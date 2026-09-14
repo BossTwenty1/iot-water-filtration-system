@@ -1,44 +1,53 @@
 # Project Overview
 
+## Project
+
+IoT Embedded Water Filtration System
+
 ## Purpose
 
-The IoT Water Filtration System is a research and monitoring platform for
-observing water-quality measurements before and after filtration. It combines
-local ESP32 control with a Node.js and Express API, Supabase PostgreSQL, and a
-web-based record of measurements, test runs, alerts, calibration records,
-laboratory validation, and CSV export.
+The project combines a physical water filtration prototype with IoT monitoring,
+data collection, research records, and a web-based dashboard.
 
-The system is not a substitute for laboratory testing, regulatory approval, or
-professional advice about drinking-water safety.
+The system monitors selected water-quality parameters before and after
+filtration and provides records that can support the research team's analysis.
 
-## Confirmed scope
+Embedded sensor readings are monitoring data and are not independent proof that
+water is safe to drink.
 
-- Controller: ESP32-WROOM-32
-- Sensor positions: pre-filtration and post-filtration
-- Measurements: pH, turbidity, TDS, temperature, and flow rate
-- User-facing capability: web dashboard
-- Records: historical data, alerts, test runs, calibration records, and
-  laboratory validation
-- Export: CSV
+The planned web system should support access through the public internet and
+through a local network where practical. The local deployment method and exact
+behavior when public internet or cloud services are unavailable remain `TBD`.
 
-## Planned architecture
+---
 
-`ESP32 -> HTTPS / JSON -> Node.js + Express API -> Supabase PostgreSQL`
+## Current Project Status
 
-`React Dashboard -> Express API -> Supabase PostgreSQL`
+The research team has completed the initial/proposal defense and is currently
+building the prototype for the final defense.
 
-The ESP32 owns critical hardware control and must continue operating safely
-without internet access. Internet connectivity is for synchronization and
-remote records, not for the minimum local control loop.
+Hardware is currently under assembly.
 
-## Team
+The software team is starting development while hardware construction
+continues.
 
-- Nash — Project Lead, Frontend, Integration
-- Alejandro — Backend, Database, API
-- Edgar — ESP32, Firmware, Hardware Integration
+Target final defense provided by the client:
 
-## Phase 1 deliverable
+`October 10, 2026`
 
-Phase 1 establishes repository structure and shared documentation. It does not
-initialize application frameworks, install dependencies, create a Supabase
-project, or implement device behavior.
+---
+
+## Physical Process
+
+Current planned water flow:
+
+```text
+Water Source
+-> Booster Pump
+-> Pre-Filtration Sensors
+-> Ultrafiltration
+-> UV-C
+-> Post-Filtration Sensors
+-> LCD
+-> Output / Collection Tank
+```

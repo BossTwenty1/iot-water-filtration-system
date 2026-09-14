@@ -1,43 +1,68 @@
+
 # Database
 
-## Target
+The planned database platform is Supabase PostgreSQL.
 
-The planned persistence layer is Supabase PostgreSQL. No Supabase project,
-database migration, seed data, or generated types are included in Phase 1.
+This document describes the proposed logical schema. The database is not yet
+implemented.
 
-The normal database path is:
+---
 
-`ESP32 or React -> Express API -> Supabase PostgreSQL`
+## 1. Principles
 
-## Planned data domains
+The database must:
 
-The eventual schema is expected to cover these domains, subject to approval:
+- preserve pre/post measurement identity,
+- preserve device identity,
+- preserve timestamps,
+- preserve test-run context,
+- separate sensor data from laboratory data,
+- distinguish simulated from real records,
+- preserve calibration context,
+- support historical analysis,
+- support CSV export,
+- support audit-relevant fault and maintenance records.
 
-- devices and device status;
-- sensor definitions and sensor positions;
-- time-series readings for pH, turbidity, TDS, temperature, and flow rate;
-- test runs;
-- alerts and alert state changes;
-- calibration records;
-- laboratory validation records; and
-- export/audit context where required.
+---
 
-These are domain boundaries, not a finalized schema. Table names, columns,
-relationships, retention, indexing, access policies, and migration strategy are
-`TBD`.
+## 2. Normal Data Path
 
-## Data integrity principles
+Device/simulator write path:
 
-- Preserve whether a reading came from the pre-filtration or post-filtration
-  sensor position.
-- Preserve measurement time and device context.
-- Keep calibration records separate from laboratory validation records.
-- Do not derive a drinking-water safety claim from sensor data alone.
-- Keep synthetic development fixtures clearly separated from real project data.
-- Define authorization and row-level access before exposing production data.
+```text
+ESP32 / Simulator
+       ↓
+Express API
+       ↓
+Supabase PostgreSQL
+```
 
-## Phase 1 boundary
+Frontend request path:
 
-No database service is provisioned and no schema implementation is started.
-The database design must be approved after the API and hardware data contract
-decisions are resolved.
+```text
+React
+  ↓
+Express API
+  ↓
+Supabase PostgreSQL
+```
+
+---
+
+## 3. Logical Record Domains
+
+The logical database design should support, subject to final schema approval:
+
+- users and authorization references,
+- devices,
+- telemetry with explicit pre-filtration/post-filtration sensor position,
+- test runs,
+- alerts,
+- calibration records,
+- laboratory tests, and
+- maintenance records.
+
+Telemetry should also preserve device identity, test-run context, measurement
+timestamp, calibration context, and a source identity distinguishing real
+hardware from simulator data. Exact table names, fields, relationships, and
+constraints remain `TBD`.
