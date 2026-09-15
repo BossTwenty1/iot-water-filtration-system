@@ -1,0 +1,375 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><title>IoT Embedded Water Filtration System</title><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"on-secondary":"#ffffff","surface-container":"#e5eeff","surface-container-lowest":"#ffffff","on-secondary-fixed":"#001e2f","on-surface-variant":"#3f4850","inverse-surface":"#213145","on-primary":"#ffffff","tertiary-container":"#00855b","surface-tint":"#006398","primary":"#006194","secondary-fixed":"#c9e6ff","on-error":"#ffffff","tertiary-fixed-dim":"#4edea3","primary-container":"#007bb9","error-container":"#ffdad6","primary-fixed":"#cce5ff","tertiary-fixed":"#6ffbbe","on-primary-container":"#fdfcff","on-tertiary":"#ffffff","on-primary-fixed":"#001d31","on-tertiary-container":"#f5fff6","on-background":"#0b1c30","on-tertiary-fixed":"#002113","on-surface":"#0b1c30","surface":"#f8f9ff","surface-container-low":"#eff4ff","inverse-on-surface":"#eaf1ff","secondary":"#006591","on-error-container":"#93000a","secondary-fixed-dim":"#89ceff","tertiary":"#006947","outline":"#707881","secondary-container":"#39b8fd","surface-bright":"#f8f9ff","on-secondary-fixed-variant":"#004c6e","surface-container-highest":"#d3e4fe","on-tertiary-fixed-variant":"#005236","on-secondary-container":"#004666","outline-variant":"#bfc7d2","surface-dim":"#cbdbf5","surface-container-high":"#dce9ff","primary-fixed-dim":"#93ccff","background":"#f8f9ff","error":"#ba1a1a","on-primary-fixed-variant":"#004b73","surface-variant":"#d3e4fe","inverse-primary":"#93ccff"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"space-lg":"1.5rem","gutter":"1rem","margin":"1.5rem","gutter-mobile":"0.75rem","margin-mobile":"1rem","space-xl":"2rem","space-sm":"0.5rem","space-md":"1rem","space-xs":"0.25rem"},"fontFamily":{"body-sm":["Hanken Grotesk"],"label-sm":["JetBrains Mono"],"body-lg":["Hanken Grotesk"],"label-xs":["JetBrains Mono"],"headline-lg":["Hanken Grotesk"],"telemetry-lg":["JetBrains Mono"],"body-md":["Hanken Grotesk"],"headline-xl":["Hanken Grotesk"],"telemetry-xl":["JetBrains Mono"],"telemetry-md":["JetBrains Mono"],"headline-md":["Hanken Grotesk"]},"fontSize":{"body-sm":["12px",{"lineHeight":"16px","fontWeight":"400"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.04em","fontWeight":"500"}],"body-lg":["15px",{"lineHeight":"22px","fontWeight":"400"}],"label-xs":["10px",{"lineHeight":"12px","letterSpacing":"0.06em","fontWeight":"500"}],"headline-lg":["22px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"600"}],"telemetry-lg":["20px",{"lineHeight":"26px","letterSpacing":"-0.02em","fontWeight":"500"}],"body-md":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-xl":["28px",{"lineHeight":"36px","letterSpacing":"-0.02em","fontWeight":"700"}],"telemetry-xl":["30px",{"lineHeight":"36px","letterSpacing":"-0.03em","fontWeight":"600"}],"telemetry-md":["14px",{"lineHeight":"20px","fontWeight":"500"}],"headline-md":["18px",{"lineHeight":"24px","fontWeight":"600"}]}}}};</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex flex-col justify-between border-r border-outline-variant"><div class="flex flex-col"><div class="h-16 px-gutter flex items-center border-b border-outline-variant bg-surface-container-low"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-primary text-[20px]">hub</span><span class="font-label-sm text-label-sm text-on-surface tracking-wider uppercase font-semibold">Console Navigation</span></div></div><div class="px-gutter py-space-sm"><div class="px-space-sm py-space-xs font-label-xs text-label-xs text-on-surface-variant uppercase tracking-widest">System Architecture</div></div><nav class="flex flex-col px-space-xs space-y-0.5" data-active-classes="bg-surface-container text-primary font-semibold border-l-2 border-primary"><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[18px]">space_dashboard</span><span class="font-body-md text-body-md">Dashboard</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="history" href="#"><span class="material-symbols-outlined text-[18px]">history</span><span class="font-body-md text-body-md">History</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="alerts" href="#"><span class="material-symbols-outlined text-[18px]">notifications_active</span><span class="font-body-md text-body-md">Alerts</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="test-runs" href="#"><span class="material-symbols-outlined text-[18px]">science</span><span class="font-body-md text-body-md">Test Runs</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="calibration" href="#"><span class="material-symbols-outlined text-[18px]">tune</span><span class="font-body-md text-body-md">Calibration</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="laboratory-validation" href="#"><span class="material-symbols-outlined text-[18px]">verified</span><span class="font-body-md text-body-md">Laboratory Validation</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-sm transition-colors rounded bg-surface-container text-primary font-semibold border-l-2 border-primary" data-path="maintenance" href="#"><span class="material-symbols-outlined text-[18px]">build_circle</span><span class="font-body-md text-body-md">Maintenance</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="settings" href="#"><span class="material-symbols-outlined text-[18px]">settings_input_component</span><span class="font-body-md text-body-md">Settings</span></a></nav></div><div class="p-gutter border-t border-outline-variant bg-surface-container-lowest"><div class="bg-surface-container-low p-space-sm rounded border border-outline-variant flex flex-col gap-space-xs"><div class="flex items-center justify-between"><span class="font-label-xs text-label-xs uppercase text-on-surface-variant font-medium">System Hardware</span><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span></span></div><div class="font-label-sm text-label-sm font-semibold text-on-surface">ESP32-WROOM-32</div><div class="flex items-center gap-space-xs pt-space-xs border-t border-outline-variant/50 font-label-xs text-label-xs text-on-surface-variant"><span class="">Status: Online</span></div></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md z-40 flex items-center justify-between px-margin border-b border-outline-variant"><div class="flex items-center gap-space-md"><img alt="Minimalist technical scientific logo mark representing IoT water filtration: clean stylized water droplet integrated with circuit lines and geometric filtration layers, clean cyan and deep ocean blue vector icon, precision academic engineering symbol. Design context: - Primary color: #0284c7
+- Font: hankenGrotesk
+- Mode: light
+- Roundness: rounded-sm
+. The logo should be visually consistent with these brand tokens." class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UzaRFYVczjcEAThJUKNiFlXlocQX2MHgsRotoYcKvIL-Cvj1JE-AmMnywjqPsKDgIg8Go_IWI2DI_Vsl62lGk9bOUIxOirGFMGCcOQAzBYKyZBlvI07qVeDr5DKPLN8WELzhtfzHAcaUMVdqEJEa35NSWUrrAgygmnrEKMy6K6dRotXP-F1T_OX2ijjMBzQ1TWTcX8tIxo0s8fM2XIF8eH0lFN22hY28KPJ2Xq9MHeTBfqjb2tkS0WVVU"><div class="flex flex-col"><span class="font-headline-md text-headline-md text-on-surface leading-tight tracking-tight">IoT Embedded Water Filtration System</span><span class="font-label-xs text-label-xs text-on-surface-variant tracking-normal uppercase">Real-Time Water Quality Monitoring &amp; Filtration</span></div></div><div class="flex items-center gap-space-md"><div class="hidden xl:flex items-center gap-space-xs px-space-sm py-space-xs rounded bg-surface-container-low border border-outline-variant"><span class="font-label-xs text-label-xs text-on-surface-variant uppercase">Last Synced:</span><span class="font-label-xs text-label-xs text-on-surface font-medium">10:42:19 AM UTC</span></div><div class="flex items-center gap-space-xs px-space-sm py-space-xs rounded border border-outline-variant bg-surface-container-low"><span class="h-2 w-2 rounded-full bg-tertiary"></span><span class="font-label-xs text-label-xs text-on-surface font-medium">ESP32 Online • Updated 8s ago</span></div><button aria-label="Alert Notifications" class="p-space-xs text-on-surface-variant hover:text-on-surface transition-colors rounded hover:bg-surface-container-low relative" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-error"></span></button><div class="h-5 w-px bg-outline-variant"></div><div class="flex items-center gap-space-sm"><div class="flex flex-col text-right"><span class="font-body-md text-body-md font-semibold text-on-surface leading-none">Researcher / Admin</span></div><img alt="Profile" class="w-8 h-8 rounded-full object-cover border border-outline-variant" src="https://lh3.googleusercontent.com/aida/AEtjO1Ukx5UAa6XlP0AuGWUNr7iNaZDbLM0mEsHiMr3fSj9qnCznaVQtazxbiP33Gs2mME0_C0WVDLxqdcKkDyaSrCRMVBEU5vi7NYc4gh2ZMS0EO-whSHFQTGutsO7SuL6TI1nFVuIxQ43ZIqvfvk0LO-YKr9W2PL10LQIaW6kGl7KeSS16T-p1NBydzSb3KGz--BrsiIJZrO72Tv-vp34wuu9gv9ObMH1CU9hH_5zeHSdi25igiv83dHH4d7k"></div></div></header><main class="relative pt-16 w-full px-margin bg-surface min-h-screen"><div class="flex flex-col w-full pb-16">
+<!-- TOP SYSTEM DEMO & TRACEABILITY BANNER -->
+<div class="w-full bg-surface-container-low px-space-md py-space-xs mb-space-md flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="inline-flex items-center px-space-xs py-0.5 rounded bg-primary text-on-primary font-label-xs text-label-xs uppercase font-medium">REPRESENTATIVE UI DEMO DATA</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">System Maintenance &amp; Component Inspection Log</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="inline-flex items-center gap-1.5 px-space-sm py-0.5 rounded bg-surface-container font-label-xs text-label-xs text-primary font-semibold">
+<span class="h-1.5 w-1.5 rounded-full bg-primary"></span>
+        Maintenance Documentation &amp; Traceability
+      </span>
+</div>
+</div>
+<!-- PAGE HEADER & ACTION BAR -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md mb-space-lg">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<h1 class="font-headline-xl text-headline-xl text-on-surface">Maintenance</h1>
+<span class="px-space-sm py-0.5 rounded bg-surface-container text-primary font-label-xs text-label-xs font-semibold uppercase">PROTOTYPE LOG</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Record and review system inspections, servicing, replacements, and maintenance activities</p>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<button class="inline-flex items-center gap-space-xs px-space-md py-space-sm rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface transition-colors font-body-md text-body-md font-medium shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">download</span>
+        Export Maintenance CSV
+      </button>
+<button class="inline-flex items-center gap-space-xs px-space-md py-space-sm rounded bg-primary hover:bg-primary-container text-on-primary transition-colors font-body-md text-body-md font-medium shadow-sm" onclick="document.getElementById('maintenance-modal').classList.remove('hidden')" type="button">
+<span class="material-symbols-outlined text-[18px]">add</span>
+        New Maintenance Record
+      </button>
+</div>
+</div>
+<!-- SUMMARY METRICS CARDS (4-Column Bento) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md mb-space-lg">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-space-xs">
+<span class="font-label-xs text-label-xs uppercase tracking-wider font-medium">Maintenance Records</span>
+<span class="material-symbols-outlined text-[18px] text-primary">fact_check</span>
+</div>
+<div class="flex items-baseline gap-space-xs my-space-xs">
+<span class="font-telemetry-xl text-telemetry-xl text-on-surface">14</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant">Records</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Physical Inspections &amp; Servicing Logs</span>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-space-xs"><span class="font-label-xs text-label-xs uppercase tracking-wider font-medium">OPEN ITEMS</span><span class="material-symbols-outlined text-[18px] text-error">pending_actions</span></div>
+<div class="flex items-baseline gap-space-xs my-space-xs">
+<span class="font-telemetry-xl text-telemetry-xl text-error">2</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant">Action Items</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Pending Follow-Up Inspection</span>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-space-xs">
+<span class="font-label-xs text-label-xs uppercase tracking-wider font-medium">Completed</span>
+<span class="material-symbols-outlined text-[18px] text-tertiary">task_alt</span>
+</div>
+<div class="flex items-baseline gap-space-xs my-space-xs">
+<span class="font-telemetry-xl text-telemetry-xl text-tertiary">12</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant">Activities</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Completed Maintenance Records</span>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-space-xs">
+<span class="font-label-xs text-label-xs uppercase tracking-wider font-medium">Maintenance Reminders</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">schedule</span>
+</div>
+<div class="flex items-baseline gap-space-xs my-space-xs">
+<span class="font-body-md text-body-md font-semibold text-on-surface">Reminder Configuration Pending</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Schedule Not Configured • Manual entry</span>
+</div>
+</div>
+<!-- SYSTEM MAINTENANCE STATUS SECTION -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm mb-space-lg">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-sm mb-space-md pb-space-sm bg-surface-container-low/40 p-space-sm rounded">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">System Maintenance Status</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Component servicing records and physical inspection status across prototype subsystems</p>
+</div>
+<div class="flex items-center gap-space-md font-label-xs text-label-xs text-on-surface-variant shrink-0">
+<span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-tertiary"></span> Record Available</span>
+<span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-error"></span> Review Needed</span>
+<span class="flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-outline"></span> No Record</span>
+</div>
+</div>
+<!-- 6 Compact Component Status Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-space-md"><div class="bg-surface-container-low p-space-md rounded flex flex-col justify-between"><div class="flex items-start justify-between gap-space-xs mb-space-xs"><span class="font-headline-md text-body-lg font-semibold text-on-surface">Ultrafiltration Unit</span><span class="px-space-sm py-0.5 rounded bg-surface-container-lowest text-tertiary font-label-xs text-label-xs font-semibold">Record Available</span></div><p class="font-body-sm text-body-sm text-on-surface-variant mb-space-sm">Filtration Subsystem</p><div class="bg-surface-container-lowest p-space-sm rounded space-y-1"><div class="flex justify-between font-label-xs text-label-xs"><span class="text-on-surface-variant">Last Record:</span><span class="font-label-sm text-on-surface font-medium">2026-09-12</span></div><div class="flex justify-between font-body-sm text-body-sm"><span class="text-on-surface-variant">Note:</span><span class="text-on-surface truncate">Maintenance record available</span></div></div></div><div class="bg-surface-container-low p-space-md rounded flex flex-col justify-between"><div class="flex items-start justify-between gap-space-xs mb-space-xs"><span class="font-headline-md text-body-lg font-semibold text-on-surface">UV-C Unit</span><span class="px-space-sm py-0.5 rounded bg-error-container text-on-error-container font-label-xs text-label-xs font-semibold">Review Needed</span></div><p class="font-body-sm text-body-sm text-on-surface-variant mb-space-sm">Disinfection Subsystem</p><div class="bg-surface-container-lowest p-space-sm rounded space-y-1"><div class="flex justify-between font-label-xs text-label-xs"><span class="text-on-surface-variant">Last Record:</span><span class="font-label-sm text-on-surface font-medium">2026-09-10</span></div><div class="flex justify-between font-body-sm text-body-sm"><span class="text-on-surface-variant">Note:</span><span class="text-on-surface truncate">Review pending</span></div></div></div><div class="bg-surface-container-low p-space-md rounded flex flex-col justify-between"><div class="flex items-start justify-between gap-space-xs mb-space-xs"><span class="font-headline-md text-body-lg font-semibold text-on-surface">Booster Pump</span><span class="px-space-sm py-0.5 rounded bg-surface-container-lowest text-tertiary font-label-xs text-label-xs font-semibold">Record Available</span></div><p class="font-body-sm text-body-sm text-on-surface-variant mb-space-sm">Water Flow Component</p><div class="bg-surface-container-lowest p-space-sm rounded space-y-1"><div class="flex justify-between font-label-xs text-label-xs"><span class="text-on-surface-variant">Last Record:</span><span class="font-label-sm text-on-surface font-medium">2026-09-11</span></div><div class="flex justify-between font-body-sm text-body-sm"><span class="text-on-surface-variant">Note:</span><span class="text-on-surface truncate">Inspection record available</span></div></div></div><div class="bg-surface-container-low p-space-md rounded flex flex-col justify-between"><div class="flex items-start justify-between gap-space-xs mb-space-xs"><span class="font-headline-md text-body-lg font-semibold text-on-surface">Before-Filtration Sensors</span><span class="px-space-sm py-0.5 rounded bg-surface-container-lowest text-tertiary font-label-xs text-label-xs font-semibold">Record Available</span></div><p class="font-body-sm text-body-sm text-on-surface-variant mb-space-sm">pH (PH-4502C), TDS (DFRobot TDS), Temp (DS18B20), Flow (ZJ-S201C), Turbidity (Pending Confirmation)</p><div class="bg-surface-container-lowest p-space-sm rounded space-y-1"><div class="flex justify-between font-label-xs text-label-xs"><span class="text-on-surface-variant">Last Record:</span><span class="font-label-sm text-on-surface font-medium">2026-09-13</span></div><div class="flex justify-between font-body-sm text-body-sm"><span class="text-on-surface-variant">Note:</span><span class="text-on-surface truncate">Maintenance record available</span></div></div></div><div class="bg-surface-container-low p-space-md rounded flex flex-col justify-between"><div class="flex items-start justify-between gap-space-xs mb-space-xs"><span class="font-headline-md text-body-lg font-semibold text-on-surface">After-Filtration Sensors</span><span class="px-space-sm py-0.5 rounded bg-surface-container-lowest text-tertiary font-label-xs text-label-xs font-semibold">Record Available</span></div><p class="font-body-sm text-body-sm text-on-surface-variant mb-space-sm">pH (PH-4502C), TDS (DFRobot TDS), Temp (DS18B20), Flow (ZJ-S201C), Turbidity (Pending Confirmation)</p><div class="bg-surface-container-lowest p-space-sm rounded space-y-1"><div class="flex justify-between font-label-xs text-label-xs"><span class="text-on-surface-variant">Last Record:</span><span class="font-label-sm text-on-surface font-medium">2026-09-14</span></div><div class="flex justify-between font-body-sm text-body-sm"><span class="text-on-surface-variant">Note:</span><span class="text-on-surface truncate">Inspection record available</span></div></div></div><div class="bg-surface-container-low p-space-md rounded flex flex-col justify-between"><div class="flex items-start justify-between gap-space-xs mb-space-xs"><span class="font-headline-md text-body-lg font-semibold text-on-surface">ESP32 Controller</span><span class="px-space-sm py-0.5 rounded bg-surface-container-lowest text-tertiary font-label-xs text-label-xs font-semibold">Record Available</span></div><p class="font-body-sm text-body-sm text-on-surface-variant mb-space-sm">ESP32-WROOM-32</p><div class="bg-surface-container-lowest p-space-sm rounded space-y-1"><div class="flex justify-between font-label-xs text-label-xs"><span class="text-on-surface-variant">Last Record:</span><span class="font-label-sm text-on-surface font-medium">2026-09-14</span></div><div class="flex justify-between font-body-sm text-body-sm"><span class="text-on-surface-variant">Note:</span><span class="text-on-surface truncate">Inspection record available</span></div></div></div></div>
+</div>
+<!-- INFORMATIONAL CARDS: UV-C OPERATING HOURS & FILTER REMINDER STATUS -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-space-md mb-space-lg"><div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between"><div class="flex items-center justify-between mb-space-sm"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px] text-primary">wb_iridescent</span><span class="font-headline-md text-headline-md text-on-surface">UV-C Operating Hours</span></div><span class="px-space-sm py-0.5 rounded bg-surface-container text-on-surface-variant font-label-xs text-label-xs font-medium">Runtime Tracking Pending Integration</span></div><div class="bg-surface-container-low p-space-sm rounded mb-space-sm"><div class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Runtime Tracker</div><div class="font-telemetry-lg text-telemetry-lg text-primary mt-0.5">Representative Manual Runtime Log: 14 h 25 min</div></div><p class="font-body-sm text-body-sm text-on-surface-variant">Automated runtime telemetry is pending hardware integration. Lamp status is recorded manually for prototype research documentation.</p></div><div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between"><div class="flex items-center justify-between mb-space-sm"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px] text-primary">filter_alt</span><span class="font-headline-md text-headline-md text-on-surface">Filter Maintenance Reminder Status</span></div><span class="px-space-sm py-0.5 rounded bg-surface-container text-on-surface-variant font-label-xs text-label-xs font-medium">Configured Reminders</span></div><div class="bg-surface-container-low p-space-sm rounded mb-space-sm"><div class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">Reminder State</div><div class="font-body-lg text-body-lg font-semibold text-on-surface mt-0.5">Reminder Configuration Pending</div></div><p class="font-body-sm text-body-sm text-on-surface-variant">No pressure-based filter-health measurement is currently available. Filter maintenance reminders must be configured or recorded manually until an approved maintenance procedure is established.</p></div></div>
+<!-- FILTER & SEARCH TOOLBAR -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm mb-space-lg flex flex-col gap-space-sm">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-sm">
+<div class="flex flex-col gap-1">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase font-medium">Date Range</label>
+<div class="flex items-center bg-surface-container-low px-space-sm py-space-xs rounded">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant mr-1.5">calendar_today</span>
+<span class="font-label-sm text-label-sm text-on-surface">2026-09-08 - 2026-09-14</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase font-medium">Component</label>
+<select class="bg-surface-container-low text-on-surface font-body-md text-body-md px-space-sm py-space-xs rounded focus:outline-none focus:bg-surface-container">
+<option>All Components</option>
+<option>Ultrafiltration Unit</option>
+<option>UV-C Unit</option>
+<option>Booster Pump</option>
+<option>pH Sensor</option>
+<option>Turbidity Sensor</option>
+<option>TDS Sensor</option>
+<option>Temperature Sensor</option>
+<option>Flow Sensor</option>
+<option>ESP32 Controller</option>
+<option>General System</option>
+</select>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase font-medium">Maintenance Type</label>
+<select class="bg-surface-container-low text-on-surface font-body-md text-body-md px-space-sm py-space-xs rounded focus:outline-none focus:bg-surface-container">
+<option>All Types</option>
+<option>Inspection</option>
+<option>Cleaning</option>
+<option>Adjustment</option>
+<option>Replacement</option>
+<option>Repair</option>
+<option>Other</option>
+</select>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase font-medium">Status</label>
+<select class="bg-surface-container-low text-on-surface font-body-md text-body-md px-space-sm py-space-xs rounded focus:outline-none focus:bg-surface-container">
+<option>All Statuses</option>
+<option>Open</option>
+<option>Completed</option>
+<option>Review Needed</option>
+</select>
+</div>
+</div>
+<div class="flex items-center justify-end gap-space-sm pt-space-xs">
+<button class="px-space-md py-space-xs rounded bg-surface-container text-on-surface font-body-sm text-body-sm hover:bg-surface-container-high transition-colors" type="button">Reset</button>
+<button class="px-space-md py-space-xs rounded bg-primary text-on-primary font-body-sm text-body-sm hover:bg-primary-container transition-colors" type="button">Apply Filters</button>
+</div>
+</div>
+<!-- MAIN SPLIT: RECORDS & REMINDERS (LEFT 65%) vs DETAIL INSPECTOR (RIGHT 35%) -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-md">
+<!-- LEFT COLUMN (8 of 12 = 66%) -->
+<div class="xl:col-span-8 flex flex-col gap-space-lg">
+<!-- 1. MAINTENANCE RECORDS TABLE -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-md">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Maintenance Records</h3>
+<span class="font-label-xs text-label-xs text-on-surface-variant">Showing 5 of 14 records</span>
+</div>
+<div class="relative w-full sm:w-72">
+<span class="material-symbols-outlined absolute left-2.5 top-2.5 text-[18px] text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low pl-9 pr-space-sm py-space-xs rounded font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container" placeholder="Search records, components, or operators..." type="text">
+</div>
+</div>
+<!-- Table Container -->
+<div class="overflow-x-auto w-full">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-xs text-label-xs uppercase tracking-wider">
+<th class="py-space-sm px-space-sm">Maintenance ID</th>
+<th class="py-space-sm px-space-sm">Date (UTC)</th>
+<th class="py-space-sm px-space-sm">Component</th>
+<th class="py-space-sm px-space-sm">Type</th>
+<th class="py-space-sm px-space-sm">Description</th>
+<th class="py-space-sm px-space-sm">Performed By</th>
+<th class="py-space-sm px-space-sm">Related Run/Alert</th>
+<th class="py-space-sm px-space-sm">Status</th>
+<th class="py-space-sm px-space-sm text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-transparent font-body-sm"><tr class="hover:bg-surface-container-low/60 transition-colors cursor-pointer"><td class="py-space-sm px-space-sm font-label-sm text-primary font-medium">MNT-2026-005</td><td class="py-space-sm px-space-sm font-label-sm text-on-surface-variant whitespace-nowrap">2026-09-14 11:20</td><td class="py-space-sm px-space-sm text-on-surface font-medium whitespace-nowrap">After-Filtration Sensors</td><td class="py-space-sm px-space-sm text-on-surface-variant">Inspection</td><td class="py-space-sm px-space-sm text-on-surface max-w-xs truncate">Physical sensor inspection recorded by researcher.</td><td class="py-space-sm px-space-sm text-on-surface-variant whitespace-nowrap">Researcher / Admin</td><td class="py-space-sm px-space-sm font-label-sm text-primary whitespace-nowrap">RUN-2026-003</td><td class="py-space-sm px-space-sm whitespace-nowrap"><span class="px-space-sm py-0.5 rounded bg-surface-container text-tertiary font-label-xs text-label-xs font-semibold">Completed</span></td><td class="py-space-sm px-space-sm text-right whitespace-nowrap"><button class="text-primary hover:text-primary-container font-label-sm text-label-sm font-medium">Inspect</button></td></tr><tr class="bg-surface-container transition-colors cursor-pointer"><td class="py-space-sm px-space-sm font-label-sm text-primary font-bold">MNT-2026-004</td><td class="py-space-sm px-space-sm font-label-sm text-on-surface font-medium whitespace-nowrap">2026-09-13 16:45</td><td class="py-space-sm px-space-sm text-on-surface font-semibold whitespace-nowrap">Booster Pump</td><td class="py-space-sm px-space-sm text-on-surface">Inspection</td><td class="py-space-sm px-space-sm text-on-surface max-w-xs truncate font-medium">Booster pump inspection recorded following a system warning.</td><td class="py-space-sm px-space-sm text-on-surface whitespace-nowrap">Researcher / Admin</td><td class="py-space-sm px-space-sm font-label-sm text-error whitespace-nowrap font-medium">ALT-2026-004</td><td class="py-space-sm px-space-sm whitespace-nowrap"><span class="px-space-sm py-0.5 rounded bg-error-container text-on-error-container font-label-xs text-label-xs font-semibold">Review Needed</span></td><td class="py-space-sm px-space-sm text-right whitespace-nowrap"><span class="px-space-xs py-0.5 rounded bg-primary text-on-primary font-label-xs text-label-xs font-medium">Active</span></td></tr><tr class="hover:bg-surface-container-low/60 transition-colors cursor-pointer"><td class="py-space-sm px-space-sm font-label-sm text-primary font-medium">MNT-2026-003</td><td class="py-space-sm px-space-sm font-label-sm text-on-surface-variant whitespace-nowrap">2026-09-12 14:00</td><td class="py-space-sm px-space-sm text-on-surface font-medium whitespace-nowrap">Ultrafiltration Unit</td><td class="py-space-sm px-space-sm text-on-surface-variant">Inspection</td><td class="py-space-sm px-space-sm text-on-surface max-w-xs truncate">Ultrafiltration unit maintenance review recorded.</td><td class="py-space-sm px-space-sm text-on-surface-variant whitespace-nowrap">Researcher / Admin</td><td class="py-space-sm px-space-sm font-label-sm text-primary whitespace-nowrap">RUN-2026-002</td><td class="py-space-sm px-space-sm whitespace-nowrap"><span class="px-space-sm py-0.5 rounded bg-surface-container text-tertiary font-label-xs text-label-xs font-semibold">Completed</span></td><td class="py-space-sm px-space-sm text-right whitespace-nowrap"><button class="text-primary hover:text-primary-container font-label-sm text-label-sm font-medium">Inspect</button></td></tr><tr class="hover:bg-surface-container-low/60 transition-colors cursor-pointer"><td class="py-space-sm px-space-sm font-label-sm text-primary font-medium">MNT-2026-002</td><td class="py-space-sm px-space-sm font-label-sm text-on-surface-variant whitespace-nowrap">2026-09-11 09:30</td><td class="py-space-sm px-space-sm text-on-surface font-medium whitespace-nowrap">ESP32 Controller</td><td class="py-space-sm px-space-sm text-on-surface-variant">Inspection</td><td class="py-space-sm px-space-sm text-on-surface max-w-xs truncate">Controller enclosure and connections inspected by researcher.</td><td class="py-space-sm px-space-sm text-on-surface-variant whitespace-nowrap">Researcher / Admin</td><td class="py-space-sm px-space-sm font-label-sm text-on-surface-variant whitespace-nowrap">—</td><td class="py-space-sm px-space-sm whitespace-nowrap"><span class="px-space-sm py-0.5 rounded bg-surface-container text-tertiary font-label-xs text-label-xs font-semibold">Completed</span></td><td class="py-space-sm px-space-sm text-right whitespace-nowrap"><button class="text-primary hover:text-primary-container font-label-sm text-label-sm font-medium">Inspect</button></td></tr><tr class="hover:bg-surface-container-low/60 transition-colors cursor-pointer"><td class="py-space-sm px-space-sm font-label-sm text-primary font-medium">MNT-2026-001</td><td class="py-space-sm px-space-sm font-label-sm text-on-surface-variant whitespace-nowrap">2026-09-10 10:15</td><td class="py-space-sm px-space-sm text-on-surface font-medium whitespace-nowrap">UV-C Unit</td><td class="py-space-sm px-space-sm text-on-surface-variant">Inspection</td><td class="py-space-sm px-space-sm text-on-surface max-w-xs truncate">UV-C unit inspection record created.</td><td class="py-space-sm px-space-sm text-on-surface-variant whitespace-nowrap">Researcher / Admin</td><td class="py-space-sm px-space-sm font-label-sm text-primary whitespace-nowrap">RUN-2026-001</td><td class="py-space-sm px-space-sm whitespace-nowrap"><span class="px-space-sm py-0.5 rounded bg-surface-container text-tertiary font-label-xs text-label-xs font-semibold">Completed</span></td><td class="py-space-sm px-space-sm text-right whitespace-nowrap"><button class="text-primary hover:text-primary-container font-label-sm text-label-sm font-medium">Inspect</button></td></tr></tbody>
+</table>
+</div>
+<!-- Table Pagination -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-space-sm mt-space-md pt-space-sm bg-surface-container-low/40 p-space-sm rounded">
+<span class="font-label-xs text-label-xs text-on-surface-variant">Page 1 of 3 (Total 14 items)</span>
+<div class="flex items-center gap-1 font-label-sm text-label-sm">
+<span class="px-space-sm py-0.5 rounded bg-primary text-on-primary font-semibold">1</span>
+<button class="px-space-sm py-0.5 rounded bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors">2</button>
+<button class="px-space-sm py-0.5 rounded bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors">3</button>
+<button class="px-space-sm py-0.5 rounded bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors ml-1">Next &gt;</button>
+</div>
+</div>
+</div>
+<!-- 2. CONFIGURED MAINTENANCE REMINDERS -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs mb-space-sm">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Maintenance Reminders</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Operator reminder milestones. Automatic service intervals are not configured.</p>
+</div>
+<span class="px-space-sm py-0.5 rounded bg-surface-container text-primary font-label-xs text-label-xs font-semibold uppercase shrink-0">Configured Reminders</span>
+</div>
+<div class="grid grid-cols-1 gap-space-xs">
+<!-- Reminder 1 -->
+<div class="bg-surface-container-low p-space-sm rounded flex flex-col md:flex-row md:items-center justify-between gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-sm text-label-sm font-semibold text-primary">REM-001</span>
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Booster Pump:</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Pump Inspection</span>
+</div>
+<div class="flex items-center gap-space-sm self-end md:self-auto">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Due: 2026-09-16</span>
+<span class="px-space-sm py-0.5 rounded bg-error-container text-on-error-container font-label-xs text-label-xs font-semibold">Due</span>
+</div>
+</div>
+<!-- Reminder 2 -->
+<div class="bg-surface-container-low p-space-sm rounded flex flex-col md:flex-row md:items-center justify-between gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-sm text-label-sm font-semibold text-primary">REM-002</span>
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Ultrafiltration Unit:</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Filter Maintenance Review</span>
+</div>
+<div class="flex items-center gap-space-sm self-end md:self-auto">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Due: 2026-09-18</span>
+<span class="px-space-sm py-0.5 rounded bg-surface-container text-primary font-label-xs text-label-xs font-semibold">Upcoming</span>
+</div>
+</div>
+<!-- Reminder 3 -->
+<div class="bg-surface-container-low p-space-sm rounded flex flex-col md:flex-row md:items-center justify-between gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-sm text-label-sm font-semibold text-primary">REM-003</span>
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">UV-C Unit:</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">UV-C Review</span>
+</div>
+<div class="flex items-center gap-space-sm self-end md:self-auto">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Due: 2026-09-20</span>
+<span class="px-space-sm py-0.5 rounded bg-surface-container text-primary font-label-xs text-label-xs font-semibold">Upcoming</span>
+</div>
+</div>
+<!-- Reminder 4 -->
+<div class="bg-surface-container-low p-space-sm rounded flex flex-col md:flex-row md:items-center justify-between gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-sm text-label-sm font-semibold text-primary">REM-004</span>
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Sensor Suite:</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Sensor Inspection</span>
+</div>
+<div class="flex items-center gap-space-sm self-end md:self-auto">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Due: 2026-09-22</span>
+<span class="px-space-sm py-0.5 rounded bg-surface-container text-primary font-label-xs text-label-xs font-semibold">Upcoming</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 3. RECENT MAINTENANCE ACTIVITY TIMELINE -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-space-sm">Recent Maintenance Activity</h3>
+<div class="space-y-space-xs font-body-sm text-body-sm"><div class="flex items-start gap-space-sm p-space-xs hover:bg-surface-container-low rounded transition-colors"><span class="font-label-xs text-label-xs text-on-surface-variant whitespace-nowrap mt-0.5">2026-09-14 11:20</span><span class="font-label-sm text-label-sm text-primary font-semibold whitespace-nowrap">After-Filtration Sensors</span><span class="text-on-surface flex-1">Sensor inspection record completed.</span><span class="font-label-xs text-label-xs text-on-surface-variant whitespace-nowrap">Researcher / Admin</span></div><div class="flex items-start gap-space-sm p-space-xs hover:bg-surface-container-low rounded transition-colors"><span class="font-label-xs text-label-xs text-on-surface-variant whitespace-nowrap mt-0.5">2026-09-13 16:45</span><span class="font-label-sm text-label-sm text-primary font-semibold whitespace-nowrap">Booster Pump</span><span class="text-on-surface flex-1">Booster pump inspection record created.</span><span class="font-label-xs text-label-xs text-on-surface-variant whitespace-nowrap">Researcher / Admin</span></div><div class="flex items-start gap-space-sm p-space-xs hover:bg-surface-container-low rounded transition-colors"><span class="font-label-xs text-label-xs text-on-surface-variant whitespace-nowrap mt-0.5">2026-09-12 14:00</span><span class="font-label-sm text-label-sm text-primary font-semibold whitespace-nowrap">Ultrafiltration Unit</span><span class="text-on-surface flex-1">Ultrafiltration maintenance review recorded.</span><span class="font-label-xs text-label-xs text-on-surface-variant whitespace-nowrap">Researcher / Admin</span></div></div>
+</div>
+</div>
+<!-- RIGHT COLUMN: MAINTENANCE INSPECTOR (4 of 12 = 34%) -->
+<div class="xl:col-span-4 flex flex-col gap-space-md">
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col gap-space-md sticky top-20"><div class="flex items-center justify-between pb-space-sm bg-surface-container-low/40 p-space-sm rounded"><div class="flex flex-col"><div class="flex items-center gap-space-xs"><span class="font-label-xs text-label-xs uppercase text-on-surface-variant font-semibold tracking-wider">MAINTENANCE INSPECTOR</span><span class="font-label-sm text-label-sm text-primary font-bold">MNT-2026-004</span></div><span class="font-headline-md text-headline-md text-on-surface leading-tight">Booster Pump Servicing</span></div><div class="flex items-center gap-space-xs"><span class="px-space-sm py-0.5 rounded bg-error-container text-on-error-container font-label-xs text-label-xs font-semibold">Review Needed</span><button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Print Record" type="button"><span class="material-symbols-outlined text-[18px]">print</span></button></div></div><div class="grid grid-cols-2 gap-space-sm bg-surface-container-low p-space-sm rounded"><div class="flex flex-col"><span class="font-label-xs text-label-xs text-on-surface-variant">Recorded Date (UTC)</span><span class="font-label-sm text-label-sm text-on-surface font-medium">2026-09-13 16:45</span></div><div class="flex flex-col"><span class="font-label-xs text-label-xs text-on-surface-variant">Component</span><span class="font-body-sm text-body-sm text-on-surface font-semibold">Booster Pump</span></div><div class="flex flex-col"><span class="font-label-xs text-label-xs text-on-surface-variant">Maintenance Type</span><span class="font-body-sm text-body-sm text-on-surface">Inspection</span></div><div class="flex flex-col"><span class="font-label-xs text-label-xs text-on-surface-variant">Performed By</span><span class="font-body-sm text-body-sm text-on-surface font-medium">Researcher / Admin</span></div><div class="flex flex-col"><span class="font-label-xs text-label-xs text-on-surface-variant">Related Test Run</span><span class="font-label-sm text-label-sm text-primary font-medium flex items-center gap-1">RUN-2026-002<span class="material-symbols-outlined text-[12px]">arrow_forward</span></span></div><div class="flex flex-col"><span class="font-label-xs text-label-xs text-on-surface-variant">Related Alert</span><span class="font-label-sm text-label-sm text-error font-medium">ALT-2026-004</span></div><div class="col-span-2 flex flex-col pt-1 bg-surface-container-lowest/50 p-space-xs rounded"><span class="font-label-xs text-label-xs text-on-surface-variant">Completed Date</span><span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Pending Review</span></div></div><div class="flex flex-col gap-1"><span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider font-semibold">Inspection Description</span><div class="bg-surface-container-low p-space-sm rounded font-body-sm text-body-sm text-on-surface leading-relaxed">Booster pump inspected following a recorded system warning. General physical condition was reviewed by the researcher.</div></div><div class="flex flex-col gap-1"><span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider font-semibold">Parts / Materials Notes</span><div class="bg-surface-container-low p-space-sm rounded font-body-sm text-body-sm text-on-surface">No replacement parts recorded.</div></div><div class="bg-error-container/40 p-space-sm rounded flex flex-col gap-1"><div class="flex items-center justify-between"><span class="font-label-xs text-label-xs text-error font-bold uppercase tracking-wider">Follow-Up Required</span><span class="px-space-xs py-0.5 rounded bg-error-container text-on-error-container font-label-xs text-label-xs font-semibold">YES</span></div><p class="font-body-sm text-body-sm text-on-surface leading-normal">Follow-up inspection may be recorded if required by the research/hardware team.</p></div><div class="bg-surface-container-low p-space-sm rounded flex items-start gap-space-sm"><span class="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5">info</span><div class="flex flex-col gap-0.5"><span class="font-label-xs text-label-xs text-primary font-semibold uppercase">Maintenance vs Calibration</span><span class="font-body-sm text-body-sm text-on-surface-variant leading-tight">This record documents physical inspection and servicing activities. Sensor measurement comparison and accuracy evaluation are tracked independently in Sensor Calibration.</span></div></div><div class="bg-surface-container p-space-sm rounded flex items-start gap-space-sm"><span class="material-symbols-outlined text-[18px] text-on-surface-variant shrink-0 mt-0.5">shield</span><div class="flex flex-col gap-0.5"><span class="font-label-xs text-label-xs text-on-surface-variant font-bold uppercase">SAFETY &amp; OPERATIONAL NOTICE</span><span class="font-body-sm text-body-sm text-on-surface-variant leading-tight">Maintenance records document inspection and service activities. Hardware condition and service requirements must be confirmed through actual physical inspection and the specifications of installed components. The system does not remotely control hardware or determine water potability.</span></div></div></div>
+</div>
+</div>
+<!-- NEW MAINTENANCE RECORD MODAL (Accessible markup) -->
+<div class="hidden fixed inset-0 z-50 overflow-y-auto bg-inverse-surface/40 backdrop-blur-sm flex items-center justify-center p-space-md" id="maintenance-modal">
+<div class="relative bg-surface-container-lowest w-full max-w-2xl rounded shadow-2xl p-space-lg flex flex-col gap-space-md max-h-[921px] overflow-y-auto">
+<!-- Modal Header -->
+<div class="flex items-start justify-between pb-space-xs bg-surface-container-low/40 p-space-sm rounded">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">New Maintenance Record</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Record physical inspection, servicing, or component replacement for research prototype traceability</p>
+</div>
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" onclick="document.getElementById('maintenance-modal').classList.add('hidden')" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Modal Form Grid -->
+<form class="grid grid-cols-1 md:grid-cols-2 gap-space-md" onsubmit="event.preventDefault(); document.getElementById('maintenance-modal').classList.add('hidden');">
+<!-- Maintenance ID (Disabled) -->
+<div class="flex flex-col gap-1">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase font-medium">Maintenance ID (Auto-Generated)</label>
+<input class="bg-surface-container-low px-space-sm py-space-xs rounded font-label-sm text-label-sm text-on-surface-variant opacity-80 cursor-not-allowed" disabled="" type="text" value="MNT-2026-006">
+</div>
+<!-- Date & Time (UTC) -->
+<div class="flex flex-col gap-1">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase font-medium">Date &amp; Time (UTC)</label>
+<input class="bg-surface-container-low px-space-sm py-space-xs rounded font-label-sm text-label-sm text-on-surface focus:outline-none focus:bg-surface-container" type="text" value="2026-09-14 14:30">
+</div>
+<!-- Component Select -->
+<div class="flex flex-col gap-1">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase font-medium">Subsystem Component</label>
+<select class="bg-surface-container-low px-space-sm py-space-xs rounded font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container"><option>Ultrafiltration Unit</option><option>UV-C Unit</option><option>Booster Pump</option><option>Before-Filtration Sensors</option><option>After-Filtration Sensors</option><option>ESP32 Controller</option><option>General System</option></select>
+</div>
+<!-- Maintenance Type Select -->
+<div class="flex flex-col gap-1">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase font-medium">Maintenance Type</label>
+<select class="bg-surface-container-low px-space-sm py-space-xs rounded font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container">
+<option>Inspection</option>
+<option>Cleaning</option>
+<option>Adjustment</option>
+<option>Replacement</option>
+<option>Repair</option>
+<option>Other</option>
+</select>
+</div>
+<!-- Performed By -->
+<div class="flex flex-col gap-1">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase font-medium">Performed By</label>
+<input class="bg-surface-container-low px-space-sm py-space-xs rounded font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container" type="text" value="Researcher / Admin">
+</div>
+<!-- Related Test Run / Alert -->
+<div class="flex flex-col gap-1">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase font-medium">Related Test Run / Alert (Optional)</label>
+<input class="bg-surface-container-low px-space-sm py-space-xs rounded font-label-sm text-label-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container" placeholder="e.g. RUN-2026-003 or ALT-2026-004" type="text">
+</div>
+<!-- Servicing Description (Span 2) -->
+<div class="col-span-1 md:col-span-2 flex flex-col gap-1">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase font-medium">Description of Servicing &amp; Observations</label>
+<textarea class="bg-surface-container-low p-space-sm rounded font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container" placeholder="Describe specific physical tasks performed, cleaning procedures, observations, and subsystem condition..." rows="3"></textarea>
+</div>
+<!-- Parts / Materials Notes (Span 2) -->
+<div class="col-span-1 md:col-span-2 flex flex-col gap-1">
+<label class="font-label-xs text-label-xs text-on-surface-variant uppercase font-medium">Parts / Materials Notes (Optional)</label>
+<input class="bg-surface-container-low px-space-sm py-space-xs rounded font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container" placeholder="Record any parts or materials used, if applicable." type="text">
+</div>
+<!-- Follow-Up Required -->
+<div class="col-span-1 md:col-span-2 flex flex-col gap-space-xs bg-surface-container-low p-space-sm rounded">
+<div class="flex items-center justify-between">
+<span class="font-label-xs text-label-xs text-on-surface uppercase font-medium">Follow-Up Inspection Required?</span>
+<div class="flex items-center gap-space-md font-body-sm text-body-sm">
+<label class="inline-flex items-center gap-1.5 cursor-pointer">
+<input checked="" class="text-primary focus:ring-0" name="followup" type="radio" value="no">
+<span class="text-on-surface">No</span>
+</label>
+<label class="inline-flex items-center gap-1.5 cursor-pointer">
+<input class="text-primary focus:ring-0" name="followup" type="radio" value="yes">
+<span class="text-on-surface">Yes</span>
+</label>
+</div>
+</div>
+<input class="bg-surface-container-lowest px-space-sm py-space-xs rounded font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none" placeholder="Follow-up notes or scheduled milestone (if applicable)..." type="text">
+</div>
+<!-- Formal Disclaimer -->
+<div class="col-span-1 md:col-span-2 bg-surface-container p-space-sm rounded flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5">verified_user</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-tight">Maintenance records document inspection and service activities. Hardware condition and service requirements must be confirmed through actual physical inspection and the specifications of installed components. The system does not remotely control hardware or determine water potability.</p>
+</div>
+<!-- Modal Actions -->
+<div class="col-span-1 md:col-span-2 flex items-center justify-end gap-space-sm pt-space-xs">
+<button class="px-space-md py-space-sm rounded bg-surface-container text-on-surface font-body-md text-body-md hover:bg-surface-container-high transition-colors" onclick="document.getElementById('maintenance-modal').classList.add('hidden')" type="button">
+            Cancel
+          </button>
+<button class="px-space-lg py-space-sm rounded bg-primary text-on-primary font-body-md text-body-md hover:bg-primary-container transition-colors shadow-sm" type="submit">
+            Save Maintenance Record
+          </button>
+</div>
+</form>
+</div>
+</div>
+</div></main></div>
+
+
+
+</body></html>

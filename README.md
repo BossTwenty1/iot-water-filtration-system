@@ -6,8 +6,9 @@ Supabase PostgreSQL, and a React web dashboard.
 
 ## Project status
 
-Phase 1 — Project Foundation is documented. The application, backend, firmware,
-simulator, and database implementations have not been initialized yet.
+Phase 2 — Frontend Foundation is in progress. The React dashboard is initialized
+with representative local mock data; backend, firmware, simulator, and database
+implementations have not been initialized yet.
 
 ## Confirmed system scope
 
@@ -32,7 +33,7 @@ must not be presented as laboratory proof that water is safe to drink.
 ## Repository layout
 
 ```text
-frontend/       React dashboard (not initialized)
+frontend/       React dashboard (frontend foundation implemented)
 backend/        API and server-side logic (not initialized)
 firmware/       Device firmware
   esp32/        ESP32 firmware workspace (not initialized)
@@ -51,8 +52,8 @@ items that must remain `TBD` until the team approves them.
 - Alejandro — Backend, Database, API
 - Edgar — ESP32, Firmware, Hardware Integration
 
-## Phase 1 boundary
+## Frontend development
 
-This phase creates repository structure and documentation only. It does not
-install dependencies, initialize React, Express, PlatformIO, or Supabase, and
-does not create branches, commits, or pushes.
+From `frontend/`, run `npm install`, then `npm run dev`. The frontend currently
+uses representative local mock data and must not be interpreted as a connected
+device, API, database, laboratory, or hardware-control implementation.
