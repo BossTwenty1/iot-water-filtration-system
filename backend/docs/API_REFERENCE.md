@@ -33,7 +33,9 @@ http://localhost:<BACKEND_PORT>/api/v1
 
 ## Authentication
 
-Every route except `GET /health` and the `/auth/*` routes requires:
+Every route except `GET /health`, the `/auth/*` routes, and
+`POST /devices/:id/readings` (see "Devices" below — it uses a device shared
+secret instead, since a device has no user session) requires:
 
 ```
 Authorization: Bearer <token>
@@ -657,6 +659,63 @@ Any subset of `connectionState`/`wifiState`/`failSafeState`/`controllerName`/
 updated `DeviceStatus`. This is the route the UI's current "Pending Hardware
 Integration" placeholders should eventually call once real hardware
 integration lands.
+
+### `POST /devices/:id/readings`
+
+Device/simulator telemetry ingestion — the one write route a device (not a
+logged-in user) calls. **Auth is different here**: no `Authorization`
+header; instead send
+
+```
+X-Device-Key: <DEVICE_INGEST_KEY>
+```
+
+This is a placeholder shared secret (one value, set in `.env`), not the real
+device-authentication mechanism — that's still `docs/PENDING_DECISIONS.md`
+§8. It exists so this one unauthenticated-by-user route isn't wide open,
+nothing more.
+
+```json
+// request
+{
+  "measuredAt": "2026-09-17T08:00:00Z",
+  "testRunId": "81e398b8-... (optional)",
+  "readings": [
+    { "category": "ph", "position": "pre_filtration", "value": 7.1, "status": "valid" },
+    { "category": "turbidity", "position": "post_filtration", "value": null, "status": "unavailable" }
+  ]
+}
+```
+
+Note this uses the database's own vocabulary (`category`/`position` —
+`ph|turbidity|tds|temperature|flow_rate` / `pre_filtration|post_filtration`),
+not the frontend's `parameter`/`stage` — this route is device-facing, not
+consumed by the dashboard. `value: null` is how a device reports "no
+reading" (preserves the unavailable-vs-measured distinction from
+`docs/DATABASE.md`). `status` maps straight to the free-text
+`reading_status` column — no enum is enforced, since that rule is still TBD
+(`PENDING_DECISIONS` §3).
+
+```json
+// response 201 — at least one reading was inserted
+{
+  "deviceId": "2a273ff0-fde6-4453-899a-c05af063d071",
+  "inserted": 1,
+  "skipped": [{ "category": "turbidity", "position": "post_filtration", "reason": "sensor not registered for this device" }]
+}
+```
+
+A malformed or unregistered individual reading is skipped and reported back
+in `skipped`, not treated as a whole-batch failure — one bad entry in a
+firmware payload shouldn't discard the rest of an otherwise-valid batch.
+`400` (not `201`) if every reading in the batch was skipped, or if
+`measuredAt` is missing/unparsable, `readings` is empty, or `testRunId` is
+provided but doesn't reference an existing test run. `401` for a missing/
+wrong `X-Device-Key`. `404` if `:id` isn't a registered device.
+
+On success (`inserted > 0`), this also sets `devices.last_seen_at` to now
+and `connection_state` to `"Online"` — the heartbeat mechanism the
+`GET /devices/:id/status` section above already referenced.
 
 ---
 

@@ -48,6 +48,12 @@ const PARAMETER_TO_CATEGORY: Record<string, string> = Object.fromEntries(
 const POSITION_TO_STAGE: Record<string, SensorStage> = { pre_filtration: 'before', post_filtration: 'after' }
 const STAGE_TO_POSITION: Record<string, string> = { before: 'pre_filtration', after: 'post_filtration' }
 
+// The confirmed sensor category/position sets (REQUIREMENTS.md) — exported
+// so ingestion validation (src/routes/devices.routes.ts) uses the same
+// source of truth instead of duplicating the list.
+export const VALID_CATEGORIES = Object.keys(CATEGORY_TO_PARAMETER)
+export const VALID_POSITIONS = Object.keys(POSITION_TO_STAGE)
+
 export function categoryToParameter(category: string | null | undefined): SensorParameter {
   if (!category) return category as SensorParameter
   return CATEGORY_TO_PARAMETER[category] ?? (category as SensorParameter)
