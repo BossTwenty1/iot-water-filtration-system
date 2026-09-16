@@ -2,10 +2,13 @@
   "name": "iot-water-filtration-system-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js",
+    "dev": "nodemon --watch src --watch index.ts --ext ts --exec ts-node index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "seed": "ts-node scripts/seedTestData.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "adb-polar",
@@ -14,10 +17,17 @@
     "@supabase/supabase-js": "^2.116.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "ws": "^8.21.3"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.20.3",
+    "@types/ws": "^8.18.1",
     "nodemon": "^3.1.14",
-    "supabase": "^2.117.0"
+    "supabase": "^2.117.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }

@@ -56,3 +56,30 @@ was implemented as plain `text` or `jsonb` so nothing had to be guessed.
 3. Add follow-up migrations for CHECK constraints, RLS policies, and any new
    tables (e.g. remote commands) rather than editing this migration in place,
    once those decisions land.
+
+## Follow-up: `20260916120000_app_support_tables.sql`
+
+Implementing [../plans/API ROUTES PLAN.md](plans/API%20ROUTES%20PLAN.md) needed
+a few domains this initial schema didn't cover (Maintenance, Settings, richer
+Device/User metadata) plus some free-text columns the Alerts/table needed
+(`source`/`title`/`message`, and a direct `alerts.test_run_id`). That
+follow-up migration adds:
+
+- `profiles`: `full_name`, `email`, `status`, and an `on_auth_user_created`
+  trigger that auto-inserts a profile (role defaults to `'Viewer'`) whenever
+  a Supabase Auth user is created.
+- `alerts`: `source`, `title`, `message`, `test_run_id`.
+- `devices`: `controller_name`, `connection_state`, `wifi_state`,
+  `fail_safe_state`, `last_seen_at`, `config` — all placeholder-valued until
+  hardware integration lands, per the existing UI copy.
+- New tables: `maintenance_records`, `maintenance_reminders`, `app_settings`
+  (singleton), `thresholds`, `notification_providers`,
+  `data_retention_policy` (singleton).
+
+Every business-rule field on these additions (threshold config, calibration
+`parameters`, alert taxonomy, roles) is still free-form `text`/`jsonb`, same
+philosophy as the original migration — nothing here resolves an item in
+`PENDING_DECISIONS.md`. See `docs/API_REFERENCE.md` for how the Express API
+maps these tables onto the frontend's expected JSON shapes, and for which
+mapping choices (e.g. telemetry grouping, percentage-error formula) are
+engineering placeholders rather than approved business rules.
