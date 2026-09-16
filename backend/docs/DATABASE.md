@@ -41,3 +41,6 @@ relationships, retention, indexing, access policies, and migration strategy are
 No database service is provisioned and no schema implementation is started.
 The database design must be approved after the API and hardware data contract
 decisions are resolved.
+
+A structural draft proposal for review is tracked in
+[DATABASE_SCHEMA_DRAFT.md](DATABASE_SCHEMA_DRAFT.md), pending team approval.
