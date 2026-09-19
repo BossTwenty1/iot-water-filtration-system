@@ -9,6 +9,7 @@
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "seed": "ts-node scripts/seedTestData.ts",
+    "simulate": "ts-node scripts/liveSimulator.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "adb-polar",

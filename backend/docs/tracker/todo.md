@@ -17,14 +17,14 @@ built.
       On success, also bumps `devices.last_seen_at`/`connection_state` as a
       heartbeat. See `docs/API_REFERENCE.md` → Devices →
       `POST /devices/:id/readings`.
-- [ ] **Live simulator** (finishes `P1-05`) — `scripts/seedTestData.ts`
-      writes simulated readings straight into the DB for local testing; it
-      is not a standing process that posts over HTTP like a real device
-      would. The ingestion endpoint above now exists — add a small script
-      that POSTs a reading batch to `POST /devices/:id/readings` on an
-      interval (with `X-Device-Key`), so the dashboard's "live" surfaces
-      (SSE streams, `SensorGrid`) can be exercised the same way real
-      hardware will drive them.
+- [x] **Live simulator** (`P1-05`) — done. `scripts/liveSimulator.ts` POSTs
+      a reading batch to `POST /devices/:id/readings` every 5s
+      (`LIVE_SIM_INTERVAL_MS` to change it), authenticated with
+      `X-Device-Key`, against the same `SIM-DEV-001` device as
+      `seedTestData.ts`, with small per-parameter random drift and an
+      occasional simulated `value: null` / `status: "unavailable"` reading.
+      Run with `npm run simulate` (needs `npm run dev` running). See
+      `docs/API_REFERENCE.md` → "Seed data".
 - [ ] **CSV export** (`P2-06`) — not started. `docs/API_ROUTES_DRAFT.md` §8
       proposes `GET /export/csv`; exact record types and column order are
       still `TBD` per `docs/PENDING_DECISIONS.md` §12 — needs a decision

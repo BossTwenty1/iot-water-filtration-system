@@ -800,19 +800,6 @@ you one device (`SIM-DEV-001`) with all 10 sensors registered (5 parameters
 — enough to satisfy routes that need *something* to exist, but no test
 runs, alerts, readings, or a login.
 
-For an actually-populated database plus a ready-to-use token, run the
-seeder script instead:
-
-```bash
-npm run seed
-```
-
-`backend/scripts/seedTestData.ts` creates a test user
-(`seed-admin@aquasense.test` / `SeedTest123!`), two test runs (one active,
-one completed) with 100 sensor readings across 5 reading cycles, 3 alerts, 3
-calibration records, 2 laboratory validation records (one `Available`, one
-`Pending`), 2 maintenance records, 2 maintenance reminders, and threshold +
-notification-provider config — then logs in and prints the access token plus
-copy-pasteable `curl` commands for the routes above. Safe to re-run (the
-test user is recreated each time); run `npx supabase db reset` first if you
-want a fully clean slate before seeding again.
+For an actually-populated database plus a ready-to-use token, or a
+continuous HTTP telemetry feed to exercise SSE/live surfaces, see
+`docs/script.md` for `npm run seed` and `npm run simulate`.
