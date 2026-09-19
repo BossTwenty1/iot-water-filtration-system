@@ -75,10 +75,15 @@ built.
 - [ ] Regenerate `src/types/database.types.ts` (`npx supabase gen types
       typescript --local`) after every new migration — it's checked in, not
       generated at build time, so it goes stale silently otherwise.
-- [ ] Data retention: `data_retention_policy` is just a config row today —
-      nothing reads it or purges old rows. Needs a scheduled job (Supabase
-      cron function, or an external scheduler) once a retention policy is
-      approved.
+- [x] Data retention — done. `src/lib/retentionJob.ts` polls
+      `data_retention_policy` every `RETENTION_JOB_INTERVAL_MS` (default
+      24h) and deletes `sensor_readings` rows older than `retentionDays`
+      days. No-ops while `retentionDays` is `null` (the default) — the
+      actual number is a policy decision, not hardcoded here. Verified:
+      backdating rows + setting `retentionDays` to a small number purged
+      exactly the old rows; clearing it back to `null` made the job a
+      no-op again. See `docs/API_REFERENCE.md` → Settings →
+      `GET /data-retention`.
 - [ ] Remote command delivery / audit table for pump/UV-C control
       (`docs/PENDING_DECISIONS.md` §10) — only relevant once `P0-05`
       confirms actuators are controllable, not monitor-only.

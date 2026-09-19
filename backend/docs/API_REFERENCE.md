@@ -634,6 +634,12 @@ SMS/notification provider is TBD (`PENDING_DECISIONS`: "SMS provider").
 
 `PUT` body: `{ "retentionDays": 90, "config": {} }`.
 
+`src/lib/retentionJob.ts` reads this policy every `RETENTION_JOB_INTERVAL_MS`
+(default 24h) and deletes `sensor_readings` rows older than `retentionDays`
+days. It's a no-op while `retentionDays` is `null` (the default) — the
+actual retention period is a policy decision, not something this job
+hardcodes.
+
 ---
 
 ## Devices
