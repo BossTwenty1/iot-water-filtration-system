@@ -769,12 +769,18 @@ implemented, see "Authentication" above).
 
 Provisions a real Supabase Auth user (`email_confirm: true`, so no
 confirmation email is required) plus its profile row. Returns `201`.
+**Administrator-only** (`requireRole('Administrator')`) — the caller picks
+the new user's role.
 
 ### `PATCH /users/:id/role`
 
 ```json
 { "role": "Researcher" }
 ```
+
+**Administrator-only.** Without this gate, any authenticated user —
+including a freshly-created `Viewer` — could grant themselves
+`Administrator`.
 
 ### `PATCH /users/:id/status`
 
@@ -783,12 +789,48 @@ confirmation email is required) plus its profile row. Returns `201`.
 ```
 
 App-level flag only — does **not** suspend the underlying Supabase Auth
-account (enforcing that is a `PENDING_DECISIONS` §9 question).
+account (enforcing that is a `PENDING_DECISIONS.md` "user authorization"
+question). **Administrator-only.**
 
 ### `DELETE /users/:id`
 
 Deletes the Supabase Auth user; the profile row cascades. `204` on success,
-`404` if the id doesn't exist.
+`404` if the id doesn't exist. **Administrator-only.**
+
+`GET /users` and `GET /users/:id` remain `requireAuth`-only (any
+authenticated user can read the user list — other pages need it, e.g. a
+"performed by" picker). This Administrator gate on the 4 routes above is
+deliberately narrow — it is not the full permissions matrix from
+`PENDING_DECISIONS.md` ("user authorization"), which remains open for every
+other route in this API.
+
+---
+
+## Export
+
+### `GET /export/csv`
+
+`docs/API_ROUTES_DRAFT.md` §8 proposed this route but left "which record
+types are exportable" and "CSV column order" both `TBD`
+(`docs/PENDING_DECISIONS.md` explicitly still lists "CSV column order" as
+open). **The column set/order below is a placeholder**, not a final
+contract — it reuses the same fields/vocabulary as the equivalent JSON
+routes, capped at 5000 rows per export.
+
+Query: `type` (required) — one of `telemetry`, `test-runs`, `alerts`,
+`laboratory-validation`; plus `from`/`to`, `deviceId`, `testRunId` where
+applicable (same semantics as the JSON routes above). `400` if `type` is
+missing or unrecognized.
+
+| `type` | Columns |
+| --- | --- |
+| `telemetry` | `measuredAt, deviceId, testRunId, parameter, stage, value, unit, status` |
+| `test-runs` | `id, deviceId, status, startedAt, endedAt, targetVolumeLiters, notes` |
+| `alerts` | `id, deviceId, category, severity, status, source, title, message, triggeredAt, acknowledgedAt` |
+| `laboratory-validation` | `id, testRunId, sampleReference, validatedAt, stage, parameter, referenceResult, sensorReading, unit, percentageError, conclusion, notes` |
+
+Response is `Content-Type: text/csv` with
+`Content-Disposition: attachment; filename="<type>-export.csv"`.
 
 ---
 

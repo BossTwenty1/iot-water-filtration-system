@@ -11,6 +11,7 @@ import devicesRoutes from './devices.routes'
 import usersRoutes from './users.routes'
 import realtimeRoutes from './realtime.routes'
 import settingsRoutes from './settings.routes'
+import exportRoutes from './export.routes'
 
 const router = express.Router()
 
@@ -25,6 +26,7 @@ router.use('/maintenance', maintenanceRoutes)
 router.use('/devices', devicesRoutes)
 router.use('/users', usersRoutes)
 router.use('/realtime', realtimeRoutes)
+router.use('/export', exportRoutes)
 // Settings routes mount several top-level resources (/settings, /thresholds,
 // /notifications/providers, /data-retention) rather than one prefix — see
 // docs/plans/API ROUTES PLAN.md §9.

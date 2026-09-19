@@ -25,10 +25,13 @@ built.
       occasional simulated `value: null` / `status: "unavailable"` reading.
       Run with `npm run simulate` (needs `npm run dev` running). See
       `docs/API_REFERENCE.md` → "Seed data".
-- [ ] **CSV export** (`P2-06`) — not started. `docs/API_ROUTES_DRAFT.md` §8
-      proposes `GET /export/csv`; exact record types and column order are
-      still `TBD` per `docs/PENDING_DECISIONS.md` §12 — needs a decision
-      before implementing, not just an endpoint.
+- [x] **CSV export** (`P2-06`) — done. `GET /export/csv?type=telemetry|
+      test-runs|alerts|laboratory-validation` (`src/routes/export.routes.ts`,
+      `src/lib/csv.ts`), filters mirror the equivalent JSON routes, capped
+      at 5000 rows. Column set/order is explicitly documented as a
+      placeholder, not a final contract — `docs/PENDING_DECISIONS.md`
+      still lists "CSV column order" as open. See `docs/API_REFERENCE.md`
+      → Export.
 - [x] **Alert-generation logic** (`P2-05`, sensor/threshold scope) — done
       for everything not blocked on a pending decision.
       `src/lib/alertEngine.ts` evaluates every ingested reading: threshold
