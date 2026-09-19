@@ -44,10 +44,14 @@ built.
       `req.profile.role` is already available in
       `src/middleware/auth.ts` — add `requireRole(...)` gates once the team
       decides who may do what (`docs/PENDING_DECISIONS.md` §9).
-- [ ] **Row-Level Security policies** — no RLS exists on any table yet (see
-      `docs/SCHEMA_TBD_LOG.md`); the API currently relies entirely on the
-      Express layer for access control via the service-role client. Needed
-      before this schema is exposed to anything beyond local development.
+- [x] **Row-Level Security policies** — done. `supabase/migrations/
+      20260919090000_enable_rls.sql` enables RLS on all 15 tables with no
+      policies, so `anon`/`authenticated` are deny-by-default (a direct
+      PostgREST read with the anon key now returns `[]`); `service_role`
+      (this backend's only DB client) is unaffected via `BYPASSRLS`. No
+      per-role policies yet — that's a permissions design, still open
+      (`docs/PENDING_DECISIONS.md` "user authorization"). See
+      `docs/SCHEMA_TBD_LOG.md`.
 - [ ] **Device authentication** — `devices.device_identifier` has no
       enforced link to how an ESP32/simulator proves its identity
       (`docs/PENDING_DECISIONS.md` §8). Relevant once the ingestion endpoint

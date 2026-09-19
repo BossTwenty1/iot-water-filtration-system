@@ -30,12 +30,19 @@ was implemented as plain `text` or `jsonb` so nothing had to be guessed.
 | `laboratory_validation_records.results` | `jsonb`, no shape | PENDING_DECISIONS §12 — required lab fields not decided |
 | `laboratory_validation_records.percentage_error` | `numeric`, formula unconfirmed | PENDING_DECISIONS §12 |
 
+## What was implemented (follow-up)
+
+- **Row-Level Security** — `20260919090000_enable_rls.sql` enables RLS on
+  all 15 tables with zero policies, so `anon`/`authenticated` are
+  deny-by-default (confirmed: a direct PostgREST read with the anon key now
+  returns `[]` instead of every row). `service_role` (what this backend's
+  `supabaseAdmin` client always uses) is unaffected — it has `BYPASSRLS`.
+  This is a security floor, not a permissions design: no per-role policies
+  exist yet, since who-can-read-what is still open
+  (PENDING_DECISIONS.md "user authorization").
+
 ## Not implemented at all
 
-- **Row-Level Security** — no policies exist on any table; every table is
-  currently wide open to any role with API/DB access. Must be addressed
-  before this schema is exposed to anything beyond local development.
-  (PENDING_DECISIONS §11)
 - **Data retention / backup strategy** (PENDING_DECISIONS §11)
 - **Device authentication mechanism** — `devices.device_identifier` has no
   enforced link to how an ESP32/simulator proves its identity.
