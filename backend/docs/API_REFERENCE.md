@@ -299,6 +299,34 @@ here.
 
 See "Real-time" above.
 
+### What generates alerts automatically
+
+`src/lib/alertEngine.ts` evaluates every reading right after
+`POST /devices/:id/readings` inserts it:
+
+- **Threshold breach** — if a `thresholds` row exists for the reading's
+  parameter/stage (see "Settings" below) and the value falls outside its
+  `min`/`max`, raises e.g. `"Abnormal pH"` / `"High Turbidity"`. Does
+  nothing until a threshold is actually configured — `thresholds` is empty
+  by default (`docs/PENDING_DECISIONS.md` "approved thresholds" is still
+  open).
+- **Sensor fault** — if `status` on the incoming reading is
+  `unavailable`/`invalid`/`error`/`fault`, raises `"Sensor Connection
+  Warning"`.
+
+`src/lib/deviceWatchdog.ts` separately polls every
+`DEVICE_WATCHDOG_INTERVAL_MS` (default 10s) for devices whose
+`last_seen_at` is older than `DEVICE_OFFLINE_TIMEOUT_MS` (default 30s),
+marks them `connection_state: "Offline"`, and raises `"ESP32 Offline"`.
+The next successful ingestion from that device auto-resolves the alert.
+
+Both dedupe on `(device_id, source)` — only one `Active` alert per
+sensor/device at a time, so a misbehaving sensor or a fast telemetry loop
+(e.g. `npm run simulate`) doesn't flood the alerts list. Alerts are never
+auto-created for pump/UV-C/filter conditions — there is no such telemetry
+in this schema yet, and actuator control authority is still open
+(`docs/PENDING_DECISIONS.md`, `P0-05`).
+
 ---
 
 ## Test Runs

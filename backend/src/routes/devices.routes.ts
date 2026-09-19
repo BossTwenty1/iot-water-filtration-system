@@ -6,6 +6,8 @@ import { ApiError } from '../lib/apiError'
 import { param } from '../lib/params'
 import { orThrow } from '../lib/queryHelpers'
 import { toDeviceStatus, VALID_CATEGORIES, VALID_POSITIONS } from '../lib/mappers'
+import { evaluateReadingsForAlerts, type EvaluableReading } from '../lib/alertEngine'
+import { resolveOfflineAlertIfActive } from '../lib/deviceWatchdog'
 import type { DeviceRow, SensorReadingRow, SensorRow, TablesInsert, TablesUpdate } from '../types/db'
 
 const router = express.Router()
@@ -145,8 +147,8 @@ router.post('/:id/readings', requireDeviceKey, async (req: Request, res: Respons
       throw ApiError.badRequest('readings must be a non-empty array.')
     }
 
-    const device = orThrow<Pick<DeviceRow, 'id'> | null>(
-      await supabaseAdmin.from('devices').select('id').eq('id', deviceId).maybeSingle(),
+    const device = orThrow<Pick<DeviceRow, 'id' | 'name' | 'device_identifier'> | null>(
+      await supabaseAdmin.from('devices').select('id, name, device_identifier').eq('id', deviceId).maybeSingle(),
       'Failed to load device.'
     )
     if (!device) throw ApiError.notFound('Device was not found.')
@@ -166,6 +168,7 @@ router.post('/:id/readings', requireDeviceKey, async (req: Request, res: Respons
     const sensorByKey = new Map(sensors.map((sensor) => [`${sensor.category}|${sensor.position}`, sensor]))
 
     const rows: TablesInsert<'sensor_readings'>[] = []
+    const rowMeta: Array<{ category: string; position: string }> = []
     const skipped: SkippedReading[] = []
 
     for (const reading of readings as IncomingReading[]) {
@@ -197,10 +200,11 @@ router.post('/:id/readings', requireDeviceKey, async (req: Request, res: Respons
         measured_at: measuredAt,
         test_run_id: testRunId ?? null,
       })
+      rowMeta.push({ category, position })
     }
 
     if (rows.length > 0) {
-      orThrow<SensorReadingRow[]>(
+      const inserted = orThrow<SensorReadingRow[]>(
         await supabaseAdmin.from('sensor_readings').insert(rows).select('id'),
         'Failed to insert sensor readings.'
       )
@@ -208,6 +212,22 @@ router.post('/:id/readings', requireDeviceKey, async (req: Request, res: Respons
         .from('devices')
         .update({ last_seen_at: new Date().toISOString(), connection_state: 'Online' })
         .eq('id', deviceId)
+
+      // Fire-and-forget: alert generation/resolution should never fail or
+      // slow down the device's ingestion response.
+      const evaluable: EvaluableReading[] = inserted.map((insertedRow, i) => ({
+        sensorReadingId: insertedRow.id,
+        category: rowMeta[i]!.category,
+        position: rowMeta[i]!.position,
+        value: rows[i]!.value ?? null,
+        readingStatus: rows[i]!.reading_status ?? null,
+      }))
+      evaluateReadingsForAlerts(deviceId, testRunId ?? null, evaluable).catch((err) =>
+        console.error('Alert evaluation failed:', err instanceof Error ? err.message : err)
+      )
+      resolveOfflineAlertIfActive(device).catch((err) =>
+        console.error('Failed to auto-resolve offline alert:', err instanceof Error ? err.message : err)
+      )
     }
 
     res.status(rows.length > 0 ? 201 : 400).json({ deviceId, inserted: rows.length, skipped })

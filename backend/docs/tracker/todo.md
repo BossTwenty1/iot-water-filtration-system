@@ -29,12 +29,18 @@ built.
       proposes `GET /export/csv`; exact record types and column order are
       still `TBD` per `docs/PENDING_DECISIONS.md` §12 — needs a decision
       before implementing, not just an endpoint.
-- [ ] **Alert-generation logic** (`P2-05`, partially done) — storage and the
-      acknowledge/resolve/stream API exist, but nothing currently evaluates
-      sensor readings or device faults and inserts an `alerts` row. Blocked
-      on `P0-06` (approved thresholds) and `P0-05` (pump/UV-C control
-      authority) — implement once those land, likely as a check that runs
-      alongside the ingestion endpoint above.
+- [x] **Alert-generation logic** (`P2-05`, sensor/threshold scope) — done
+      for everything not blocked on a pending decision.
+      `src/lib/alertEngine.ts` evaluates every ingested reading: threshold
+      breach (reads the `thresholds` table — does nothing until one is
+      configured, since approved values are still `TBD`) and sensor fault
+      (`status: "unavailable"`/etc). `src/lib/deviceWatchdog.ts` separately
+      polls for devices gone quiet, marks them `Offline`, raises `"ESP32
+      Offline"`, and auto-resolves it on the device's next reading. Both
+      dedupe on `(device_id, source)`. See `docs/API_REFERENCE.md` →
+      Alerts → "What generates alerts automatically". **Still blocked**:
+      pump/UV-C/filter alert categories — no such telemetry exists in this
+      schema, and `P0-05` (control authority) remains open.
 
 ## Authorization
 
