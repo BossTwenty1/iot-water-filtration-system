@@ -67,14 +67,23 @@ built.
       `docs/SCHEMA_TBD_LOG.md`.
 - [ ] **Device authentication** — `devices.device_identifier` has no
       enforced link to how an ESP32/simulator proves its identity
-      (`docs/PENDING_DECISIONS.md` §8). Relevant once the ingestion endpoint
+      (`docs/PENDING_DECISIONS.md`). Relevant once the ingestion endpoint
       above is built — right now only the frontend/admin API has auth.
+      **Deliberately not touched in this round**: the shared-secret
+      `X-Device-Key` placeholder already exists and is explicitly
+      documented as not the real mechanism; a "better" placeholder (e.g.
+      per-device secrets) still isn't the decided mechanism, and
+      guessing at one risks pre-empting a decision PENDING_DECISIONS.md
+      says must go through team approval first.
 
 ## Data & schema
 
 - [ ] Regenerate `src/types/database.types.ts` (`npx supabase gen types
       typescript --local`) after every new migration — it's checked in, not
-      generated at build time, so it goes stale silently otherwise.
+      generated at build time, so it goes stale silently otherwise. (An
+      ongoing process reminder, not a one-off task — followed for the RLS
+      migration in this round; no diff, as expected since RLS isn't
+      reflected in generated types.)
 - [x] Data retention — done. `src/lib/retentionJob.ts` polls
       `data_retention_policy` every `RETENTION_JOB_INTERVAL_MS` (default
       24h) and deletes `sensor_readings` rows older than `retentionDays`
@@ -85,8 +94,11 @@ built.
       no-op again. See `docs/API_REFERENCE.md` → Settings →
       `GET /data-retention`.
 - [ ] Remote command delivery / audit table for pump/UV-C control
-      (`docs/PENDING_DECISIONS.md` §10) — only relevant once `P0-05`
-      confirms actuators are controllable, not monitor-only.
+      (`docs/PENDING_DECISIONS.md`) — only relevant once `P0-05` confirms
+      actuators are controllable, not monitor-only. **Deliberately not
+      touched in this round**: building command-issuing endpoints now
+      would imply actuator control is possible, which is exactly the
+      undecided question — not something to build ahead of the decision.
 
 ## Realtime
 
@@ -94,7 +106,10 @@ built.
       `/realtime/stream`) poll the DB every `SSE_POLL_INTERVAL_MS` (default
       3s) — see `src/lib/sse.ts`. Fine for a dashboard; revisit with
       Supabase Realtime (already running in the local stack) if the project
-      ends up needing sub-second updates.
+      ends up needing sub-second updates. **Deliberately not touched in
+      this round** — not blocking anything, and rewriting a working
+      real-time path for marginal benefit wasn't worth the risk alongside
+      everything else that landed this round.
 
 ## Deployment (Phase 8)
 
@@ -102,6 +117,9 @@ built.
       local Docker stack (`npx supabase start`); no hosted project exists.
 - [ ] CORS_ORIGIN / env values need real production values before deploy —
       `.env.example` only has local defaults.
+
+Both **out of scope for this round** — they need a real cloud account and
+a real production domain, neither of which can be provisioned from here.
 
 ## Frontend integration
 
@@ -111,3 +129,4 @@ built.
       has the exact request/response shape for every endpoint, written so
       this should be closer to a drop-in swap than a rewrite. Not started;
       needs coordination with Nash since it touches the frontend branch.
+      **Out of scope for this round** per that same coordination note.
