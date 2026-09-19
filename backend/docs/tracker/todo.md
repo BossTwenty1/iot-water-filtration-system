@@ -38,12 +38,16 @@ built.
 
 ## Authorization
 
-- [ ] **Role-based authorization enforcement** (`P2-04`, partially done) —
-      login/session/role-storage all work; every route only requires *some*
-      authenticated user right now (`requireAuth`), not a specific role.
-      `req.profile.role` is already available in
-      `src/middleware/auth.ts` — add `requireRole(...)` gates once the team
-      decides who may do what (`docs/PENDING_DECISIONS.md` §9).
+- [x] **Role-based authorization enforcement** (`P2-04`, narrow fix) —
+      `requireRole(...roles)` now exists in `src/middleware/auth.ts` and
+      gates the 4 account-management routes in `src/routes/users.routes.ts`
+      (`POST /`, `PATCH /:id/role`, `PATCH /:id/status`, `DELETE /:id`) to
+      `Administrator` — previously any authenticated user, including a
+      freshly-created `Viewer`, could grant themselves `Administrator`.
+      This is **not** the full permissions matrix — every other route in
+      the API is still `requireAuth`-only, since who-may-call-what for
+      domain routes (telemetry, alerts, test runs, ...) remains an open
+      decision (`docs/PENDING_DECISIONS.md` "user authorization").
 - [x] **Row-Level Security policies** — done. `supabase/migrations/
       20260919090000_enable_rls.sql` enables RLS on all 15 tables with no
       policies, so `anon`/`authenticated` are deny-by-default (a direct

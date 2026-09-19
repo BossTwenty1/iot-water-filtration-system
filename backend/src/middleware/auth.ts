@@ -21,10 +21,12 @@ declare global {
 }
 
 // Verifies the bearer token with Supabase Auth and attaches the caller's
-// profile row (role/status/name) to req.profile. Every protected route in
-// this API only requires a valid, authenticated user — see
-// docs/API_REFERENCE.md "Authentication" for why per-role gating is not
-// enforced yet (PENDING_DECISIONS §9 leaves roles/permissions unresolved).
+// profile row (role/status/name) to req.profile. Almost every protected
+// route in this API only requires a valid, authenticated user — see
+// docs/API_REFERENCE.md "Authentication" for why full per-role gating is
+// not enforced (PENDING_DECISIONS.md "user authorization" leaves the
+// permissions matrix unresolved). `requireRole` below is a narrow
+// exception for the account-management routes only.
 export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const token = extractToken(req)
@@ -40,5 +42,23 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     next()
   } catch (err) {
     next(err)
+  }
+}
+
+// Gates a route to specific `profiles.role` values. This is deliberately
+// narrow — it is NOT the full permissions matrix from PENDING_DECISIONS.md
+// ("user authorization", still unresolved), which would need to decide who
+// may call every route in this API. It exists only to close an obvious
+// self-escalation hole: today any authenticated user (including a
+// freshly-created 'Viewer') can call the account-management routes in
+// src/routes/users.routes.ts, including granting themselves 'Administrator'.
+// Must run after `requireAuth` (reads `req.profile`).
+export function requireRole(...roles: string[]) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.profile?.role || !roles.includes(req.profile.role)) {
+      next(ApiError.forbidden(`This action requires one of these roles: ${roles.join(', ')}.`))
+      return
+    }
+    next()
   }
 }

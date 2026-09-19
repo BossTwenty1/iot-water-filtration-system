@@ -1,6 +1,6 @@
 import express, { type Request, type Response, type NextFunction } from 'express'
 import { supabaseAdmin } from '../config/supabaseClient'
-import { requireAuth } from '../middleware/auth'
+import { requireAuth, requireRole } from '../middleware/auth'
 import { ApiError } from '../lib/apiError'
 import { param } from '../lib/params'
 import { orThrow, parsePagination, type PaginationQuery } from '../lib/queryHelpers'
@@ -34,7 +34,9 @@ router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFu
 })
 
 // POST /users — create (provisions a Supabase Auth user + profile row).
-router.post('/', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+// Administrator-only: the caller picks the new user's role, so this is as
+// much a privilege-granting action as PATCH .../role below.
+router.post('/', requireAuth, requireRole('Administrator'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { name, email, password, role } = req.body ?? {}
     if (!email || !password) throw ApiError.badRequest('email and password are required.')
@@ -57,8 +59,10 @@ router.post('/', requireAuth, async (req: Request, res: Response, next: NextFunc
   }
 })
 
-// PATCH /users/:id/role — update role.
-router.patch('/:id/role', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+// PATCH /users/:id/role — update role. Administrator-only — without this,
+// any authenticated user (including a freshly-created 'Viewer') could grant
+// themselves 'Administrator'.
+router.patch('/:id/role', requireAuth, requireRole('Administrator'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { role } = req.body ?? {}
     if (!role) throw ApiError.badRequest('role is required.')
@@ -76,8 +80,9 @@ router.patch('/:id/role', requireAuth, async (req: Request, res: Response, next:
 
 // PATCH /users/:id/status — update Active/Inactive. App-level flag only —
 // it does not (yet) suspend the underlying Supabase Auth account, since
-// enforcement policy is TBD (docs/PENDING_DECISIONS.md §9).
-router.patch('/:id/status', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+// enforcement policy is TBD (docs/PENDING_DECISIONS.md). Administrator-only:
+// deactivating another account is a privilege-sensitive action.
+router.patch('/:id/status', requireAuth, requireRole('Administrator'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { status } = req.body ?? {}
     if (!status) throw ApiError.badRequest('status is required.')
@@ -94,7 +99,9 @@ router.patch('/:id/status', requireAuth, async (req: Request, res: Response, nex
 })
 
 // DELETE /users/:id — remove a user (and their profile, via cascade).
-router.delete('/:id', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+// Administrator-only — deleting an account is not something any
+// authenticated user should be able to do to any other account.
+router.delete('/:id', requireAuth, requireRole('Administrator'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { error } = await supabaseAdmin.auth.admin.deleteUser(param(req, 'id'))
     if (error) throw ApiError.notFound('User was not found.')
