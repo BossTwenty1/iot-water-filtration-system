@@ -100,6 +100,33 @@ built.
       would imply actuator control is possible, which is exactly the
       undecided question — not something to build ahead of the decision.
 
+## Risk register follow-ups
+
+- [x] **R-08, "SMS provider not chosen"** — done, scoped to what the
+      mitigation actually asks for ("build provider-neutral notification
+      service first"). `src/lib/notificationService.ts` is a
+      provider-registry dispatch layer wired into `raiseAlertIfNotActive`
+      (`src/lib/alertEngine.ts`): every newly-raised alert checks the
+      matching `AppSettings.notifications` toggle, then dispatches through
+      a built-in `log` provider plus any `notification_providers` row
+      that's `enabled` and has a matching registry entry. No SMS provider
+      is implemented — enabling one that isn't in the registry (e.g. the
+      seeded `twilio` row) logs a warning rather than sending anything,
+      since the provider itself is still `TBD`
+      (`docs/PENDING_DECISIONS.md` "SMS provider"). See
+      `docs/API_REFERENCE.md` → Settings → "Notification dispatch (R-08)".
+- [x] **R-07, "Internet/cloud dependency during demo"** — backend half
+      done; the mitigation's other half (local ESP32 autonomy/fallback) is
+      firmware, not backend, and `firmware/esp32/` is still empty — nothing
+      to build on yet. What's done: `src/middleware/errorHandler.ts` now
+      classifies a Supabase network-level failure (fetch throws before a
+      PostgrestError even exists — `ECONNREFUSED`/`ENOTFOUND`/`ETIMEDOUT`/
+      etc.) as a `503` instead of a generic `500`, so a real cloud outage is
+      distinguishable from a server bug; added `GET /health/cloud`, which
+      actually queries Supabase (unlike the existing pure-liveness
+      `GET /health`), so a demo can tell "server's fine, cloud is down"
+      apart from either extreme. See `docs/API_REFERENCE.md` → "Health".
+
 ## Realtime
 
 - [ ] Current SSE streams (`/telemetry/stream`, `/alerts/stream`,

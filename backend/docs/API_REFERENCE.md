@@ -107,7 +107,8 @@ Every non-2xx response is:
 ```
 
 Status codes used: `400` (bad input), `401` (missing/invalid token), `404`
-(not found), `500` (unexpected/database error).
+(not found), `500` (unexpected/database error), `503` (Supabase is
+unreachable at the network level — retryable; see "Health" below).
 
 ## List conventions
 
@@ -119,6 +120,18 @@ Status codes used: `400` (bad input), `401` (missing/invalid token), `404`
 - IDs are Supabase UUIDs (`string`), not the padded display codes
   (`"RUN-2026-001"`) the frontend mocks currently generate — the mocks'
   cosmetic numbering was never a contract, just mock flavor.
+
+## Health
+
+- `GET /health` — pure liveness, no auth. Never touches the network (always
+  `{ "status": "ok" }` if the process is up), so it can't tell you anything
+  about Supabase.
+- `GET /health/cloud` — no auth. Actually queries Supabase. `200
+  { "status": "ok", "cloud": "reachable" }` normally; `503
+  { "status": "degraded", "cloud": "unreachable" }` if it can't. Added for
+  R-07 ("Internet/cloud dependency during demo") so a demo can distinguish
+  "this server is fine, the cloud is down" from a real bug in either
+  direction.
 
 ## Real-time
 
@@ -326,6 +339,10 @@ sensor/device at a time, so a misbehaving sensor or a fast telemetry loop
 auto-created for pump/UV-C/filter conditions — there is no such telemetry
 in this schema yet, and actuator control authority is still open
 (`docs/PENDING_DECISIONS.md`, `P0-05`).
+
+Every newly-raised (non-dedupe) alert also goes through
+`src/lib/notificationService.ts` — see "Settings" → notification providers
+below.
 
 ---
 
@@ -625,6 +642,24 @@ SMS/notification provider is TBD (`PENDING_DECISIONS`: "SMS provider").
 ```
 
 `PUT` body upserts one provider: `{ "provider": "twilio", "enabled": true, "config": { ... } }`.
+
+### Notification dispatch (R-08)
+
+`src/lib/notificationService.ts` is the provider-neutral dispatch layer
+these rows feed: every newly-raised alert calls `dispatchNotification`,
+which (1) checks `AppSettings.notifications` (`GET/PUT /settings`) for that
+alert category's on/off toggle — `offline` → "Device Offline", `sensor` →
+"Sensor Fault", `waterQuality` → "Water Quality" — skipping only on an
+explicit `false`; (2) always runs the built-in `log` provider (writes to
+the server log); (3) for every `enabled: true` row above whose `provider`
+name matches something in the in-code registry, calls that provider's
+`send()`. Today the registry only has `log` — enabling `twilio` (or
+anything else) logs a warning instead of sending anything, since no SMS
+provider is implemented. This is deliberate: the abstraction and dispatch
+path are built and wired end-to-end, but the actual SMS integration is not,
+since picking one would pre-empt the still-open "SMS provider" decision.
+A real provider becomes a self-contained addition to the registry, no
+changes needed anywhere upstream.
 
 ### `GET /data-retention` / `PUT /data-retention`
 

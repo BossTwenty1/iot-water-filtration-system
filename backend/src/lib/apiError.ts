@@ -27,6 +27,10 @@ export class ApiError extends Error {
     return new ApiError(404, message)
   }
 
+  static serviceUnavailable(message = 'The cloud service is temporarily unreachable. Please try again shortly.', details?: string): ApiError {
+    return new ApiError(503, message, details)
+  }
+
   static fromSupabase(error: PostgrestError | null, fallbackMessage = 'Database request failed.'): ApiError | null {
     if (!error) return null
     return new ApiError(500, fallbackMessage, error.message)

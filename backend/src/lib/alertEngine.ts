@@ -18,6 +18,7 @@
 // approved" behavior (PENDING_DECISIONS.md "approved thresholds").
 import { supabaseAdmin } from '../config/supabaseClient'
 import { categoryToParameter, positionToStage } from './mappers'
+import { dispatchNotification } from './notificationService'
 import type { ThresholdRow } from '../types/db'
 
 export interface EvaluableReading {
@@ -126,6 +127,10 @@ export async function raiseAlertIfNotActive(input: RaiseAlertInput): Promise<voi
     severity: input.severity,
     status: 'Active',
   })
+  // Notification dispatch (src/lib/notificationService.ts) — only on a
+  // newly-raised alert, not on the dedupe path above, so an already-Active
+  // alert doesn't re-notify on every reading.
+  await dispatchNotification(input)
 }
 
 function loadThresholdMap(rows: ThresholdRow[]): Map<string, ThresholdConfig> {
