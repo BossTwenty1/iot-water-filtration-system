@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "seed": "ts-node scripts/seedTestData.ts",
     "simulate": "ts-node scripts/liveSimulator.ts",
+    "gen:types": "printf '%s\\n' '// AUTO-GENERATED via `npm run gen:types` (supabase gen types typescript --local).' '// Do not hand-edit. Requires the local Supabase stack running (npx supabase start).' '// Regenerate after every migration.' > src/types/database.types.ts && supabase gen types typescript --local >> src/types/database.types.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "adb-polar",

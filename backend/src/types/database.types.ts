@@ -1,3 +1,6 @@
+// AUTO-GENERATED via `npm run gen:types` (supabase gen types typescript --local).
+// Do not hand-edit. Requires the local Supabase stack running (npx supabase start).
+// Regenerate after every migration.
 export type Json =
   | string
   | number
