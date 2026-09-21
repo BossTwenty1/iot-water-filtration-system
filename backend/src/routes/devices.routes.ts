@@ -1,4 +1,5 @@
 import express, { type Request, type Response, type NextFunction } from 'express'
+import { z } from 'zod'
 import { supabaseAdmin } from '../config/supabaseClient'
 import { requireAuth } from '../middleware/auth'
 import { requireDeviceKey } from '../middleware/deviceAuth'
@@ -8,9 +9,38 @@ import { orThrow } from '../lib/queryHelpers'
 import { toDeviceStatus, VALID_CATEGORIES, VALID_POSITIONS } from '../lib/mappers'
 import { evaluateReadingsForAlerts, type EvaluableReading } from '../lib/alertEngine'
 import { resolveOfflineAlertIfActive } from '../lib/deviceWatchdog'
+import { validateBody } from '../lib/validate'
 import type { DeviceRow, SensorReadingRow, SensorRow, TablesInsert, TablesUpdate } from '../types/db'
 
 const router = express.Router()
+
+const registerDeviceSchema = z.object({
+  deviceIdentifier: z.string().min(1),
+  name: z.string().optional(),
+  isSimulated: z.boolean().optional(),
+  controllerName: z.string().optional(),
+})
+
+const updateDeviceConfigSchema = z.object({
+  connectionState: z.string().optional(),
+  wifiState: z.string().optional(),
+  failSafeState: z.string().optional(),
+  controllerName: z.string().optional(),
+  config: z.record(z.unknown()).optional(),
+})
+
+// Envelope-only: validates that a batch is well-formed enough to process at
+// all. Deliberately does NOT validate individual reading shape (category,
+// position, value) — that's the hand-rolled loop below, whose "skip a bad
+// item, keep processing the rest" behavior is a deliberate business rule a
+// `z.array(itemSchema)` would silently turn into "one bad item fails the
+// whole batch." It also depends on DB state (which sensors are registered
+// for this device) that zod can't validate anyway.
+const readingsEnvelopeSchema = z.object({
+  measuredAt: z.string().refine((value) => !Number.isNaN(new Date(value).getTime()), { message: 'measuredAt must be a valid ISO timestamp.' }),
+  testRunId: z.string().optional(),
+  readings: z.array(z.unknown()).nonempty({ message: 'readings must be a non-empty array.' }),
+})
 
 // GET /devices — list known devices (needed to discover a deviceId before
 // calling the :id-scoped routes below).
@@ -40,10 +70,9 @@ router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFu
 // POST /devices — register a device. Device auth/provisioning is TBD
 // (docs/PENDING_DECISIONS.md §8) — this route is a placeholder for manual
 // registration until that's resolved.
-router.post('/', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/', requireAuth, validateBody(registerDeviceSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { deviceIdentifier, name, isSimulated, controllerName } = req.body ?? {}
-    if (!deviceIdentifier) throw ApiError.badRequest('deviceIdentifier is required.')
+    const { deviceIdentifier, name, isSimulated, controllerName } = req.body
 
     const row = orThrow<DeviceRow | null>(
       await supabaseAdmin
@@ -93,9 +122,9 @@ router.get('/:id/status', requireAuth, async (req: Request, res: Response, next:
 // PUT /devices/:id/config — device control/connectivity config. Wired ahead
 // of hardware integration per docs/plans/API ROUTES PLAN.md — the UI
 // currently shows this as "Pending Hardware Integration."
-router.put('/:id/config', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id/config', requireAuth, validateBody(updateDeviceConfigSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { connectionState, wifiState, failSafeState, controllerName, config } = req.body ?? {}
+    const { connectionState, wifiState, failSafeState, controllerName, config } = req.body
     const patch: TablesUpdate<'devices'> = { last_seen_at: new Date().toISOString() }
     if (connectionState !== undefined) patch.connection_state = connectionState
     if (wifiState !== undefined) patch.wifi_state = wifiState
@@ -135,17 +164,10 @@ interface SkippedReading {
 // rather than failing the whole batch. On any successful insert, bumps
 // devices.last_seen_at/connection_state — the heartbeat mechanism
 // docs/API_REFERENCE.md's device-status section already anticipated.
-router.post('/:id/readings', requireDeviceKey, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/:id/readings', requireDeviceKey, validateBody(readingsEnvelopeSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const deviceId = param(req, 'id')
-    const { measuredAt, testRunId, readings } = req.body ?? {}
-
-    if (typeof measuredAt !== 'string' || Number.isNaN(new Date(measuredAt).getTime())) {
-      throw ApiError.badRequest('measuredAt must be a valid ISO timestamp.')
-    }
-    if (!Array.isArray(readings) || readings.length === 0) {
-      throw ApiError.badRequest('readings must be a non-empty array.')
-    }
+    const { measuredAt, testRunId, readings } = req.body
 
     const device = orThrow<Pick<DeviceRow, 'id' | 'name' | 'device_identifier'> | null>(
       await supabaseAdmin.from('devices').select('id, name, device_identifier').eq('id', deviceId).maybeSingle(),
