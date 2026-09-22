@@ -1,10 +1,8 @@
 # API Reference
 
-Implementation of [plans/API ROUTES PLAN.md](plans/API%20ROUTES%20PLAN.md)
-against the Supabase schema in
-[DATABASE_SCHEMA_DRAFT.md](DATABASE_SCHEMA_DRAFT.md) +
-[SCHEMA_TBD_LOG.md](SCHEMA_TBD_LOG.md). This is the reference for wiring the
-frontend's mock services
+Implementation of the route plan in "Origin" below, against the Supabase
+schema in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md). This is the reference
+for wiring the frontend's mock services
 (`frontend/src/services/*Service.ts` on `feature/frontend-foundation`) to a
 real backend: **every response below is shaped to match the corresponding
 type in `frontend/src/types/index.ts` exactly**, so a service function like
@@ -46,7 +44,7 @@ authorization** — any authenticated user can call any route. This is
 intentional, not an oversight: `docs/PENDING_DECISIONS.md` §9 leaves
 roles/permissions unresolved, and guessing a specific role gate would violate
 that document's decision rule. `req.profile.role` is available server-side
-(`backend/src/middleware/auth.js`) if/when the team decides on a policy —
+(`backend/src/middleware/auth.ts`) if/when the team decides on a policy —
 adding `requireRole(...)` gates then is a small change, not a rewrite.
 
 ### `POST /auth/login`
@@ -110,6 +108,14 @@ Status codes used: `400` (bad input), `401` (missing/invalid token), `404`
 (not found), `500` (unexpected/database error), `503` (Supabase is
 unreachable at the network level — retryable; see "Health" below).
 
+Request bodies for `POST/PATCH /auth/*` and the `POST /devices` /
+`POST /devices/:id/readings` envelope are validated with `zod`
+(`src/lib/validate.ts`) — a malformed body gets this same `400` shape, with
+`details` listing the failing field(s). This is a rolling conversion, not
+finished everywhere yet: every other route (test runs, calibration, lab
+validation, maintenance, settings, users) still relies on the handler's own
+ad-hoc checks, same as before.
+
 ## List conventions
 
 - Pagination: `?limit=` (default varies per route, capped at 500–1000) and
@@ -136,7 +142,7 @@ unreachable at the network level — retryable; see "Health" below).
 ## Real-time
 
 Chosen: **Server-Sent Events**, not WebSocket — see
-`backend/src/lib/sse.js`. No new dependency was needed (plain
+`backend/src/lib/sse.ts`. No new dependency was needed (plain
 `res.write`), and every real-time surface here is server→client only, so
 SSE's one-way stream is sufficient; this matches the plan's "or SSE if
 simplicity is preferred" option.
@@ -155,7 +161,7 @@ through proxies.
 | `GET /realtime/stream` | `telemetry` and/or `alert` | multiplexed channel, per the plan's "Real-time strategy note" |
 
 All three poll the database every `SSE_POLL_INTERVAL_MS` (default 3000ms) —
-see `backend/src/lib/sse.js`'s `pollAndStream`. If the project later needs
+see `backend/src/lib/sse.ts`'s `pollAndStream`. If the project later needs
 sub-second latency, Supabase Realtime (already running in the local stack)
 is the natural next step; this poll-based approach was chosen to avoid
 adding that complexity before it's actually needed.
@@ -193,7 +199,7 @@ rows sharing the same `device_id` + `test_run_id` + `measured_at` timestamp
 — i.e. the device reports all sensors in one batch per cycle. If the
 firmware ever timestamps sensors independently within a cycle, this grouping
 will split what should be one `TelemetryRecord` into several. Revisit
-`groupReadingsIntoTelemetry` in `backend/src/lib/mappers.js` if that changes.
+`groupReadingsIntoTelemetry` in `backend/src/lib/mappers.ts` if that changes.
 
 **`totalVolume`** (from `SensorParameter`) is intentionally never populated
 by these endpoints — it isn't one of the five confirmed sensor categories
@@ -350,7 +356,7 @@ below.
 
 `TestRun.duration`, `.telemetryCount`, `.alertCount`, and `.validationStatus`
 are **computed on read**, not stored columns — see
-`backend/src/lib/testRunHydrator.js`. `validationStatus` is `"Available"` if
+`backend/src/lib/testRunHydrator.ts`. `validationStatus` is `"Available"` if
 any linked `laboratory_validation_records` row has a `percentage_error` or a
 `results.referenceResult`, else `"Pending"`. `processedVolume` currently
 falls back to `target_volume_liters` (or `0`) — there's no flow-integration
@@ -418,7 +424,7 @@ duplicated.
 
 `model` values mirror the frontend mock's existing hardcoded map
 (`PH-4502C`, `DFRobot TDS`, `DS18B20`, `ZJ-S201C`, and `"Pending
-Confirmation"` for turbidity) — see `backend/src/lib/sensorModels.js`. These
+Confirmation"` for turbidity) — see `backend/src/lib/sensorModels.ts`. These
 are the labels the UI already shows; nothing new was invented here.
 
 **Status is never computed** — every created record is `"Record Available"`,
@@ -791,7 +797,7 @@ and `connection_state` to `"Online"` — the heartbeat mechanism the
 ## Users
 
 `profiles` rows, one per Supabase Auth user (auto-created via the
-`on_auth_user_created` trigger — see `SCHEMA_TBD_LOG.md`). Default role on
+`on_auth_user_created` trigger — see `DATABASE_SCHEMA.md`). Default role on
 creation is `"Viewer"` (least-privilege placeholder, not a permissions
 decision — anyone can `PATCH .../role` since role enforcement isn't
 implemented, see "Authentication" above).
@@ -889,7 +895,7 @@ carried over here).
 
 ```bash
 cd backend
-npx supabase start     # first time only per docs/LOCAL_SUPABASE.md
+npx supabase start     # first time only per docs/LOCAL_DEVELOPMENT.md
 npx supabase db reset  # applies both migrations + supabase/seed.sql
 cp .env.example .env   # then fill in the values `supabase start` printed
 npm run dev            # ts-node + nodemon; recompiles nothing to disk
@@ -913,4 +919,36 @@ runs, alerts, readings, or a login.
 
 For an actually-populated database plus a ready-to-use token, or a
 continuous HTTP telemetry feed to exercise SSE/live surfaces, see
-`docs/script.md` for `npm run seed` and `npm run simulate`.
+`docs/LOCAL_DEVELOPMENT.md` for `npm run seed` and `npm run simulate`. For
+automated tests instead of manual poking, see `docs/TESTING.md` (`npm test`).
+
+---
+
+## Origin
+
+This API was planned before it was built, as a route inventory reacting to
+the frontend's existing mock services (`frontend/src/services/*Service.ts`,
+`feature/frontend-foundation`) and their TypeScript types
+(`frontend/src/types/index.ts`) — the plan's route list has since been
+absorbed into the per-domain sections above (which are authoritative; treat
+this section as history, not spec). Two things from that original plan are
+worth keeping on record:
+
+**Why SSE, not WebSocket.** The frontend at the time had no real-time path
+at all — every page fetched once on mount. The plan flagged two
+real-time-sensitive surfaces (Dashboard's live sensor grid/chart, and
+Alerts needing to appear without a manual refresh) and recommended "one
+WebSocket channel multiplexing telemetry + alert + device-status events, or
+SSE if simplicity is preferred over bidirectionality." SSE was the one
+built (see "Real-time" above) — every real-time surface here is
+server→client only, so bidirectionality was never actually needed.
+
+**Verification approach.** The plan itself shipped no code — it explicitly
+deferred verification to implementation time: each route's response shape
+checked against its corresponding frontend type, and each mock service
+swapped to call `apiRequest()` against the real route, confirming the page
+still renders end-to-end. `docs/TESTING.md` is the automated version of
+that same idea for the routes it now covers (`auth`, `devices`); the
+frontend-swap half of verification (`frontend/src/services/*Service.ts`
+actually calling these routes) has not happened yet — see
+`docs/tracker/todo.md` → "Frontend integration".

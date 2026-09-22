@@ -1,7 +1,8 @@
 # Backend TODO
 
-Follow-up work identified while implementing `docs/plans/API ROUTES PLAN.md`
-(commits `f4b9ce9`, `598f0e1` on `feature/backend-init`). Cross-referenced to
+Follow-up work identified while implementing the original API route plan
+(now folded into `docs/API_REFERENCE.md` → "Origin"; commits `f4b9ce9`,
+`598f0e1` on `feature/backend-init`). Cross-referenced to
 task IDs in `IoT Water Filtration - Project Tracker.xlsx` → **Project
 Tracker** where one exists. See `docs/API_REFERENCE.md` for what's already
 built.
@@ -64,7 +65,7 @@ built.
       (this backend's only DB client) is unaffected via `BYPASSRLS`. No
       per-role policies yet — that's a permissions design, still open
       (`docs/PENDING_DECISIONS.md` "user authorization"). See
-      `docs/SCHEMA_TBD_LOG.md`.
+      `docs/DATABASE_SCHEMA.md`.
 - [ ] **Device authentication** — `devices.device_identifier` has no
       enforced link to how an ESP32/simulator proves its identity
       (`docs/PENDING_DECISIONS.md`). Relevant once the ingestion endpoint
@@ -78,12 +79,12 @@ built.
 
 ## Data & schema
 
-- [ ] Regenerate `src/types/database.types.ts` (`npx supabase gen types
-      typescript --local`) after every new migration — it's checked in, not
-      generated at build time, so it goes stale silently otherwise. (An
-      ongoing process reminder, not a one-off task — followed for the RLS
-      migration in this round; no diff, as expected since RLS isn't
-      reflected in generated types.)
+- [x] Regenerate `src/types/database.types.ts` after every new migration —
+      now a one-command step (`npm run gen:types`, wraps `supabase gen types
+      typescript --local` and stamps the file with a "do not hand-edit"
+      header). Still a per-migration process step, not something CI enforces
+      automatically — remembering to run it after adding a migration is on
+      the author.
 - [x] Data retention — done. `src/lib/retentionJob.ts` polls
       `data_retention_policy` every `RETENTION_JOB_INTERVAL_MS` (default
       24h) and deletes `sensor_readings` rows older than `retentionDays`
@@ -99,6 +100,22 @@ built.
       touched in this round**: building command-issuing endpoints now
       would imply actuator control is possible, which is exactly the
       undecided question — not something to build ahead of the decision.
+
+## Testing & validation (new since the round above)
+
+- [x] **Test infrastructure** — `vitest` + `supertest` set up
+      (`vitest.config.ts`, `src/__tests__/setup.ts`), plus unit tests for
+      error handling, params, query helpers, mappers, device auth, and the
+      alert engine, and integration tests against a real local Supabase
+      instance (auth, device readings, RLS). See `docs/TESTING.md`.
+- [x] **Request validation (partial)** — `src/lib/validate.ts` wraps a `zod`
+      schema as body-validation middleware, feeding failures into the
+      existing `ApiError`/`400` flow unchanged. Applied so far to
+      `auth.routes.ts` and `devices.routes.ts` (registration + the readings
+      envelope only — individual reading shape is still hand-validated on
+      purpose, see the comment in `devices.routes.ts`). Not yet applied to
+      test runs, calibration, laboratory validation, maintenance, settings,
+      or users — extending it there is ongoing, not blocked on a decision.
 
 ## Risk register follow-ups
 
