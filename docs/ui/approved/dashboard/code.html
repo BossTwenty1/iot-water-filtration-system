@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>IoT Embedded Water Filtration System</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"on-secondary":"#ffffff","surface-container":"#e5eeff","surface-container-lowest":"#ffffff","on-secondary-fixed":"#001e2f","on-surface-variant":"#3f4850","inverse-surface":"#213145","on-primary":"#ffffff","tertiary-container":"#00855b","surface-tint":"#006398","primary":"#006194","secondary-fixed":"#c9e6ff","on-error":"#ffffff","tertiary-fixed-dim":"#4edea3","primary-container":"#007bb9","error-container":"#ffdad6","primary-fixed":"#cce5ff","tertiary-fixed":"#6ffbbe","on-primary-container":"#fdfcff","on-tertiary":"#ffffff","on-primary-fixed":"#001d31","on-tertiary-container":"#f5fff6","on-background":"#0b1c30","on-tertiary-fixed":"#002113","on-surface":"#0b1c30","surface":"#f8f9ff","surface-container-low":"#eff4ff","inverse-on-surface":"#eaf1ff","secondary":"#006591","on-error-container":"#93000a","secondary-fixed-dim":"#89ceff","tertiary":"#006947","outline":"#707881","secondary-container":"#39b8fd","surface-bright":"#f8f9ff","on-secondary-fixed-variant":"#004c6e","surface-container-highest":"#d3e4fe","on-tertiary-fixed-variant":"#005236","on-secondary-container":"#004666","outline-variant":"#bfc7d2","surface-dim":"#cbdbf5","surface-container-high":"#dce9ff","primary-fixed-dim":"#93ccff","background":"#f8f9ff","error":"#ba1a1a","on-primary-fixed-variant":"#004b73","surface-variant":"#d3e4fe","inverse-primary":"#93ccff"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"space-lg":"1.5rem","gutter":"1rem","margin":"1.5rem","gutter-mobile":"0.75rem","margin-mobile":"1rem","space-xl":"2rem","space-sm":"0.5rem","space-md":"1rem","space-xs":"0.25rem"},"fontFamily":{"body-sm":["Hanken Grotesk"],"label-sm":["JetBrains Mono"],"body-lg":["Hanken Grotesk"],"label-xs":["JetBrains Mono"],"headline-lg":["Hanken Grotesk"],"telemetry-lg":["JetBrains Mono"],"body-md":["Hanken Grotesk"],"headline-xl":["Hanken Grotesk"],"telemetry-xl":["JetBrains Mono"],"telemetry-md":["JetBrains Mono"],"headline-md":["Hanken Grotesk"]},"fontSize":{"body-sm":["12px",{"lineHeight":"16px","fontWeight":"400"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.04em","fontWeight":"500"}],"body-lg":["15px",{"lineHeight":"22px","fontWeight":"400"}],"label-xs":["10px",{"lineHeight":"12px","letterSpacing":"0.06em","fontWeight":"500"}],"headline-lg":["22px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"600"}],"telemetry-lg":["20px",{"lineHeight":"26px","letterSpacing":"-0.02em","fontWeight":"500"}],"body-md":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-xl":["28px",{"lineHeight":"36px","letterSpacing":"-0.02em","fontWeight":"700"}],"telemetry-xl":["30px",{"lineHeight":"36px","letterSpacing":"-0.03em","fontWeight":"600"}],"telemetry-md":["14px",{"lineHeight":"20px","fontWeight":"500"}],"headline-md":["18px",{"lineHeight":"24px","fontWeight":"600"}]}}}};</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex flex-col justify-between border-r border-outline-variant"><div class="flex flex-col"><div class="h-16 px-gutter flex items-center border-b border-outline-variant bg-surface-container-low"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-primary text-[20px]">hub</span><span class="font-label-sm text-label-sm text-on-surface tracking-wider uppercase font-semibold">Console Navigation</span></div></div><div class="px-gutter py-space-sm"><div class="px-space-sm py-space-xs font-label-xs text-label-xs text-on-surface-variant uppercase tracking-widest">System Architecture</div></div><nav class="flex flex-col px-space-xs space-y-0.5" data-active-classes="bg-surface-container text-primary font-semibold border-l-2 border-primary"><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-sm transition-colors rounded bg-surface-container text-primary font-semibold border-l-2 border-primary" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[18px]">space_dashboard</span><span class="font-body-md text-body-md">Dashboard</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="history" href="#"><span class="material-symbols-outlined text-[18px]">history</span><span class="font-body-md text-body-md">History</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="alerts" href="#"><span class="material-symbols-outlined text-[18px]">notifications_active</span><span class="font-body-md text-body-md">Alerts</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="test-runs" href="#"><span class="material-symbols-outlined text-[18px]">science</span><span class="font-body-md text-body-md">Test Runs</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="calibration" href="#"><span class="material-symbols-outlined text-[18px]">tune</span><span class="font-body-md text-body-md">Calibration</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="laboratory-validation" href="#"><span class="material-symbols-outlined text-[18px]">verified</span><span class="font-body-md text-body-md">Laboratory Validation</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="maintenance" href="#"><span class="material-symbols-outlined text-[18px]">build_circle</span><span class="font-body-md text-body-md">Maintenance</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="settings" href="#"><span class="material-symbols-outlined text-[18px]">settings_input_component</span><span class="font-body-md text-body-md">Settings</span></a></nav></div><div class="p-gutter border-t border-outline-variant bg-surface-container-lowest"><div class="bg-surface-container-low p-space-sm rounded border border-outline-variant flex flex-col gap-space-xs"><div class="flex items-center justify-between"><span class="font-label-xs text-label-xs uppercase text-on-surface-variant font-medium">Operational Mode</span><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span></span></div><div class="font-label-sm text-label-sm font-semibold text-primary">Live Telemetry</div><div class="flex items-center gap-space-xs pt-space-xs border-t border-outline-variant/50 font-label-xs text-label-xs text-on-surface-variant"><span>MCU: ESP32-WROOM-32</span><span class="text-outline">|</span><span>WiFi Connected</span></div></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md z-40 flex items-center justify-between px-margin border-b border-outline-variant"><div class="flex items-center gap-space-md"><img alt="Minimalist technical scientific logo mark representing IoT water filtration: clean stylized water droplet integrated with circuit lines and geometric filtration layers, clean cyan and deep ocean blue vector icon, precision academic engineering symbol. Design context: - Primary color: #0284c7
+- Font: hankenGrotesk
+- Mode: light
+- Roundness: rounded-sm
+. The logo should be visually consistent with these brand tokens." class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UzaRFYVczjcEAThJUKNiFlXlocQX2MHgsRotoYcKvIL-Cvj1JE-AmMnywjqPsKDgIg8Go_IWI2DI_Vsl62lGk9bOUIxOirGFMGCcOQAzBYKyZBlvI07qVeDr5DKPLN8WELzhtfzHAcaUMVdqEJEa35NSWUrrAgygmnrEKMy6K6dRotXP-F1T_OX2ijjMBzQ1TWTcX8tIxo0s8fM2XIF8eH0lFN22hY28KPJ2Xq9MHeTBfqjb2tkS0WVVU"/><div class="flex flex-col"><span class="font-headline-md text-headline-md text-on-surface leading-tight tracking-tight">IoT Embedded Water Filtration System</span><span class="font-label-xs text-label-xs text-on-surface-variant tracking-normal uppercase">Real-Time Water Quality Monitoring &amp; Filtration</span></div></div><div class="flex items-center gap-space-md"><div class="hidden xl:flex items-center gap-space-xs px-space-sm py-space-xs rounded bg-surface-container-low border border-outline-variant"><span class="font-label-xs text-label-xs text-on-surface-variant uppercase">Last Synced:</span><span class="font-label-xs text-label-xs text-on-surface font-medium">10:42:19 AM UTC</span></div><div class="flex items-center gap-space-xs px-space-sm py-space-xs rounded border border-outline-variant bg-surface-container-low"><span class="h-2 w-2 rounded-full bg-tertiary"></span><span class="font-label-xs text-label-xs text-on-surface font-medium">ESP32 Online • Updated 8s ago</span></div><button aria-label="Alert Notifications" class="p-space-xs text-on-surface-variant hover:text-on-surface transition-colors rounded hover:bg-surface-container-low relative" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-error"></span></button><div class="h-5 w-px bg-outline-variant"></div><div class="flex items-center gap-space-sm"><div class="flex flex-col text-right"><span class="font-body-md text-body-md font-semibold text-on-surface leading-none">Researcher / Admin</span><span class="font-label-xs text-label-xs text-on-surface-variant leading-none mt-0.5">Lab Engineer Tier-1</span></div><img alt="Profile" class="w-8 h-8 rounded-full object-cover border border-outline-variant" src="https://lh3.googleusercontent.com/aida/AEtjO1Ukx5UAa6XlP0AuGWUNr7iNaZDbLM0mEsHiMr3fSj9qnCznaVQtazxbiP33Gs2mME0_C0WVDLxqdcKkDyaSrCRMVBEU5vi7NYc4gh2ZMS0EO-whSHFQTGutsO7SuL6TI1nFVuIxQ43ZIqvfvk0LO-YKr9W2PL10LQIaW6kGl7KeSS16T-p1NBydzSb3KGz--BrsiIJZrO72Tv-vp34wuu9gv9ObMH1CU9hH_5zeHSdi25igiv83dHH4d7k"/></div></div></header><main class="relative pt-16 w-full px-margin bg-surface min-h-screen"><div class="flex flex-col w-full space-y-space-lg pb-space-xl">
+<!-- TOP BAR: RESEARCH THESIS RUN CONTEXT & COMPACT SYSTEM STATUS (6 CARDS) -->
+<section class="w-full flex flex-col space-y-space-sm">
+<div class="flex items-center justify-between px-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant font-semibold">Academic Rigor Verification</span>
+<span class="text-outline-variant font-label-xs">•</span>
+<span class="font-label-xs text-label-xs text-primary font-medium">Batch Protocol RUN-2026-001</span>
+<span class="text-outline-variant font-label-xs">•</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant">Embedded ESP32 Telemetry Array</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant font-label-xs text-label-xs font-medium">Representative UI Demo Data</span>
+<div class="flex items-center gap-space-xs">
+<span class="h-1.5 w-1.5 rounded-full bg-tertiary"></span>
+<span class="font-label-xs text-label-xs text-on-surface-variant">Live Telemetry</span>
+</div>
+</div>
+</div>
+<!-- 6 Compact System Status Cards -->
+<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-space-sm">
+<!-- 1. Filtration Status -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-1">
+<span class="font-label-xs text-label-xs uppercase tracking-wider">Filtration Status</span>
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span>
+</span>
+</div>
+<div>
+<div class="font-telemetry-lg text-telemetry-lg text-on-surface">Running</div>
+<div class="font-label-xs text-label-xs text-on-surface-variant mt-0.5">Status: Active</div>
+</div>
+</div>
+<!-- 2. Pump Status -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-1">
+<span class="font-label-xs text-label-xs uppercase tracking-wider">Booster Pump</span>
+<span class="material-symbols-outlined text-[16px] text-primary">swap_driving_apps</span>
+</div>
+<div>
+<div class="font-telemetry-lg text-telemetry-lg text-primary">ON</div>
+<div class="font-label-xs text-label-xs text-on-surface-variant mt-0.5">Pump Status: ON</div>
+</div>
+</div>
+<!-- 3. UV-C Status -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-1">
+<span class="font-label-xs text-label-xs uppercase tracking-wider">UV-C Loop</span>
+<span class="material-symbols-outlined text-[16px] text-secondary-container">flare</span>
+</div>
+<div>
+<div class="font-telemetry-lg text-telemetry-lg text-on-surface">Active</div>
+<div class="font-label-xs text-label-xs text-on-surface-variant mt-0.5">UV-C Status: Active</div>
+</div>
+</div>
+<!-- 4. MCU Hardware -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-1">
+<span class="font-label-xs text-label-xs uppercase tracking-wider">MCU Hardware</span>
+<span class="h-2 w-2 rounded-full bg-tertiary"></span>
+</div>
+<div>
+<div class="font-telemetry-lg text-telemetry-lg text-tertiary">Online</div>
+<div class="font-label-xs text-label-xs text-on-surface-variant mt-0.5">ESP32 Connected</div>
+</div>
+</div>
+<!-- 5. Processed Volume -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-1">
+<span class="font-label-xs text-label-xs uppercase tracking-wider">Processed Vol</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">opacity</span>
+</div>
+<div>
+<div class="font-telemetry-lg text-telemetry-lg text-on-surface">0.72 <span class="text-body-sm font-label-sm text-on-surface-variant">L</span></div>
+<div class="font-label-xs text-label-xs text-on-surface-variant mt-0.5">Total Processed Volume</div>
+</div>
+</div>
+<!-- 6. Cycle Time -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-1">
+<span class="font-label-xs text-label-xs uppercase tracking-wider">Cycle Time</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">timer</span>
+</div>
+<div>
+<div class="font-telemetry-lg text-telemetry-lg text-on-surface">00:18:42</div>
+<div class="font-label-xs text-label-xs text-on-surface-variant mt-0.5">1h max cycle limit</div>
+</div>
+</div>
+</div>
+</section>
+<!-- LIVE FILTRATION TOPOLOGY SCHEMATIC (7 FULLY VISIBLE STAGES, NO CLIPPING) -->
+<section class="w-full bg-surface-container-lowest p-space-md rounded shadow-sm">
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-space-xs mb-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">account_tree</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Live Process Topology</h2>
+<span class="bg-surface-container-low text-on-surface-variant font-label-xs text-label-xs px-space-xs py-0.5 rounded font-medium ml-space-xs">7-Stage Sequence</span>
+</div>
+<div class="flex items-center gap-space-sm text-label-xs font-label-xs text-on-surface-variant">
+<span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-primary animate-pulse"></span> Hydrodynamic Feed</span>
+<span class="text-outline-variant">|</span>
+<span class="text-on-surface font-medium">Flow Rate: 2.1 L/min</span>
+</div>
+</div>
+<!-- Topology Node Chain: responsive grid/flex fully visible on 1440px desktop -->
+<div class="w-full overflow-x-auto pb-space-xs">
+<div class="w-full min-w-[860px] flex items-center justify-between relative py-space-sm px-space-sm">
+<!-- Connecting Line Behind Nodes -->
+<div class="absolute left-10 right-10 top-[28px] h-0.5 bg-surface-container-high z-0">
+<div class="h-full bg-primary/30 w-full"></div>
+</div>
+<!-- Node 1: Water Source -->
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-12 h-12 rounded bg-surface-container-low flex items-center justify-center text-primary shadow-sm border border-outline-variant/40">
+<span class="material-symbols-outlined text-[22px]">water</span>
+</div>
+<div class="mt-2 text-center">
+<div class="font-body-md text-body-md font-semibold text-on-surface leading-tight">Water Source</div>
+<div class="mt-1 inline-flex items-center px-space-xs py-0.5 rounded bg-surface-container-low text-on-surface-variant font-label-xs text-label-xs">
+Active
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant z-10 text-[18px]">chevron_right</span>
+<!-- Node 2: Booster Pump -->
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-12 h-12 rounded bg-surface-container text-primary flex items-center justify-center shadow-sm border border-outline-variant/40">
+<span class="material-symbols-outlined text-[22px]">cyclone</span>
+</div>
+<div class="mt-2 text-center">
+<div class="font-body-md text-body-md font-semibold text-on-surface leading-tight">Booster Pump</div>
+<div class="mt-1 inline-flex items-center px-space-xs py-0.5 rounded bg-surface-container text-primary font-label-xs text-label-xs font-medium">
+Running
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary z-10 text-[18px]">chevron_right</span>
+<!-- Node 3: Pre-Filtration Sensors -->
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-12 h-12 rounded bg-surface-container-highest text-primary flex items-center justify-center shadow-sm border border-outline-variant/40">
+<span class="material-symbols-outlined text-[22px]">sensors</span>
+</div>
+<div class="mt-2 text-center">
+<div class="font-body-md text-body-md font-semibold text-on-surface leading-tight">Pre-Filtration Sensors</div>
+<div class="mt-1 inline-flex items-center px-space-xs py-0.5 rounded bg-surface-container text-tertiary font-label-xs text-label-xs font-medium">
+Online
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary z-10 text-[18px]">chevron_right</span>
+<!-- Node 4: Ultrafiltration -->
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-12 h-12 rounded bg-surface-container-low text-primary flex items-center justify-center shadow-sm border border-outline-variant/40">
+<span class="material-symbols-outlined text-[22px]">filter_alt</span>
+</div>
+<div class="mt-2 text-center">
+<div class="font-body-md text-body-md font-semibold text-on-surface leading-tight">Ultrafiltration</div>
+<div class="mt-1 inline-flex items-center px-space-xs py-0.5 rounded bg-surface-container-low text-on-surface-variant font-label-xs text-label-xs">
+Active
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary z-10 text-[18px]">chevron_right</span>
+<!-- Node 5: UV-C -->
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-12 h-12 rounded bg-surface-container text-secondary flex items-center justify-center shadow-sm border border-outline-variant/40">
+<span class="material-symbols-outlined text-[22px]">wb_iridescent</span>
+</div>
+<div class="mt-2 text-center">
+<div class="font-body-md text-body-md font-semibold text-on-surface leading-tight">UV-C</div>
+<div class="mt-1 inline-flex items-center px-space-xs py-0.5 rounded bg-surface-container text-primary font-label-xs text-label-xs font-medium">
+Active
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary z-10 text-[18px]">chevron_right</span>
+<!-- Node 6: Post-Filtration Sensors -->
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-12 h-12 rounded bg-surface-container-highest text-primary flex items-center justify-center shadow-sm border border-outline-variant/40">
+<span class="material-symbols-outlined text-[22px]">sensors_krx</span>
+</div>
+<div class="mt-2 text-center">
+<div class="font-body-md text-body-md font-semibold text-on-surface leading-tight">Post-Filtration Sensors</div>
+<div class="mt-1 inline-flex items-center px-space-xs py-0.5 rounded bg-surface-container text-tertiary font-label-xs text-label-xs font-medium">
+Online
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary z-10 text-[18px]">chevron_right</span>
+<!-- Node 7: Output (Fully visible) -->
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-12 h-12 rounded bg-tertiary/10 text-tertiary flex items-center justify-center shadow-sm border border-tertiary/20">
+<span class="material-symbols-outlined text-[22px]">water_bottle</span>
+</div>
+<div class="mt-2 text-center">
+<div class="font-body-md text-body-md font-semibold text-on-surface leading-tight">Output</div>
+<div class="mt-1 inline-flex items-center px-space-xs py-0.5 rounded bg-surface-container text-tertiary font-label-xs text-label-xs font-semibold">
+Flowing
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- KEY VISUAL FOCUS: BEFORE VS AFTER WATER QUALITY READINGS (2 SENSOR COLUMNS) -->
+<section class="w-full flex flex-col space-y-space-sm">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Differential Quality Telemetry</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Dual-stage comparative sensor measurements captured synchronously</p>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-1 rounded">
+<span class="material-symbols-outlined text-[16px] text-primary">sync</span>
+<span class="font-label-xs text-label-xs text-on-surface font-medium">Live Telemetry</span>
+</div>
+</div>
+<!-- The 2 High-Contrast Scientific Columns -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-space-md">
+<!-- COLUMN 1: BEFORE FILTRATION -->
+<div class="bg-surface-container-lowest p-space-lg rounded shadow-sm flex flex-col space-y-space-md">
+<div class="flex items-center justify-between pb-space-sm bg-surface-container-low px-space-md py-space-sm rounded">
+<div class="flex items-center gap-space-sm">
+<span class="w-2.5 h-2.5 rounded-full bg-outline"></span>
+<div>
+<span class="font-label-xs text-label-xs uppercase tracking-widest text-on-surface-variant">Stage A</span>
+<h3 class="font-headline-md text-headline-md text-on-surface font-bold">Before Filtration</h3>
+</div>
+</div>
+<span class="font-label-xs text-label-xs px-space-sm py-space-xs rounded bg-surface-container text-on-surface font-medium">Inlet Sampling Stage</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-sm">
+<!-- 1: Pre-Filtration pH Sensor -->
+<div class="bg-surface-container-low p-space-md rounded flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Pre-Filtration pH Sensor</span>
+<span class="font-label-xs text-label-xs px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant">No Sensor Fault</span>
+</div>
+<div class="my-space-sm">
+<span class="font-telemetry-xl text-telemetry-xl text-on-surface">6.72</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-1">pH</span>
+</div>
+<div class="font-label-xs text-label-xs text-on-surface-variant">Reading Available</div>
+</div>
+<!-- 2: Pre-Filtration Turbidity Sensor -->
+<div class="bg-surface-container-low p-space-md rounded flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Pre-Filtration Turbidity Sensor</span>
+<span class="font-label-xs text-label-xs px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant">No Sensor Fault</span>
+</div>
+<div class="my-space-sm">
+<span class="font-telemetry-xl text-telemetry-xl text-on-surface">9.40</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-1">NTU</span>
+</div>
+<div class="font-label-xs text-label-xs text-on-surface-variant">Reading Available</div>
+</div>
+<!-- 3: Pre-Filtration TDS Sensor -->
+<div class="bg-surface-container-low p-space-md rounded flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Pre-Filtration TDS Sensor</span>
+<span class="font-label-xs text-label-xs px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant">No Sensor Fault</span>
+</div>
+<div class="my-space-sm">
+<span class="font-telemetry-xl text-telemetry-xl text-on-surface">302</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-1">ppm</span>
+</div>
+<div class="font-label-xs text-label-xs text-on-surface-variant">Reading Available</div>
+</div>
+<!-- 4: Pre-Filtration Temperature Sensor -->
+<div class="bg-surface-container-low p-space-md rounded flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Pre-Filtration Temperature Sensor</span>
+<span class="font-label-xs text-label-xs px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant">No Sensor Fault</span>
+</div>
+<div class="my-space-sm">
+<span class="font-telemetry-xl text-telemetry-xl text-on-surface">26.3</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-1">°C</span>
+</div>
+<div class="font-label-xs text-label-xs text-on-surface-variant">Reading Available</div>
+</div>
+<!-- 5: Pre-Filtration Flow Sensor (Span 2 cols) -->
+<div class="sm:col-span-2 bg-surface-container-low p-space-md rounded flex items-center justify-between">
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Pre-Filtration Flow Sensor</span>
+<span class="font-label-xs text-label-xs px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant">Monitoring</span>
+</div>
+<div class="mt-1 font-telemetry-xl text-telemetry-xl text-on-surface">
+2.4 <span class="font-label-sm text-label-sm text-on-surface-variant font-normal">L/min</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-label-xs text-label-xs text-on-surface-variant block">Flow Rate Monitoring</span>
+<span class="font-label-xs text-label-xs text-primary font-medium">Reading Available</span>
+</div>
+</div>
+</div>
+</div>
+<!-- COLUMN 2: AFTER FILTRATION -->
+<div class="bg-surface-container-lowest p-space-lg rounded shadow-sm flex flex-col space-y-space-md">
+<div class="flex items-center justify-between pb-space-sm bg-surface-container px-space-md py-space-sm rounded">
+<div class="flex items-center gap-space-sm">
+<span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+<div>
+<span class="font-label-xs text-label-xs uppercase tracking-widest text-primary font-semibold">Stage B</span>
+<h3 class="font-headline-md text-headline-md text-primary font-bold">After Filtration</h3>
+</div>
+</div>
+<span class="font-label-xs text-label-xs px-space-sm py-space-xs rounded bg-surface-container-lowest text-primary font-semibold">Post-Filtration Stage</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-sm">
+<!-- 1: Post-Filtration pH Sensor -->
+<div class="bg-surface-container-low p-space-md rounded flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Post-Filtration pH Sensor</span>
+<span class="font-label-xs text-label-xs px-space-xs py-0.5 rounded bg-surface-container text-primary">No Sensor Fault</span>
+</div>
+<div class="my-space-sm flex items-baseline justify-between">
+<div>
+<span class="font-telemetry-xl text-telemetry-xl text-primary font-bold">7.01</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-1">pH</span>
+</div>
+<span class="font-label-xs text-label-xs text-tertiary bg-surface-container px-1.5 py-0.5 rounded font-medium">Δ +0.29</span>
+</div>
+<div class="font-label-xs text-label-xs text-on-surface-variant">Reading Available</div>
+</div>
+<!-- 2: Post-Filtration Turbidity Sensor -->
+<div class="bg-surface-container-low p-space-md rounded flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Post-Filtration Turbidity Sensor</span>
+<span class="font-label-xs text-label-xs px-space-xs py-0.5 rounded bg-surface-container text-primary">No Sensor Fault</span>
+</div>
+<div class="my-space-sm flex items-baseline justify-between">
+<div>
+<span class="font-telemetry-xl text-telemetry-xl text-primary font-bold">0.72</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-1">NTU</span>
+</div>
+<span class="font-label-xs text-label-xs text-primary bg-surface-container px-1.5 py-0.5 rounded font-medium">-92.3%</span>
+</div>
+<div class="font-label-xs text-label-xs text-on-surface-variant">Reading Available</div>
+</div>
+<!-- 3: Post-Filtration TDS Sensor -->
+<div class="bg-surface-container-low p-space-md rounded flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Post-Filtration TDS Sensor</span>
+<span class="font-label-xs text-label-xs px-space-xs py-0.5 rounded bg-surface-container text-primary">No Sensor Fault</span>
+</div>
+<div class="my-space-sm flex items-baseline justify-between">
+<div>
+<span class="font-telemetry-xl text-telemetry-xl text-primary font-bold">181</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-1">ppm</span>
+</div>
+<span class="font-label-xs text-label-xs text-primary bg-surface-container px-1.5 py-0.5 rounded font-medium">-40.1%</span>
+</div>
+<div class="font-label-xs text-label-xs text-on-surface-variant">Reading Available</div>
+</div>
+<!-- 4: Post-Filtration Temperature Sensor -->
+<div class="bg-surface-container-low p-space-md rounded flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Post-Filtration Temperature Sensor</span>
+<span class="font-label-xs text-label-xs px-space-xs py-0.5 rounded bg-surface-container text-primary">No Sensor Fault</span>
+</div>
+<div class="my-space-sm flex items-baseline justify-between">
+<div>
+<span class="font-telemetry-xl text-telemetry-xl text-on-surface font-bold">26.5</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-1">°C</span>
+</div>
+<span class="font-label-xs text-label-xs text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded font-medium">Δ +0.2 °C</span>
+</div>
+<div class="font-label-xs text-label-xs text-on-surface-variant">Reading Available</div>
+</div>
+<!-- 5: Post-Filtration Flow Sensor -->
+<div class="sm:col-span-2 bg-surface-container-low p-space-md rounded flex items-center justify-between">
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Post-Filtration Flow Sensor</span>
+<span class="font-label-xs text-label-xs px-space-xs py-0.5 rounded bg-surface-container text-tertiary">Monitoring</span>
+</div>
+<div class="mt-1 font-telemetry-xl text-telemetry-xl text-primary font-bold">
+2.1 <span class="font-label-sm text-label-sm text-on-surface-variant font-normal">L/min</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-label-xs text-label-xs text-on-surface-variant block">Differential: 0.3 L/min</span>
+<span class="font-label-xs text-label-xs text-tertiary font-medium">Reading Available</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- SCIENTIFIC DISCLAIMER NOTE -->
+<div class="bg-surface-container-low p-space-sm rounded flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-outline text-[18px] mt-0.5">info</span>
+<p class="font-label-xs text-label-xs text-on-surface-variant leading-relaxed">
+<span class="font-semibold text-on-surface">Notice:</span> Sensor readings indicate relative physical parameters and particulate attenuation. Sensor telemetry alone does not establish microbiological potability or compliance.
+</p>
+</div>
+</section>
+<!-- COMPARISON CHART: BEFORE VS AFTER FILTRATION -->
+<section class="w-full bg-surface-container-lowest p-space-lg rounded shadow-sm flex flex-col space-y-space-md">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm">
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">ssid_chart</span>
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold">Before vs After Filtration</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Comparative parameter telemetry over time (Representative UI Demo Data)</p>
+</div>
+<!-- Parameter Switcher Tabs (Only confirmed parameters) -->
+<div class="flex flex-wrap items-center bg-surface-container-low p-1 rounded gap-1" id="chart-tabs">
+<button class="px-space-sm py-1 rounded text-on-surface-variant hover:text-on-surface font-label-xs text-label-xs font-medium transition-colors" type="button">pH</button>
+<button class="px-space-sm py-1 rounded bg-surface-container-lowest text-primary font-label-xs text-label-xs font-semibold shadow-sm" type="button">Turbidity</button>
+<button class="px-space-sm py-1 rounded text-on-surface-variant hover:text-on-surface font-label-xs text-label-xs font-medium transition-colors" type="button">TDS</button>
+<button class="px-space-sm py-1 rounded text-on-surface-variant hover:text-on-surface font-label-xs text-label-xs font-medium transition-colors" type="button">Temperature</button>
+<button class="px-space-sm py-1 rounded text-on-surface-variant hover:text-on-surface font-label-xs text-label-xs font-medium transition-colors" type="button">Flow Rate</button>
+</div>
+</div>
+<!-- Chart Legend -->
+<div class="flex flex-wrap items-center justify-between py-space-xs border-b border-surface-container-high text-label-xs font-label-xs">
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="w-3 h-0.5 bg-outline inline-block border-t border-dashed border-outline"></span>
+<span class="text-on-surface-variant">Before Filtration</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="w-3 h-1 bg-primary inline-block rounded-full"></span>
+<span class="text-primary font-semibold">After Filtration</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs text-on-surface-variant">
+<span class="h-1.5 w-1.5 rounded-full bg-tertiary"></span>
+<span>Live Telemetry</span>
+</div>
+</div>
+<!-- Scientific SVG Dual-Series Plot -->
+<div class="w-full h-64 relative flex flex-col justify-end pt-4 select-none">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 1000 220">
+<!-- Horizontal Grid Lines -->
+<line stroke="#e2e8f0" stroke-dasharray="2 4" stroke-width="1" x1="40" x2="990" y1="20" y2="20"></line>
+<line stroke="#e2e8f0" stroke-dasharray="2 4" stroke-width="1" x1="40" x2="990" y1="65" y2="65"></line>
+<line stroke="#e2e8f0" stroke-dasharray="2 4" stroke-width="1" x1="40" x2="990" y1="110" y2="110"></line>
+<line stroke="#e2e8f0" stroke-dasharray="2 4" stroke-width="1" x1="40" x2="990" y1="155" y2="155"></line>
+<line stroke="#cbd5e1" stroke-width="1.5" x1="40" x2="990" y1="200" y2="200"></line>
+<!-- Y-Axis Ticks & Labels -->
+<text class="fill-current text-outline font-label-xs text-[10px]" text-anchor="end" x="32" y="24">10.0</text>
+<text class="fill-current text-outline font-label-xs text-[10px]" text-anchor="end" x="32" y="69">7.5</text>
+<text class="fill-current text-outline font-label-xs text-[10px]" text-anchor="end" x="32" y="114">5.0</text>
+<text class="fill-current text-outline font-label-xs text-[10px]" text-anchor="end" x="32" y="159">2.5</text>
+<text class="fill-current text-outline font-label-xs text-[10px]" text-anchor="end" x="32" y="204">0.0</text>
+<!-- Area Fill Under After-Filtration Curve -->
+<polygon fill="#006194" fill-opacity="0.12" points="50,200 50,185 150,186 250,188 350,185 450,187 550,186 650,184 750,187 850,186 950,187 950,200"></polygon>
+<!-- SERIES 1: Before Filtration (Dashed line) -->
+<path d="M 50,32 L 150,30 L 250,36 L 350,31 L 450,33 L 550,29 L 650,34 L 750,31 L 850,30 L 950,31" fill="none" stroke="#707881" stroke-dasharray="4 4" stroke-width="2"></path>
+<!-- SERIES 2: After Filtration (Solid primary line) -->
+<path d="M 50,185 L 150,186 L 250,188 L 350,185 L 450,187 L 550,186 L 650,184 L 750,187 L 850,186 L 950,187" fill="none" stroke="#006194" stroke-width="2.5"></path>
+<!-- Series 2 Data Points -->
+<circle cx="50" cy="185" fill="#006194" r="3.5"></circle>
+<circle cx="150" cy="186" fill="#006194" r="3.5"></circle>
+<circle cx="250" cy="188" fill="#006194" r="3.5"></circle>
+<circle cx="350" cy="185" fill="#006194" r="3.5"></circle>
+<circle cx="450" cy="187" fill="#006194" r="3.5"></circle>
+<circle cx="550" cy="186" fill="#006194" r="3.5"></circle>
+<circle cx="650" cy="184" fill="#006194" r="3.5"></circle>
+<circle cx="750" cy="187" fill="#006194" r="3.5"></circle>
+<circle cx="850" cy="186" fill="#006194" r="3.5"></circle>
+<circle cx="950" cy="187" fill="#006194" r="4.5" stroke="#ffffff" stroke-width="1.5"></circle>
+<!-- Active Measurement Cursor -->
+<line stroke="#006194" stroke-dasharray="2 2" stroke-width="1" x1="950" x2="950" y1="20" y2="200"></line>
+</svg>
+<!-- Time Axis Markers -->
+<div class="flex justify-between pl-10 pr-2 pt-2 text-outline font-label-xs text-label-xs">
+<span>14:15:00</span>
+<span>14:17:30</span>
+<span>14:20:00</span>
+<span>14:22:30</span>
+<span>14:25:00</span>
+<span>14:27:30</span>
+<span>14:30:00</span>
+<span>14:32:30</span>
+<span>14:33:42 (Now)</span>
+</div>
+</div>
+</section>
+<!-- TWO-COLUMN OPERATIONAL SECTION: SYSTEM ALERTS & CURRENT TEST RUN -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-space-md">
+<!-- Card A: Recent System Alerts (Realistic & Generic) -->
+<div class="bg-surface-container-lowest p-space-lg rounded shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-space-sm border-b border-surface-container-high">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">notifications_active</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">Recent System Alerts</h3>
+</div>
+<div class="flex items-center gap-1.5 px-space-sm py-0.5 rounded bg-surface-container text-tertiary font-label-xs text-label-xs font-semibold">
+<span class="h-1.5 w-1.5 rounded-full bg-tertiary"></span>
+No Critical Alerts
+</div>
+</div>
+<!-- Alert Items List -->
+<div class="space-y-space-sm mt-space-md">
+<!-- Alert 1: Test run started -->
+<div class="bg-surface-container-low p-space-sm rounded flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[18px] mt-0.5">play_circle</span>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between gap-space-xs">
+<span class="font-body-md text-body-md font-semibold text-on-surface truncate">Test run started</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant whitespace-nowrap">14:15:00</span>
+</div>
+<div class="flex items-center gap-space-sm font-label-xs text-label-xs text-on-surface-variant mt-0.5">
+<span>Source: System</span>
+<span class="text-outline-variant">•</span>
+<span class="text-tertiary font-medium">Normal</span>
+</div>
+</div>
+</div>
+<!-- Alert 2: ESP32 connection restored -->
+<div class="bg-surface-container-low p-space-sm rounded flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[18px] mt-0.5">wifi</span>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between gap-space-xs">
+<span class="font-body-md text-body-md font-semibold text-on-surface truncate">ESP32 connection restored</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant whitespace-nowrap">14:15:08</span>
+</div>
+<div class="flex items-center gap-space-sm font-label-xs text-label-xs text-on-surface-variant mt-0.5">
+<span>Source: ESP32 Link</span>
+<span class="text-outline-variant">•</span>
+<span class="text-primary font-medium">Info</span>
+</div>
+</div>
+</div>
+<!-- Alert 3: Sensor data received -->
+<div class="bg-surface-container-low p-space-sm rounded flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-tertiary text-[18px] mt-0.5">check_circle</span>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between gap-space-xs">
+<span class="font-body-md text-body-md font-semibold text-on-surface truncate">Sensor data received</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant whitespace-nowrap">14:15:15</span>
+</div>
+<div class="flex items-center gap-space-sm font-label-xs text-label-xs text-on-surface-variant mt-0.5">
+<span>Source: Telemetry Bus</span>
+<span class="text-outline-variant">•</span>
+<span class="text-tertiary font-medium">Normal</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-space-md mt-space-md border-t border-surface-container-high flex justify-between items-center">
+<span class="font-label-xs text-label-xs text-on-surface-variant">Live System Log</span>
+<button class="text-primary font-body-sm text-body-sm font-medium hover:underline inline-flex items-center gap-1" type="button">
+View All Alerts <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card B: Current Test Run -->
+<div class="bg-surface-container-lowest p-space-lg rounded shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-space-sm border-b border-surface-container-high">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">science</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">Current Test Run</h3>
+</div>
+<span class="px-space-sm py-0.5 rounded bg-surface-container text-primary font-label-xs text-label-xs font-semibold">
+In Progress
+</span>
+</div>
+<div class="grid grid-cols-2 gap-space-sm mt-space-md">
+<div class="bg-surface-container-low p-space-sm rounded">
+<div class="font-label-xs text-label-xs uppercase text-on-surface-variant">Test Run ID</div>
+<div class="font-telemetry-md text-telemetry-md text-on-surface font-semibold mt-1">RUN-2026-001</div>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded">
+<div class="font-label-xs text-label-xs uppercase text-on-surface-variant">Start Time</div>
+<div class="font-telemetry-md text-telemetry-md text-on-surface font-semibold mt-1">14:15 UTC</div>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded">
+<div class="font-label-xs text-label-xs uppercase text-on-surface-variant">Duration</div>
+<div class="font-telemetry-md text-telemetry-md text-primary font-semibold mt-1">18 min 42 s</div>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded">
+<div class="font-label-xs text-label-xs uppercase text-on-surface-variant">Processed Volume</div>
+<div class="font-telemetry-md text-telemetry-md text-on-surface font-semibold mt-1">0.72 L</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded mt-space-sm flex items-center justify-between text-label-xs font-label-xs">
+<span class="text-on-surface-variant">Status:</span>
+<span class="text-primary font-semibold">In Progress</span>
+</div>
+</div>
+<div class="pt-space-md mt-space-md border-t border-surface-container-high flex flex-col sm:flex-row items-center justify-between gap-space-sm">
+<button class="w-full sm:w-auto px-space-md py-space-sm rounded bg-surface-container-low text-on-surface font-body-sm text-body-sm font-medium hover:bg-surface-container transition-colors inline-flex items-center justify-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[16px]">file_download</span>
+Export Run Telemetry (CSV)
+</button>
+<button class="w-full sm:w-auto px-space-md py-space-sm rounded bg-primary text-on-primary font-body-sm text-body-sm font-medium hover:bg-primary/90 transition-colors inline-flex items-center justify-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+View Test Run
+</button>
+</div>
+</div>
+</section>
+<!-- RECENT SENSOR TELEMETRY READINGS LOG TABLE -->
+<section class="w-full bg-surface-container-lowest p-space-lg rounded shadow-sm flex flex-col space-y-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs">
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">table_rows</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Recent Sensor Telemetry Readings Log</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Representative UI Demo Data • Live Telemetry</p>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="font-label-xs text-label-xs text-on-surface-variant">Live Telemetry</span>
+<span class="h-2 w-2 rounded-full bg-tertiary"></span>
+</div>
+</div>
+<!-- Data Table Container -->
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[900px]">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-xs text-label-xs uppercase tracking-wider">
+<th class="py-2.5 px-3">Time</th>
+<th class="py-2.5 px-3">Pre pH</th>
+<th class="py-2.5 px-3 text-primary font-semibold">Post pH</th>
+<th class="py-2.5 px-3">Pre Turbidity (NTU)</th>
+<th class="py-2.5 px-3 text-primary font-semibold">Post Turbidity (NTU)</th>
+<th class="py-2.5 px-3">Pre TDS (ppm)</th>
+<th class="py-2.5 px-3 text-primary font-semibold">Post TDS (ppm)</th>
+<th class="py-2.5 px-3">Pre Temp (°C)</th>
+<th class="py-2.5 px-3">Post Temp (°C)</th>
+<th class="py-2.5 px-3">Pre Flow (L/min)</th>
+<th class="py-2.5 px-3 text-primary font-semibold">Post Flow (L/min)</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-high font-telemetry-md text-telemetry-md text-on-surface">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-2.5 px-3 font-label-xs text-label-xs text-on-surface-variant">14:33:40</td>
+<td class="py-2.5 px-3">6.72</td>
+<td class="py-2.5 px-3 font-semibold text-primary">7.01</td>
+<td class="py-2.5 px-3">9.40</td>
+<td class="py-2.5 px-3 font-semibold text-primary">0.72</td>
+<td class="py-2.5 px-3">302</td>
+<td class="py-2.5 px-3 font-semibold text-primary">181</td>
+<td class="py-2.5 px-3 text-on-surface-variant">26.3</td>
+<td class="py-2.5 px-3 text-on-surface-variant">26.5</td>
+<td class="py-2.5 px-3 text-on-surface-variant">2.4</td>
+<td class="py-2.5 px-3 font-semibold text-primary">2.1</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-2.5 px-3 font-label-xs text-label-xs text-on-surface-variant">14:33:30</td>
+<td class="py-2.5 px-3">6.71</td>
+<td class="py-2.5 px-3 font-semibold text-primary">7.00</td>
+<td class="py-2.5 px-3">9.38</td>
+<td class="py-2.5 px-3 font-semibold text-primary">0.73</td>
+<td class="py-2.5 px-3">303</td>
+<td class="py-2.5 px-3 font-semibold text-primary">182</td>
+<td class="py-2.5 px-3 text-on-surface-variant">26.3</td>
+<td class="py-2.5 px-3 text-on-surface-variant">26.5</td>
+<td class="py-2.5 px-3 text-on-surface-variant">2.4</td>
+<td class="py-2.5 px-3 font-semibold text-primary">2.1</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-2.5 px-3 font-label-xs text-label-xs text-on-surface-variant">14:33:20</td>
+<td class="py-2.5 px-3">6.72</td>
+<td class="py-2.5 px-3 font-semibold text-primary">7.01</td>
+<td class="py-2.5 px-3">9.42</td>
+<td class="py-2.5 px-3 font-semibold text-primary">0.71</td>
+<td class="py-2.5 px-3">301</td>
+<td class="py-2.5 px-3 font-semibold text-primary">180</td>
+<td class="py-2.5 px-3 text-on-surface-variant">26.2</td>
+<td class="py-2.5 px-3 text-on-surface-variant">26.4</td>
+<td class="py-2.5 px-3 text-on-surface-variant">2.4</td>
+<td class="py-2.5 px-3 font-semibold text-primary">2.1</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-2.5 px-3 font-label-xs text-label-xs text-on-surface-variant">14:33:10</td>
+<td class="py-2.5 px-3">6.70</td>
+<td class="py-2.5 px-3 font-semibold text-primary">6.99</td>
+<td class="py-2.5 px-3">9.45</td>
+<td class="py-2.5 px-3 font-semibold text-primary">0.74</td>
+<td class="py-2.5 px-3">304</td>
+<td class="py-2.5 px-3 font-semibold text-primary">182</td>
+<td class="py-2.5 px-3 text-on-surface-variant">26.3</td>
+<td class="py-2.5 px-3 text-on-surface-variant">26.5</td>
+<td class="py-2.5 px-3 text-on-surface-variant">2.3</td>
+<td class="py-2.5 px-3 font-semibold text-primary">2.1</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-2.5 px-3 font-label-xs text-label-xs text-on-surface-variant">14:33:00</td>
+<td class="py-2.5 px-3">6.72</td>
+<td class="py-2.5 px-3 font-semibold text-primary">7.01</td>
+<td class="py-2.5 px-3">9.41</td>
+<td class="py-2.5 px-3 font-semibold text-primary">0.72</td>
+<td class="py-2.5 px-3">302</td>
+<td class="py-2.5 px-3 font-semibold text-primary">181</td>
+<td class="py-2.5 px-3 text-on-surface-variant">26.3</td>
+<td class="py-2.5 px-3 text-on-surface-variant">26.5</td>
+<td class="py-2.5 px-3 text-on-surface-variant">2.4</td>
+<td class="py-2.5 px-3 font-semibold text-primary">2.1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<span class="font-label-xs text-label-xs text-on-surface-variant">Representative UI Demo Data • Live Telemetry</span>
+<button class="text-primary font-body-sm text-body-sm font-medium hover:underline inline-flex items-center gap-1" type="button">
+View Full Telemetry Log <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</section>
+<!-- BOTTOM SECTION: LABORATORY VALIDATION & DEVICE STATUS -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-space-md">
+<!-- Bottom Left: Laboratory Validation -->
+<div class="bg-surface-container-lowest p-space-lg rounded shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-space-sm border-b border-surface-container-high">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">science</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">Laboratory Validation</h3>
+</div>
+<span class="px-space-sm py-0.5 rounded bg-surface-container-low text-on-surface-variant font-label-xs text-label-xs font-semibold">
+Laboratory Validation Pending
+</span>
+</div>
+<div class="space-y-space-xs mt-space-md">
+<div class="flex justify-between py-1.5 border-b border-surface-container-high text-body-sm">
+<span class="text-on-surface-variant">Test Run ID</span>
+<span class="font-label-xs font-semibold text-on-surface">RUN-2026-001</span>
+</div>
+<div class="flex justify-between py-1.5 border-b border-surface-container-high text-body-sm">
+<span class="text-on-surface-variant">Sample ID</span>
+<span class="font-label-xs font-medium text-primary">#LAB-SAMPLE-098</span>
+</div>
+<div class="flex justify-between py-1.5 border-b border-surface-container-high text-body-sm">
+<span class="text-on-surface-variant">Date Collected</span>
+<span class="font-label-xs text-on-surface">2026-03-30</span>
+</div>
+<div class="flex justify-between py-1.5 border-b border-surface-container-high text-body-sm">
+<span class="text-on-surface-variant">Laboratory Result</span>
+<span class="font-label-xs font-medium text-on-surface">Bench Testing in Progress</span>
+</div>
+<div class="flex justify-between py-1.5 border-b border-surface-container-high text-body-sm">
+<span class="text-on-surface-variant">Sensor Reading</span>
+<span class="font-telemetry-md text-primary font-semibold">0.72 NTU / 181 ppm</span>
+</div>
+<div class="flex justify-between py-1.5 border-b border-surface-container-high text-body-sm">
+<span class="text-on-surface-variant">Percentage Error</span>
+<span class="font-label-xs px-2 py-0.5 rounded bg-surface-container-low text-on-surface-variant">Threshold Pending</span>
+</div>
+<div class="flex justify-between py-1.5 text-body-sm">
+<span class="text-on-surface-variant">Validation Status</span>
+<span class="font-label-xs font-semibold text-on-surface-variant">Laboratory Validation Pending</span>
+</div>
+</div>
+<!-- Academic Validation Scope Note -->
+<div class="mt-space-sm bg-surface-container-low p-space-sm rounded text-label-xs font-label-xs text-on-surface-variant flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-outline text-[16px] mt-0.5">verified_user</span>
+<span>Laboratory validation is conducted independently of real-time sensor loops to assess prototype sensor accuracy.</span>
+</div>
+</div>
+<div class="pt-space-md mt-space-md border-t border-surface-container-high">
+<button class="w-full px-space-md py-space-sm rounded bg-surface-container-low text-on-surface font-body-sm text-body-sm font-medium hover:bg-surface-container transition-colors inline-flex items-center justify-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[16px]">biotech</span>
+View Laboratory Records
+</button>
+</div>
+</div>
+<!-- Bottom Right: Device Status & Link -->
+<div class="bg-surface-container-lowest p-space-lg rounded shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-space-sm border-b border-surface-container-high">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">memory</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">ESP32 Device Status</h3>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="h-2 w-2 rounded-full bg-tertiary"></span>
+<span class="font-label-xs text-label-xs text-tertiary font-semibold">Online</span>
+</div>
+</div>
+<div class="space-y-space-xs mt-space-md">
+<div class="flex justify-between py-1.5 border-b border-surface-container-high text-body-sm">
+<span class="text-on-surface-variant">Device ID</span>
+<span class="font-label-xs font-semibold text-on-surface">ESP32-001</span>
+</div>
+<div class="flex justify-between py-1.5 border-b border-surface-container-high text-body-sm">
+<span class="text-on-surface-variant">Controller</span>
+<span class="font-label-xs font-medium text-on-surface">ESP32-WROOM-32</span>
+</div>
+<div class="flex justify-between py-1.5 border-b border-surface-container-high text-body-sm">
+<span class="text-on-surface-variant">Connection</span>
+<span class="font-label-xs font-semibold text-tertiary">Online</span>
+</div>
+<div class="flex justify-between py-1.5 border-b border-surface-container-high text-body-sm">
+<span class="text-on-surface-variant">Wi-Fi</span>
+<span class="font-label-xs text-tertiary font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">wifi</span> Connected
+</span>
+</div>
+<div class="flex justify-between py-1.5 border-b border-surface-container-high text-body-sm">
+<span class="text-on-surface-variant">Last Update</span>
+<span class="font-label-xs text-on-surface font-medium">8 seconds ago</span>
+</div>
+<div class="flex justify-between py-1.5 text-body-sm items-center">
+<span class="text-on-surface-variant">Fail-Safe Control</span>
+<span class="font-label-xs px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-medium">Pending Hardware Integration</span>
+</div>
+</div>
+<div class="mt-space-sm bg-surface-container-low p-space-sm rounded text-label-xs font-label-xs text-on-surface-variant flex items-center justify-between">
+<span>Hardware Fail-Safe:</span>
+<span class="text-on-surface font-medium">Fail-Safe Control — Pending Hardware Integration</span>
+</div>
+</div>
+<div class="pt-space-md mt-space-md border-t border-surface-container-high flex items-center justify-between">
+<span class="font-label-xs text-label-xs text-on-surface-variant">Status: Telemetry Connected</span>
+<div class="flex items-center gap-space-xs text-label-xs font-label-xs text-tertiary">
+<span class="h-1.5 w-1.5 rounded-full bg-tertiary"></span>
+Online
+</div>
+</div>
+</div>
+</section>
+</div>
+<script>
+  // Simple micro-interaction for comparison chart tabs
+  document.addEventListener('DOMContentLoaded', () => {
+    const tabButtons = document.querySelectorAll('#chart-tabs button');
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabButtons.forEach(b => {
+          b.className = 'px-space-sm py-1 rounded text-on-surface-variant hover:text-on-surface font-label-xs text-label-xs font-medium transition-colors';
+        });
+        btn.className = 'px-space-sm py-1 rounded bg-surface-container-lowest text-primary font-label-xs text-label-xs font-semibold shadow-sm';
+      });
+    });
+  });
+</script></main></div></body></html>

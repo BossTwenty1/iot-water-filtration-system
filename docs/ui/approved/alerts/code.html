@@ -1,0 +1,726 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>System Alerts - HydroMetric IoT Scientific Console</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-secondary-fixed-variant": "#004c6e",
+            "on-surface-variant": "#3f4850",
+            "background": "#f8f9ff",
+            "tertiary-fixed": "#6ffbbe",
+            "on-secondary": "#ffffff",
+            "on-secondary-fixed": "#001e2f",
+            "tertiary-fixed-dim": "#4edea3",
+            "secondary-fixed": "#c9e6ff",
+            "surface-container": "#e5eeff",
+            "on-error-container": "#93000a",
+            "outline-variant": "#bfc7d2",
+            "tertiary-container": "#00855b",
+            "secondary": "#006591",
+            "on-secondary-container": "#004666",
+            "surface-container-high": "#dce9ff",
+            "on-primary": "#ffffff",
+            "surface-tint": "#006398",
+            "on-tertiary": "#ffffff",
+            "on-error": "#ffffff",
+            "surface-variant": "#d3e4fe",
+            "on-tertiary-fixed": "#002113",
+            "surface-container-highest": "#d3e4fe",
+            "on-tertiary-container": "#f5fff6",
+            "tertiary": "#006947",
+            "surface-bright": "#f8f9ff",
+            "on-primary-fixed-variant": "#004b73",
+            "secondary-container": "#39b8fd",
+            "inverse-primary": "#93ccff",
+            "on-background": "#0b1c30",
+            "error": "#ba1a1a",
+            "surface": "#f8f9ff",
+            "inverse-on-surface": "#eaf1ff",
+            "primary-fixed-dim": "#93ccff",
+            "inverse-surface": "#213145",
+            "on-primary-container": "#fdfcff",
+            "error-container": "#ffdad6",
+            "surface-container-low": "#eff4ff",
+            "outline": "#707881",
+            "primary-fixed": "#cce5ff",
+            "surface-dim": "#cbdbf5",
+            "secondary-fixed-dim": "#89ceff",
+            "primary": "#006194",
+            "primary-container": "#007bb9",
+            "on-primary-fixed": "#001d31",
+            "surface-container-lowest": "#ffffff",
+            "on-tertiary-fixed-variant": "#005236",
+            "on-surface": "#0b1c30"
+          },
+          fontFamily: {
+            "sans": ["Hanken Grotesk", "sans-serif"],
+            "body-lg": ["Hanken Grotesk"],
+            "body-md": ["Hanken Grotesk"],
+            "body-sm": ["Hanken Grotesk"],
+            "headline-xl": ["Hanken Grotesk"],
+            "headline-lg": ["Hanken Grotesk"],
+            "headline-md": ["Hanken Grotesk"],
+            "mono": ["JetBrains Mono", "monospace"],
+            "telemetry-xl": ["JetBrains Mono"],
+            "telemetry-lg": ["JetBrains Mono"],
+            "telemetry-md": ["JetBrains Mono"],
+            "label-xs": ["JetBrains Mono"],
+            "label-sm": ["JetBrains Mono"]
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    body { font-family: 'Hanken Grotesk', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex antialiased">
+<!-- LEFT FIXED DESKTOP SIDEBAR -->
+<aside class="w-60 min-w-[15rem] border-r border-slate-200 bg-surface-container-lowest min-h-screen flex flex-col justify-between z-30 flex-shrink-0">
+<div>
+<!-- Navigation Header -->
+<div class="h-16 px-5 border-b border-slate-100 flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary text-[20px]">tune</span>
+<span class="font-mono text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Console Navigation</span>
+</div>
+<!-- Section Label -->
+<div class="px-5 pt-5 pb-2">
+<span class="font-mono text-[10px] uppercase font-bold tracking-widest text-slate-400">System Architecture</span>
+</div>
+<!-- Nav Links -->
+<nav class="px-3 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">grid_view</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">history</span>
+<span class="text-sm font-medium">History</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#eff4ff] text-[#0284c7] font-semibold border-l-4 border-[#0284c7] -ml-3 pl-[17px] transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+<span class="text-sm">Alerts</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">science</span>
+<span class="text-sm font-medium">Test Runs</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+<span class="text-sm font-medium">Calibration</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">verified</span>
+<span class="text-sm font-medium">Laboratory Validation</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">build</span>
+<span class="text-sm font-medium">Maintenance</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Footer -->
+<div class="p-3 m-3 border border-slate-100 bg-surface-container-low rounded-xl flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-mono text-xs font-semibold text-on-surface">ESP32-WROOM-32</span>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span class="text-[11px] font-medium text-emerald-700">Device Online</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400 text-[18px]">memory</span>
+</div>
+</aside>
+<!-- MAIN CONTENT CONTAINER -->
+<div class="flex-1 flex flex-col min-w-0 bg-background overflow-y-auto">
+<!-- TOP BAR -->
+<header class="h-16 px-6 bg-surface-container-lowest border-b border-slate-200 flex items-center justify-between sticky top-0 z-20">
+<!-- Title & Branding -->
+<div class="flex items-center gap-3 min-w-0">
+<img alt="HydroMetric IoT Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1XxMH3TVX9TQCD8w-LL4fNKtTkK63psP1JhpiPsNMQX4e23hzjaJIM53fQEytYh6_BvGoKpbz8E8HbwuBy5Hl4v1_8jholY6r-mtMO4sm-wBxz-i1jGrhQv7O4MyXhk5so4nyauiOZnjshnCMyV_KnC2nFVqweavDyi6wnvtA6fKf2MDUVFyOAj6bJAylM2NzN8Mgg6BY0zoICvd57WLb-aOgluc-bTuOvITCrE_-l9C6fEaOCIAW9aCss">
+<div class="min-w-0">
+<h1 class="text-sm font-bold text-on-surface leading-tight truncate">IoT Embedded Water Filtration System</h1>
+<p class="text-xs text-on-surface-variant truncate">Real-Time Water Quality Monitoring &amp; Filtration</p>
+</div>
+</div>
+<!-- Right Metadata & Operator Badge -->
+<div class="flex items-center gap-4 flex-shrink-0">
+<span class="font-mono text-[11px] uppercase tracking-wider text-slate-500 hidden md:inline-block">LAST SYNCED: 10:42:19 UTC</span>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span>
+</span>
+<span class="font-mono text-xs font-medium text-on-surface">ESP32 Online • Updated 8s ago</span>
+</div>
+<button aria-label="Alerts" class="relative w-9 h-9 flex items-center justify-center rounded-lg bg-surface-container-low text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error ring-2 ring-white"></span>
+</button>
+<div class="flex items-center gap-2 pl-2 border-l border-slate-200">
+<div class="text-right hidden sm:block">
+<div class="text-xs font-semibold text-on-surface leading-tight">Researcher / Admin</div>
+<div class="font-mono text-[10px] text-slate-500">Active Operator</div>
+</div>
+<img alt="Researcher / Admin" class="w-8 h-8 rounded-full object-cover ring-1 ring-slate-200" src="https://lh3.googleusercontent.com/aida/AEtjO1W-DT-w_JDebKpSIIlZHbrqORmWc4COxFTyMlP4LkrQ9tcnlscFz0eDefI576DBtlulrxoPpW9Db5PemZD-X6iRCVEf0DQzXaVXrgcSrVif1ymys03y1U9OrwvDWzEdu8piCMWEvBf9VuGMgVhj0l_JgT5ONEqXyAatyVVJ3vcFyDorwom3tHVgk1AeDFaJdhYG6lADvBUJ-xLVyS_DV350Z06apK8U-i6h_ufnTMJucKi1EKkYGePuKBc">
+</div>
+</div>
+</header>
+<!-- BREADCRUMB / CONSOLE STATUS SUB-BAR -->
+<div class="bg-surface-container-low px-6 py-2.5 border-b border-slate-200/70 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+<div class="flex items-center gap-2.5 flex-wrap">
+<span class="material-symbols-outlined text-primary text-[18px]">verified_user</span>
+<span class="text-xs font-semibold text-on-surface">System Alert Status</span>
+<span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-surface-container-high text-primary uppercase">REPRESENTATIVE UI DEMO DATA</span>
+<span class="text-xs text-on-surface-variant hidden lg:inline">• Monitoring system events and operational status</span>
+</div>
+<div class="flex items-center gap-3 text-xs">
+<span class="font-mono text-slate-600 text-[11px]">Last Update: 10:42:19 UTC</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[11px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+          ESP32 Online
+        </span>
+</div>
+</div>
+<!-- MAIN BODY CONTENT -->
+<main class="p-6 space-y-6 max-w-[1440px] w-full mx-auto">
+<!-- PAGE HEADER -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+<div>
+<div class="flex items-center gap-2.5">
+<h2 class="text-2xl font-bold tracking-tight text-on-surface">System Alerts</h2>
+<span class="px-2 py-0.5 rounded font-mono text-xs font-semibold bg-secondary-fixed text-on-secondary-fixed">LIVE LOG</span>
+</div>
+<p class="text-sm text-on-surface-variant mt-1">Monitor system warnings, sensor faults, connectivity events, and operational notifications</p>
+</div>
+<div class="flex-shrink-0">
+<button class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container-lowest border border-slate-200 text-on-surface hover:bg-surface-container-low transition-colors text-sm font-medium shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-primary">download</span>
+<span class="">Export Alert Log (CSV)</span>
+</button>
+</div>
+</div>
+<!-- 4 SUMMARY CARDS -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- 1. Active Alerts -->
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-mono text-[11px] uppercase tracking-wider text-slate-500 font-medium">Active Alerts</span>
+<div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">notifications_active</span>
+</div>
+</div>
+<div class="my-2">
+<span class="font-mono text-3xl font-bold text-on-surface">3</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xs text-on-surface-variant">Requires operator review</span>
+<span class="px-2 py-0.5 rounded font-mono text-[10px] font-semibold bg-blue-100 text-blue-700">Active</span>
+</div>
+</div>
+<!-- 2. Critical Faults -->
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-mono text-[11px] uppercase tracking-wider text-slate-500 font-medium">Critical Faults</span>
+<div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+</div>
+</div>
+<div class="my-2">
+<span class="font-mono text-3xl font-bold text-on-surface">0</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xs text-on-surface-variant">No critical faults detected</span>
+<span class="px-2 py-0.5 rounded font-mono text-[10px] font-semibold bg-emerald-100 text-emerald-800">Resolved</span>
+</div>
+</div>
+<!-- 3. Warnings -->
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-mono text-[11px] uppercase tracking-wider text-slate-500 font-medium">Warnings</span>
+<div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">warning</span>
+</div>
+</div>
+<div class="my-2">
+<span class="font-mono text-3xl font-bold text-on-surface">2</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xs text-on-surface-variant">Sensor connection &amp; flow delay</span>
+<span class="px-2 py-0.5 rounded font-mono text-[10px] font-semibold bg-amber-100 text-amber-800">Acknowledged</span>
+</div>
+</div>
+<!-- 4. Resolved Today -->
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-mono text-[11px] uppercase tracking-wider text-slate-500 font-medium">Resolved Today</span>
+<div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">task_alt</span>
+</div>
+</div>
+<div class="my-2">
+<span class="font-mono text-3xl font-bold text-on-surface">8</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xs text-on-surface-variant">Automated &amp; operator cleared</span>
+<span class="px-2 py-0.5 rounded font-mono text-[10px] font-semibold bg-emerald-100 text-emerald-800">Resolved</span>
+</div>
+</div>
+</div>
+<!-- FILTER TOOLBAR -->
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-slate-200/80 shadow-sm">
+<div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">filter_list</span>
+<span class="font-mono text-xs uppercase tracking-wider font-semibold text-on-surface">Alert Filters</span>
+</div>
+<span class="font-mono text-xs text-slate-500 bg-surface-container-low px-2 py-0.5 rounded">Showing 10 records • Filters applied</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 items-end">
+<!-- Date Picker -->
+<div class="flex flex-col gap-1">
+<label class="font-mono text-[10px] uppercase font-medium text-slate-500">Date Range</label>
+<div class="flex items-center bg-surface-container-low px-2.5 py-1.5 rounded-lg border border-slate-200 text-on-surface font-mono text-xs">
+<span class="material-symbols-outlined text-[15px] text-slate-400 mr-1.5">calendar_today</span>
+<span class="">2026-03-30 15:00</span>
+</div>
+</div>
+<!-- Severity Dropdown -->
+<div class="flex flex-col gap-1">
+<label class="font-mono text-[10px] uppercase font-medium text-slate-500">Severity</label>
+<select class="bg-surface-container-low px-2.5 py-1.5 rounded-lg border border-slate-200 text-on-surface text-xs focus:outline-none focus:ring-1 focus:ring-primary">
+<option>All Severities</option>
+<option>Information</option>
+<option>Warning</option>
+<option>Critical</option>
+</select>
+</div>
+<!-- Status Dropdown -->
+<div class="flex flex-col gap-1">
+<label class="font-mono text-[10px] uppercase font-medium text-slate-500">Status</label>
+<select class="bg-surface-container-low px-2.5 py-1.5 rounded-lg border border-slate-200 text-on-surface text-xs focus:outline-none focus:ring-1 focus:ring-primary">
+<option>All Statuses</option>
+<option>Active</option>
+<option>Acknowledged</option>
+<option>Resolved</option>
+</select>
+</div>
+<!-- Source Dropdown -->
+<div class="flex flex-col gap-1">
+<label class="font-mono text-[10px] uppercase font-medium text-slate-500">Source</label>
+<select class="bg-surface-container-low px-2.5 py-1.5 rounded-lg border border-slate-200 text-on-surface text-xs focus:outline-none focus:ring-1 focus:ring-primary">
+<option>All Sources</option>
+<option>ESP32</option>
+<option>pH Sensor</option>
+<option>Turbidity Sensor</option>
+<option>TDS Sensor</option>
+<option>Temperature Sensor</option>
+<option>Flow Sensor</option>
+<option>Pump</option>
+<option>UV-C</option>
+<option>Filtration System</option>
+</select>
+</div>
+<!-- Apply Filters -->
+<div>
+<button class="w-full h-8 bg-primary text-on-primary rounded-lg text-xs font-semibold hover:bg-primary-container transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+<span class="material-symbols-outlined text-[15px]">tune</span>
+<span class="">Apply Filters</span>
+</button>
+</div>
+<!-- Reset -->
+<div>
+<button class="w-full h-8 bg-surface-container-lowest border border-slate-200 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5">
+<span class="material-symbols-outlined text-[15px]">restart_alt</span>
+<span class="">Reset</span>
+</button>
+</div>
+</div>
+</div>
+<!-- MAIN DUAL COLUMN WORK AREA (8 cols / 4 cols) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- LEFT COLUMN: Active Alerts + Alert History (col-span-8) -->
+<div class="lg:col-span-8 space-y-6">
+<!-- ACTIVE ALERTS CARD -->
+<div class="bg-surface-container-lowest rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+<div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+<div>
+<div class="flex items-center gap-2">
+<h3 class="text-sm font-bold text-on-surface">Active Alerts</h3>
+<span class="px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-amber-100 text-amber-800">3 UNRESOLVED</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-0.5">Current Alert Events</p>
+</div>
+<span class="material-symbols-outlined text-slate-400 text-[18px]">priority_high</span>
+</div>
+<!-- Active Alert Items -->
+<div class="p-4 space-y-3">
+<!-- Item 1: Warning -->
+<div class="p-3.5 rounded-lg border-l-4 border-l-amber-500 border border-slate-200 bg-amber-50/20 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">warning</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="text-sm font-semibold text-on-surface">Sensor Connection Warning</span>
+<span class="px-1.5 py-0.5 rounded font-mono text-[10px] font-semibold bg-blue-100 text-blue-800">Active</span>
+</div>
+<p class="font-mono text-xs text-slate-600">Source: Post-Filtration Turbidity Sensor • 14:33:10 UTC • Test Run: RUN-2026-001</p>
+<p class="text-xs text-on-surface-variant">Sensor reading temporarily unavailable. Waiting for the next valid reading.</p>
+<div class="font-mono text-[11px] text-slate-500 pt-0.5">Configured Threshold: Pending • State: Active</div>
+</div>
+</div>
+<button class="px-3 py-1.5 rounded-lg text-xs font-medium bg-surface-container-lowest border border-slate-200 text-on-surface hover:bg-slate-100 transition-colors flex-shrink-0 self-start sm:self-center shadow-xs" onclick="selectAlert('ALT-2026-042', 'Sensor Connection Warning', 'Post-Filtration Turbidity Sensor', '14:33:10 UTC', 'WARNING', 'ACTIVE', 'Post-filtration turbidity reading temporarily unavailable. The system is waiting for the next valid sensor reading.')">
+                  Inspect
+                </button>
+</div>
+<!-- Item 2: Warning -->
+<div class="p-3.5 rounded-lg border-l-4 border-l-amber-400 border border-slate-200 bg-amber-50/10 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">info</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="text-sm font-semibold text-on-surface">No Flow Detected</span>
+<span class="px-1.5 py-0.5 rounded font-mono text-[10px] font-semibold bg-amber-100 text-amber-800">Acknowledged</span>
+</div>
+<p class="font-mono text-xs text-slate-600">Source: Pre-Filtration Flow Sensor • 14:28:45 UTC • Test Run: RUN-2026-001</p>
+<p class="text-xs text-on-surface-variant">No water flow detected during an active test run. Operator inspection recommended.</p>
+<div class="font-mono text-[11px] text-slate-500 pt-0.5">Configured Threshold: Pending • State: Acknowledged</div>
+</div>
+</div>
+<button class="px-3 py-1.5 rounded-lg text-xs font-medium bg-surface-container-lowest border border-slate-200 text-on-surface hover:bg-slate-100 transition-colors flex-shrink-0 self-start sm:self-center shadow-xs" onclick="selectAlert('ALT-2026-041', 'No Flow Detected', 'Pre-Filtration Flow Sensor', '14:28:45 UTC', 'WARNING', 'ACKNOWLEDGED', 'No water flow detected during active test run. Inspection recommended.')">
+                  Inspect
+                </button>
+</div>
+<!-- Item 3: Info Reminder -->
+<div class="p-3.5 rounded-lg border-l-4 border-l-blue-400 border border-slate-200 bg-blue-50/10 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">build</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="text-sm font-semibold text-on-surface">Filter Maintenance Reminder</span>
+<span class="px-1.5 py-0.5 rounded font-mono text-[10px] font-semibold bg-blue-100 text-blue-800">Active</span>
+</div>
+<p class="font-mono text-xs text-slate-600">Source: Filtration System • 14:15:00 UTC • Test Run: None (System)</p>
+<p class="text-xs text-on-surface-variant">Filter maintenance review recommended. Maintenance reminder recorded for operator review.</p>
+<div class="font-mono text-[11px] text-slate-500 pt-0.5">Action Type: Routine Maintenance Log</div>
+</div>
+</div>
+<button class="px-3 py-1.5 rounded-lg text-xs font-medium bg-surface-container-lowest border border-slate-200 text-on-surface hover:bg-slate-100 transition-colors flex-shrink-0 self-start sm:self-center shadow-xs" onclick="selectAlert('ALT-2026-040', 'Filter Maintenance Reminder', 'Filtration System', '14:15:00 UTC', 'INFO', 'ACTIVE', 'Routine maintenance reminder recorded for operator inspection and replacement log check.')">
+                  Inspect
+                </button>
+</div>
+</div>
+</div>
+<!-- ALERT HISTORY CARD -->
+<div class="bg-surface-container-lowest rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+<div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+<div>
+<h3 class="text-sm font-bold text-on-surface">Alert History</h3>
+<p class="text-xs text-on-surface-variant">Chronological sensor fault and telemetry notification log</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2.5 top-2 text-[16px] text-slate-400">search</span>
+<input class="pl-8 pr-3 py-1.5 bg-surface-container-low border border-slate-200 rounded-lg text-xs w-56 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Search alert title or source..." type="text">
+</div>
+<span class="font-mono text-xs text-slate-500 bg-surface-container-low px-2 py-1 rounded border border-slate-200">Rows: 10</span>
+</div>
+</div>
+<!-- Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs border-collapse">
+<thead>
+<tr class="border-b border-slate-100 bg-slate-50/60 font-mono text-[11px] text-slate-500 uppercase">
+<th class="py-2.5 px-4 font-semibold">Timestamp (UTC)</th>
+<th class="py-2.5 px-3 font-semibold">Severity</th>
+<th class="py-2.5 px-3 font-semibold">Source</th>
+<th class="py-2.5 px-3 font-semibold">Alert</th>
+<th class="py-2.5 px-3 font-semibold">Test Run</th>
+<th class="py-2.5 px-3 font-semibold">Status</th>
+<th class="py-2.5 px-4 text-right font-semibold">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 font-mono">
+<!-- Row 1 -->
+<tr class="hover:bg-blue-50/30 transition-colors">
+<td class="py-2.5 px-4 font-medium text-slate-700">14:33:10</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">Warning</span></td>
+<td class="py-2.5 px-3 font-sans font-medium text-on-surface">Post-Filtration Turbidity</td>
+<td class="py-2.5 px-3 font-sans text-slate-600">Sensor Connection Warning</td>
+<td class="py-2.5 px-3 text-slate-500">RUN-2026-001</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-800 font-sans">Active</span></td>
+<td class="py-2.5 px-4 text-right">
+<button class="px-2 py-1 bg-surface-container-low hover:bg-slate-200 rounded font-sans text-xs text-on-surface font-medium" onclick="selectAlert('ALT-2026-042', 'Sensor Connection Warning', 'Post-Filtration Turbidity Sensor', '14:33:10 UTC', 'WARNING', 'ACTIVE', 'Post-filtration turbidity reading temporarily unavailable. The system is waiting for the next valid sensor reading.')">Inspect</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-blue-50/30 transition-colors">
+<td class="py-2.5 px-4 font-medium text-slate-700">14:28:45</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">Warning</span></td>
+<td class="py-2.5 px-3 font-sans font-medium text-on-surface">Pre-Filtration Flow Sensor</td>
+<td class="py-2.5 px-3 font-sans text-slate-600">No Flow Detected</td>
+<td class="py-2.5 px-3 text-slate-500">RUN-2026-001</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 font-sans">Acknowledged</span></td>
+<td class="py-2.5 px-4 text-right">
+<button class="px-2 py-1 bg-surface-container-low hover:bg-slate-200 rounded font-sans text-xs text-on-surface font-medium" onclick="selectAlert('ALT-2026-041', 'No Flow Detected', 'Pre-Filtration Flow Sensor', '14:28:45 UTC', 'WARNING', 'ACKNOWLEDGED', 'No water flow detected during active test run. Inspection recommended.')">Inspect</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-blue-50/30 transition-colors">
+<td class="py-2.5 px-4 font-medium text-slate-700">14:15:08</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700">Information</span></td>
+<td class="py-2.5 px-3 font-sans font-medium text-on-surface">ESP32-001</td>
+<td class="py-2.5 px-3 font-sans text-slate-600">ESP32 Connection Restored</td>
+<td class="py-2.5 px-3 text-slate-500">RUN-2026-001</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 font-sans">Resolved</span></td>
+<td class="py-2.5 px-4 text-right">
+<button class="px-2 py-1 bg-surface-container-low hover:bg-slate-200 rounded font-sans text-xs text-on-surface font-medium" onclick="selectAlert('ALT-2026-039', 'ESP32 Connection Restored', 'ESP32-001', '14:15:08 UTC', 'INFO', 'RESOLVED', 'ESP32 connection successfully restored. Sensor monitoring data is available again.')">Inspect</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-blue-50/30 transition-colors">
+<td class="py-2.5 px-4 font-medium text-slate-700">14:15:00</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700">Information</span></td>
+<td class="py-2.5 px-3 font-sans font-medium text-on-surface">Filtration System</td>
+<td class="py-2.5 px-3 font-sans text-slate-600">Filter Maintenance Reminder</td>
+<td class="py-2.5 px-3 text-slate-500">RUN-2026-001</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-800 font-sans">Active</span></td>
+<td class="py-2.5 px-4 text-right">
+<button class="px-2 py-1 bg-surface-container-low hover:bg-slate-200 rounded font-sans text-xs text-on-surface font-medium" onclick="selectAlert('ALT-2026-040', 'Filter Maintenance Reminder', 'Filtration System', '14:15:00 UTC', 'INFO', 'ACTIVE', 'Filter maintenance review recommended. Maintenance reminder recorded for operator review.')">Inspect</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-blue-50/30 transition-colors">
+<td class="py-2.5 px-4 font-medium text-slate-700">14:12:30</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">Warning</span></td>
+<td class="py-2.5 px-3 font-sans font-medium text-on-surface">ESP32-001</td>
+<td class="py-2.5 px-3 font-sans text-slate-600">Data Stale</td>
+<td class="py-2.5 px-3 text-slate-500">RUN-2026-001</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 font-sans">Resolved</span></td>
+<td class="py-2.5 px-4 text-right">
+<button class="px-2 py-1 bg-surface-container-low hover:bg-slate-200 rounded font-sans text-xs text-on-surface font-medium" onclick="selectAlert('ALT-2026-038', 'Data Stale', 'ESP32-001', '14:12:30 UTC', 'WARNING', 'RESOLVED', 'Sensor data was temporarily unavailable. New readings have since been received.')">Inspect</button>
+</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-blue-50/30 transition-colors">
+<td class="py-2.5 px-4 font-medium text-slate-700">14:05:10</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700">Information</span></td>
+<td class="py-2.5 px-3 font-sans font-medium text-on-surface">System</td>
+<td class="py-2.5 px-3 font-sans text-slate-600">Test Run Started</td>
+<td class="py-2.5 px-3 text-slate-500">RUN-2026-001</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 font-sans">Resolved</span></td>
+<td class="py-2.5 px-4 text-right">
+<button class="px-2 py-1 bg-surface-container-low hover:bg-slate-200 rounded font-sans text-xs text-on-surface font-medium" onclick="selectAlert('ALT-2026-037', 'Test Run Started', 'System', '14:05:10 UTC', 'INFO', 'RESOLVED', 'Test run started and sensor monitoring began.')">Inspect</button>
+</td>
+</tr>
+<!-- Row 7 -->
+<tr class="hover:bg-blue-50/30 transition-colors">
+<td class="py-2.5 px-4 font-medium text-slate-700">13:48:22</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">Warning</span></td>
+<td class="py-2.5 px-3 font-sans font-medium text-on-surface">Booster Pump</td>
+<td class="py-2.5 px-3 font-sans text-slate-600">Pump Status Warning</td>
+<td class="py-2.5 px-3 text-slate-500">RUN-2026-001</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 font-sans">Resolved</span></td>
+<td class="py-2.5 px-4 text-right">
+<button class="px-2 py-1 bg-surface-container-low hover:bg-slate-200 rounded font-sans text-xs text-on-surface font-medium" onclick="selectAlert('ALT-2026-036', 'Pump Status Warning', 'Booster Pump', '13:48:22 UTC', 'WARNING', 'RESOLVED', 'Pump status warning recorded during the test run. Operator inspection recommended.')">Inspect</button>
+</td>
+</tr>
+<!-- Row 8 -->
+<tr class="hover:bg-blue-50/30 transition-colors">
+<td class="py-2.5 px-4 font-medium text-slate-700">13:30:15</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700">Information</span></td>
+<td class="py-2.5 px-3 font-sans font-medium text-on-surface">UV-C Stage</td>
+<td class="py-2.5 px-3 font-sans text-slate-600">UV-C Status Warning</td>
+<td class="py-2.5 px-3 text-slate-500">RUN-2026-001</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 font-sans">Resolved</span></td>
+<td class="py-2.5 px-4 text-right">
+<button class="px-2 py-1 bg-surface-container-low hover:bg-slate-200 rounded font-sans text-xs text-on-surface font-medium" onclick="selectAlert('ALT-2026-035', 'UV-C Status Warning', 'UV-C Stage', '13:30:15 UTC', 'INFO', 'RESOLVED', 'UV-C status warning recorded during the test run. Operator inspection recommended.')">Inspect</button>
+</td>
+</tr>
+<!-- Row 9 -->
+<tr class="hover:bg-blue-50/30 transition-colors">
+<td class="py-2.5 px-4 font-medium text-slate-700">13:10:00</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">Warning</span></td>
+<td class="py-2.5 px-3 font-sans font-medium text-on-surface">Pre-Filtration TDS Sensor</td>
+<td class="py-2.5 px-3 font-sans text-slate-600">TDS Reading Warning</td>
+<td class="py-2.5 px-3 text-slate-500">RUN-2026-001</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 font-sans">Resolved</span></td>
+<td class="py-2.5 px-4 text-right">
+<button class="px-2 py-1 bg-surface-container-low hover:bg-slate-200 rounded font-sans text-xs text-on-surface font-medium" onclick="selectAlert('ALT-2026-034', 'TDS Reading Warning', 'Pre-Filtration TDS Sensor', '13:10:00 UTC', 'WARNING', 'RESOLVED', 'A change in the pre-filtration TDS reading was recorded during the test run.')">Inspect</button>
+</td>
+</tr>
+<!-- Row 10 -->
+<tr class="hover:bg-blue-50/30 transition-colors">
+<td class="py-2.5 px-4 font-medium text-slate-700">12:45:00</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700">Information</span></td>
+<td class="py-2.5 px-3 font-sans font-medium text-on-surface">ESP32-001</td>
+<td class="py-2.5 px-3 font-sans text-slate-600">Device Online</td>
+<td class="py-2.5 px-3 text-slate-500">RUN-2026-001</td>
+<td class="py-2.5 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 font-sans">Resolved</span></td>
+<td class="py-2.5 px-4 text-right">
+<button class="px-2 py-1 bg-surface-container-low hover:bg-slate-200 rounded font-sans text-xs text-on-surface font-medium" onclick="selectAlert('ALT-2026-033', 'Device Online', 'ESP32-001', '12:45:00 UTC', 'INFO', 'RESOLVED', 'ESP32 system boot sequence completed successfully.')">Inspect</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Pagination Bar -->
+<div class="px-4 py-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+<span class="font-mono text-slate-500">Showing 1 to 10 of 42 logged alerts • Batch RUN-2026-001</span>
+<div class="flex items-center gap-1 font-mono">
+<button class="w-7 h-7 flex items-center justify-center rounded bg-primary text-on-primary font-bold">1</button>
+<button class="w-7 h-7 flex items-center justify-center rounded bg-surface-container-low hover:bg-slate-200 text-on-surface">2</button>
+<button class="w-7 h-7 flex items-center justify-center rounded bg-surface-container-low hover:bg-slate-200 text-on-surface">3</button>
+<button class="w-7 h-7 flex items-center justify-center rounded bg-surface-container-low hover:bg-slate-200 text-on-surface">4</button>
+<button class="px-2.5 h-7 flex items-center justify-center rounded bg-surface-container-low hover:bg-slate-200 text-on-surface font-sans">Next &gt;</button>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: Alert Inspector Panel Card (col-span-4) -->
+<div class="lg:col-span-4">
+<div class="bg-surface-container-lowest rounded-xl border border-slate-200/80 shadow-sm sticky top-24 overflow-hidden">
+<!-- Header -->
+<div class="p-4 border-b border-slate-100 flex items-center justify-between">
+<div>
+<h3 class="text-sm font-bold text-on-surface">Alert Inspector</h3>
+<p class="text-xs text-on-surface-variant">Alert Details</p>
+</div>
+<span class="font-mono text-xs font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200" id="inspect-badge">ALT-2026-042</span>
+</div>
+<div class="p-4 space-y-4 text-xs">
+<!-- Metadata Grid -->
+<div class="space-y-2 pb-3 border-b border-slate-100">
+<div class="flex items-center justify-between py-1">
+<span class="font-mono text-[10px] uppercase text-slate-500">Time Recorded</span>
+<div class="flex items-center gap-1.5">
+<span class="font-mono font-medium text-slate-700" id="inspect-time">2026-03-30 14:33:10 UTC</span>
+<span class="px-1.5 py-0.5 rounded font-mono text-[9px] font-bold bg-amber-100 text-amber-800" id="inspect-severity">WARNING</span>
+</div>
+</div>
+<div class="flex items-center justify-between py-1 border-t border-slate-50">
+<span class="font-mono text-[10px] uppercase text-slate-500">Alert ID</span>
+<span class="font-mono font-semibold text-on-surface" id="inspect-id">ALT-2026-042</span>
+</div>
+<div class="flex items-center justify-between py-1 border-t border-slate-50">
+<span class="font-mono text-[10px] uppercase text-slate-500">Source Component</span>
+<span class="font-medium text-on-surface text-right" id="inspect-source">Post-Filtration Turbidity Sensor</span>
+</div>
+<div class="flex items-center justify-between py-1 border-t border-slate-50">
+<span class="font-mono text-[10px] uppercase text-slate-500">Test Run Association</span>
+<span class="font-mono font-medium text-slate-700">RUN-2026-001</span>
+</div>
+<div class="flex items-center justify-between py-1 border-t border-slate-50">
+<span class="font-mono text-[10px] uppercase text-slate-500">Device</span>
+<span class="font-mono text-slate-700">ESP32-001</span>
+</div>
+<div class="flex items-center justify-between py-1 border-t border-slate-50">
+<span class="font-mono text-[10px] uppercase text-slate-500">Controller</span>
+<span class="font-mono text-slate-700">ESP32-WROOM-32</span>
+</div>
+<div class="flex items-center justify-between py-1 border-t border-slate-50">
+<span class="font-mono text-[10px] uppercase text-slate-500">Current Status</span>
+<span class="px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-blue-100 text-blue-800" id="inspect-status">ACTIVE</span>
+</div>
+<div class="flex items-center justify-between py-1 border-t border-slate-50">
+<span class="font-mono text-[10px] uppercase text-slate-500">Acknowledged By</span>
+<span class="font-medium text-slate-600" id="inspect-ack">Pending Operator Review</span>
+</div>
+</div>
+<!-- Diagnostic Summary -->
+<div>
+<span class="font-mono text-[10px] uppercase font-semibold text-slate-500 block mb-1">Diagnostic Summary</span>
+<p class="text-xs text-on-surface leading-relaxed bg-surface-container-low p-2.5 rounded-lg border border-slate-200" id="inspect-desc">
+                  Post-filtration turbidity reading temporarily unavailable. The system is waiting for the next valid sensor reading.
+                </p>
+<div class="font-mono text-[11px] text-slate-500 mt-1.5">Configured Threshold: Pending</div>
+</div>
+<!-- Safety Notice Callout -->
+<div class="bg-amber-50/60 border border-amber-200/80 rounded-lg p-3 flex gap-2.5">
+<span class="material-symbols-outlined text-amber-600 text-[18px] flex-shrink-0 mt-0.5">info</span>
+<div>
+<span class="text-[11px] font-bold text-amber-900 block">Safety Notice</span>
+<p class="text-[11px] text-amber-800 leading-snug mt-0.5">
+                    Water-quality thresholds and automatic fail-safe behavior are pending research-team and hardware-integration approval. Sensor alerts alone do not establish contamination or potability.
+                  </p>
+</div>
+</div>
+<!-- Inspector Actions -->
+<div class="space-y-2 pt-1">
+<div class="grid grid-cols-2 gap-2">
+<button class="w-full py-2 px-3 bg-primary text-on-primary rounded-lg text-xs font-semibold hover:bg-primary-container transition-colors shadow-sm text-center" onclick="ackCurrentAlert()">
+                    Acknowledge Alert
+                  </button>
+<button class="w-full py-2 px-3 bg-surface-container-lowest border border-slate-200 text-on-surface hover:bg-slate-100 rounded-lg text-xs font-semibold transition-colors text-center shadow-xs" onclick="resolveCurrentAlert()">
+                    Mark Resolved
+                  </button>
+</div>
+<p class="font-mono text-[10px] text-slate-400 text-center leading-normal">
+                  Software alert status management only. Remote hardware cutoff or actuator overrides are not configured on this console.
+                </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Interactive script for Alert Inspector inspection -->
+<script>
+    function selectAlert(id, title, source, time, severity, status, desc) {
+      document.getElementById('inspect-badge').innerText = id;
+      document.getElementById('inspect-id').innerText = id;
+      document.getElementById('inspect-source').innerText = source;
+      document.getElementById('inspect-time').innerText = '2026-03-30 ' + time;
+      document.getElementById('inspect-severity').innerText = severity;
+      document.getElementById('inspect-status').innerText = status;
+      document.getElementById('inspect-desc').innerText = desc;
+
+      if (status === 'ACTIVE') {
+        document.getElementById('inspect-ack').innerText = 'Pending Operator Review';
+        document.getElementById('inspect-status').className = 'px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-blue-100 text-blue-800';
+      } else if (status === 'ACKNOWLEDGED') {
+        document.getElementById('inspect-ack').innerText = 'Researcher / Admin';
+        document.getElementById('inspect-status').className = 'px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-amber-100 text-amber-800';
+      } else {
+        document.getElementById('inspect-ack').innerText = 'Auto-Resolved / Cleared';
+        document.getElementById('inspect-status').className = 'px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-emerald-100 text-emerald-800';
+      }
+    }
+
+    function ackCurrentAlert() {
+      document.getElementById('inspect-status').innerText = 'ACKNOWLEDGED';
+      document.getElementById('inspect-status').className = 'px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-amber-100 text-amber-800';
+      document.getElementById('inspect-ack').innerText = 'Researcher / Admin (Current Operator)';
+    }
+
+    function resolveCurrentAlert() {
+      document.getElementById('inspect-status').innerText = 'RESOLVED';
+      document.getElementById('inspect-status').className = 'px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-emerald-100 text-emerald-800';
+      document.getElementById('inspect-ack').innerText = 'Marked Resolved by Operator';
+    }
+  </script>
+
+
+</body></html>

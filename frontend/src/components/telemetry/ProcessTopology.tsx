@@ -1,0 +1,3 @@
+import { CircleDot,Droplets,Filter,Gauge,Radio,Sun,Waves } from 'lucide-react'
+const stages=[['Water Source',Waves],['Booster Pump',Gauge],['Pre-Filtration Sensors',Radio],['Ultrafiltration',Filter],['UV-C',Sun],['Post-Filtration Sensors',CircleDot],['Output',Droplets]] as const
+export function ProcessTopology() { return <div className="topology" role="group" aria-label="Water filtration process">{stages.map(([label,Icon])=><div className="topology-node" key={label}><Icon size={20} className="text-hydro" aria-hidden="true"/><strong>{label}</strong><span className="mono text-[9px] text-good">{label==='Output'?'Flowing':label.includes('Sensors')?'Online':'Active'}</span></div>)}</div> }
