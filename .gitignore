@@ -34,3 +34,7 @@ firmware/esp32/include/secrets.h
 .idea/
 .DS_Store
 Thumbs.db
+
+# External team docs kept locally only, not versioned
+backend/docs/tracker/*.xlsx
+backend/docs/references/

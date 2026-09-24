@@ -1,0 +1,41 @@
+{
+  "name": "iot-water-filtration-system-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "nodemon --watch src --watch index.ts --ext ts --exec ts-node index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "seed": "ts-node scripts/seedTestData.ts",
+    "simulate": "ts-node scripts/liveSimulator.ts",
+    "gen:types": "printf '%s\\n' '// AUTO-GENERATED via `npm run gen:types` (supabase gen types typescript --local).' '// Do not hand-edit. Requires the local Supabase stack running (npx supabase start).' '// Regenerate after every migration.' > src/types/database.types.ts && supabase gen types typescript --local >> src/types/database.types.ts",
+    "test": "vitest run --exclude \"**/integration/**\"",
+    "test:watch": "vitest --exclude \"**/integration/**\"",
+    "test:integration": "vitest run src/__tests__/integration"
+  },
+  "author": "adb-polar",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "ws": "^8.21.3",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.20.3",
+    "@types/supertest": "^6.0.2",
+    "@types/ws": "^8.18.1",
+    "nodemon": "^3.1.14",
+    "supabase": "^2.117.0",
+    "supertest": "^7.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.8"
+  }
+}
