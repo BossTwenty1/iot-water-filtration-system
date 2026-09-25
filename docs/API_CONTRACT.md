@@ -1,53 +1,116 @@
 # API Contract
 
-## Status
+This document defines the shared communication contract between the ESP32,
+simulator, backend, frontend, and database-facing services.
 
-This is a Phase 1 contract boundary, not an implemented API. Endpoint names,
-authentication, payload schemas, retry behavior, and versioning require team
-approval before implementation.
+The API is not yet implemented. Routes and payloads documented here are the
+planned contract and may be refined through an approved architecture decision.
 
-## Transport and direction
+---
 
-- Device-to-backend communication is planned to use HTTPS REST.
-- The ESP32 must not depend on a successful request to continue critical local
-  hardware control.
-- The Node.js and Express backend is the boundary for validating and persisting
-  synchronized data.
-- The dashboard consumes backend data through Express; it does not directly
-  query the database or control critical hardware.
-- The normal persistence path is `client -> Express API -> Supabase
-  PostgreSQL`.
+## 1. API Principles
 
-## Candidate interface areas
+The backend shall act as the normal communication boundary between:
 
-The following areas are intentionally provisional and are not routes yet:
+- ESP32 and database
+- simulator and database
+- frontend and database
+- remote commands and ESP32
 
-| Area | Purpose | Status |
-| --- | --- | --- |
-| Health/status | Report service availability | TBD |
-| Device readings | Submit pre- and post-filtration measurements | TBD |
-| Test runs | Start, observe, and retrieve a test run record | TBD |
-| Alerts | Retrieve and acknowledge approved alert records | TBD |
-| Calibration | Record and retrieve calibration events | TBD |
-| Laboratory validation | Record externally produced validation results | TBD |
-| CSV export | Export approved historical records | TBD |
+Normal flow:
 
-## Data contract principles
+ESP32 / Simulator
+-> HTTPS REST API
+-> Node.js + Express
+-> Supabase PostgreSQL
 
-Each synchronized reading should eventually include enough context to identify
-the device, sensor category, sensor position, measurement time, unit, and
-calibration context. The exact field names, units, identifiers, and validation
-rules are `TBD`.
+Frontend
+-> HTTPS REST API
+-> Node.js + Express
+-> Supabase PostgreSQL
 
-The API must distinguish:
+The ESP32 must not require a successful API request for critical local hardware
+control to continue.
 
-- unavailable data from a measured value;
-- a device/network error from a water-quality alert;
-- a sensor reading from a laboratory validation result; and
-- an alert condition from a claim that water is safe to drink.
+Remote commands must remain subject to local ESP32 safety validation. API
+authorization or successful command delivery must not bypass the ESP32's
+approved local safety logic.
 
-## Deferred decisions
+The frontend must not contain database administrator or Supabase service-role
+credentials.
 
-Authentication, device identity, authorization, endpoint version, rate limits,
-batch size, retry/idempotency rules, timestamp format, error format, and CSV
-column order are all `TBD`.
+---
+
+## 2. Base Path
+
+Planned API prefix:
+
+`/api/v1`
+
+API versioning is proposed so future changes do not silently break firmware,
+frontend, simulator, or backend integrations.
+
+Final versioning policy remains subject to implementation approval.
+
+---
+
+## 3. Data Format
+
+API payloads shall use JSON unless another format is explicitly required.
+
+Example content type:
+
+`Content-Type: application/json`
+
+Timestamps should use UTC ISO 8601 format when possible.
+
+Example:
+
+`2026-09-14T14:30:00Z`
+
+The backend should also preserve a server-received timestamp so device clock
+problems can be diagnosed.
+
+---
+
+## 4. Source Identification
+
+Telemetry must identify whether it came from:
+
+- real ESP32 hardware,
+- development simulator.
+
+Recommended field:
+
+Device example:
+
+```json
+{
+  "source": "device"
+}
+```
+
+Simulator example:
+
+```json
+{
+  "source": "simulator"
+}
+```
+
+---
+
+## 5. Telemetry Context
+
+Telemetry payloads must preserve the context required by the requirements and
+database design:
+
+- device identity,
+- test-run or experiment context,
+- explicit sensor position (`pre-filtration` or `post-filtration`),
+- measurement timestamp,
+- sensor/calibration context, and
+- source identity distinguishing real device data from simulator data.
+
+Final field names, identifiers, units, and validation rules remain subject to
+implementation approval.

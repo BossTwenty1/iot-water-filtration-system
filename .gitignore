@@ -26,9 +26,15 @@ __pycache__/
 *.bin
 *.elf
 *.map
+# ESP32 firmware credentials (template: firmware/esp32/include/secrets.example.h)
+firmware/esp32/include/secrets.h
 
 # Local IDE and operating-system files
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
+
+# External team docs kept locally only, not versioned
+backend/docs/tracker/*.xlsx
+backend/docs/references/

@@ -1,43 +1,86 @@
+
 # Hardware Integration
 
-## Confirmed hardware context
+This document defines the boundary between physical hardware and software.
 
-- Controller: ESP32-WROOM-32
-- Sensor groups: pre-filtration and post-filtration
-- Sensor categories: pH, turbidity, TDS, temperature, and flow rate
+Final electrical decisions remain under the hardware/research team's authority.
 
-The exact turbidity sensor model and all actuator/electrical specifications
-remain `TBD`.
+---
 
-## Integration boundary
+## 1. Confirmed Controller
 
-The ESP32 is the local authority for critical hardware behavior. It must be
-able to continue the approved local control behavior without an internet
-connection. The backend and dashboard may synchronize and display records, but
-they must not be required for the local safety/control loop.
+- ESP32-WROOM-32
 
-## Measurement handling
+Final board revision and physical pin map must be confirmed before permanent
+wiring or firmware pin definitions are finalized.
 
-Firmware should preserve sensor position, sensor category, measurement time,
-unit, device identity, and calibration context when the final contract is
-approved. Invalid, unavailable, or stale readings must be distinguishable from
-valid measurements. Exact validation behavior is `TBD`.
+---
 
-## Wiring and control
+## 2. Confirmed Sensor Configuration
 
-Do not implement or document final GPIO assignments until the wiring plan is
-approved. Pump, UV-C, relay, and power behavior must be designed around the
-confirmed electrical specifications and approved control rules.
+The system uses two sensor groups:
 
-## Connectivity loss
+- one before filtration,
+- one after filtration.
 
-Loss of internet connectivity must not stop critical local control. Firmware
-may queue or discard synchronization data only according to an approved data
-retention policy; this policy is `TBD`.
+### pH
 
-## Safety and validation boundary
+- Client-provided/confirmed project information: PH-4502C
+- Quantity: 2
 
-Sensor measurements are monitoring signals. They are not laboratory proof that
-water is safe to drink. Laboratory validation remains a separate record and
-process, with its protocol and relationship to dashboard messaging still
-`TBD`.
+### TDS
+
+- Client-provided documentation/reference: DFRobot TDS / SEN0244
+- Quantity: 2
+- Confirm exact delivered module before final electrical integration
+
+### Temperature
+
+- Client-provided/confirmed project information: DS18B20
+- Quantity: 2
+
+### Flow
+
+- Client-provided/confirmed project information: ZJ-S201C
+- Quantity: 2
+
+### Turbidity
+
+- Quantity: 2
+- Exact model: `TBD`
+
+---
+
+## 3. Other Confirmed Hardware
+
+- ESP32-WROOM-32
+- integrated ultrafiltration / UV-C filtration unit
+- Client-provided requirement: 4-channel relay module
+
+Exact relay model and electrical specifications remain `TBD`.
+
+---
+
+## 4. Physical Water Flow
+
+Current process:
+
+```text
+Water Source
+-> Booster Pump
+-> Pre-Filtration Sensors
+-> Ultrafiltration
+-> UV-C
+-> Post-Filtration Sensors
+-> LCD
+-> Output
+```
+
+---
+
+## 5. Local Control and Connectivity
+
+Critical physical control remains local to the ESP32 and must continue safely
+when internet or cloud services are unavailable. Remote commands, if approved,
+must remain subject to ESP32 local safety validation and must not bypass the
+approved fail-safe behavior.

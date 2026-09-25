@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>IoT Water Filtration - Sensor Calibration</title>
+<!-- Google Fonts: Hanken Grotesk & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Hanken Grotesk"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              300: '#93c5fd',
+              400: '#60a5fa',
+              500: '#3b82f6',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Hanken Grotesk', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex bg-slate-50 text-slate-900 antialiased selection:bg-sky-100 selection:text-sky-900">
+<!-- ========================================================================= -->
+<!-- LEFT SIDEBAR: Standard Approved Application Shell                         -->
+<!-- ========================================================================= -->
+<aside class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0 min-h-screen sticky top-0 h-screen z-30">
+<!-- Top Brand & Header -->
+<div class="p-4 border-b border-slate-100 flex items-center space-x-3">
+<div class="w-8 h-8 rounded-lg bg-sky-50 border border-sky-200 flex items-center justify-center p-1 shrink-0 text-sky-600">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+<path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path>
+</svg>
+</div>
+<div>
+<h1 class="text-xs font-semibold tracking-wider text-slate-500 uppercase">Console Navigation</h1>
+<p class="text-sm font-bold text-slate-800 tracking-tight">System Architecture</p>
+</div>
+</div>
+<!-- Navigation Menu -->
+<nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+<!-- Dashboard -->
+<a class="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<rect height="7" width="7" x="3" y="3"></rect>
+<rect height="7" width="7" x="14" y="3"></rect>
+<rect height="7" width="7" x="14" y="14"></rect>
+<rect height="7" width="7" x="3" y="14"></rect>
+</svg>
+<span>Dashboard</span>
+</a>
+<!-- History -->
+<a class="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="10"></circle>
+<polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+<span>History</span>
+</a>
+<!-- Alerts -->
+<a class="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+<path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+</svg>
+<span>Alerts</span>
+</a>
+<!-- Test Runs -->
+<a class="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M10 2v7.31"></path>
+<path d="M14 9.3V2"></path>
+<path d="M8.5 2h7"></path>
+<path d="M14 9.3a6.5 6.5 0 1 1-4 0"></path>
+<path d="M5.52 16h12.96"></path>
+</svg>
+<span>Test Runs</span>
+</a>
+<!-- Calibration (ACTIVE) -->
+<a class="flex items-center justify-between px-3 py-2.5 text-sm font-semibold text-sky-800 bg-sky-50/80 rounded-lg border-l-4 border-sky-600 shadow-sm transition-colors" href="#">
+<div class="flex items-center space-x-3">
+<svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<line x1="4" x2="4" y1="21" y2="14"></line>
+<line x1="4" x2="4" y1="10" y2="3"></line>
+<line x1="12" x2="12" y1="21" y2="12"></line>
+<line x1="12" x2="12" y1="8" y2="3"></line>
+<line x1="20" x2="20" y1="21" y2="16"></line>
+<line x1="20" x2="20" y1="12" y2="3"></line>
+<line x1="1" x2="7" y1="14" y2="14"></line>
+<line x1="9" x2="15" y1="8" y2="8"></line>
+<line x1="17" x2="23" y1="16" y2="16"></line>
+</svg>
+<span class="font-bold tracking-tight text-sky-900">Calibration</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-sky-600"></span>
+</a>
+<!-- Laboratory Validation -->
+<a class="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+<polyline points="9 12 11 14 15 10"></polyline>
+</svg>
+<span>Laboratory Validation</span>
+</a>
+<!-- Maintenance -->
+<a class="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+</svg>
+<span>Maintenance</span>
+</a>
+<!-- Settings -->
+<a class="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="3"></circle>
+<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+</svg>
+<span>Settings</span>
+</a>
+</nav>
+<!-- Sidebar Footer: Approved Hardware Status -->
+<div class="p-3 border-t border-slate-200 bg-slate-50/70">
+<div class="p-2.5 rounded-lg border border-slate-200 bg-white shadow-xs flex items-center justify-between">
+<div>
+<div class="text-[10px] font-mono text-slate-400 uppercase tracking-wider font-semibold">Controller Status</div>
+<div class="text-xs font-mono font-medium text-slate-700">ESP32-WROOM-32</div>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="text-[11px] font-medium text-emerald-700">Online</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- ========================================================================= -->
+<!-- MAIN WORKSPACE                                                            -->
+<!-- ========================================================================= -->
+<div class="flex-1 flex flex-col min-w-0 overflow-x-hidden">
+<!-- Top Application Header -->
+<header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0 sticky top-0 z-20">
+<!-- Title & Branding -->
+<div class="flex items-center space-x-3">
+<div class="w-7 h-7 rounded-lg bg-sky-50 border border-sky-200 p-1 flex items-center justify-center shrink-0">
+<img alt="Water Sense Icon" class="w-full h-full object-contain" onerror="this.style.display='none'" src="https://lh3.googleusercontent.com/aida/AEtjO1XxMH3TVX9TQCD8w-LL4fNKtTkK63psP1JhpiPsNMQX4e23hzjaJIM53fQEytYh6_BvGoKpbz8E8HbwuBy5Hl4v1_8jholY6r-mtMO4sm-wBxz-i1jGrhQv7O4MyXhk5so4nyauiOZnjshnCMyV_KnC2nFVqweavDyi6wnvtA6fKf2MDUVFyOAj6bJAylM2NzN8Mgg6BY0zoICvd57WLb-aOgluc-bTuOvITCrE_-l9C6fEaOCIAW9aCss"/>
+</div>
+<div>
+<div class="text-sm font-bold text-slate-900 tracking-tight leading-none">IoT Embedded Water Filtration System</div>
+<div class="text-[11px] text-slate-500 font-medium mt-0.5">Real-Time Water Quality Monitoring &amp; Filtration</div>
+</div>
+</div>
+<!-- Sync Status & User Profile -->
+<div class="flex items-center space-x-4">
+<div class="hidden sm:flex items-center space-x-2 text-xs border border-slate-200 bg-slate-50 px-2.5 py-1 rounded-md">
+<span class="text-slate-400 font-mono text-[10px]">LAST SYNCED:</span>
+<span class="font-mono font-semibold text-slate-700">10:42:19 UTC</span>
+</div>
+<div class="flex items-center space-x-2 text-xs bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-1 rounded-md">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span class="font-medium font-mono text-[11px]">ESP32 Online • Updated 8s ago</span>
+</div>
+<!-- Notification Bell -->
+<button class="relative p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors" title="Notifications">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+<path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+</svg>
+<span class="absolute top-1 right-1 w-2 h-2 bg-amber-500 rounded-full"></span>
+</button>
+<!-- Researcher Profile -->
+<div class="flex items-center space-x-2.5 pl-2 border-l border-slate-200">
+<img alt="Researcher Avatar" class="w-8 h-8 rounded-full border border-slate-300 object-cover" onerror="this.src='data:image/svg+xml;utf8,&lt;svg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 24 24\' fill=\'%23e2e8f0\'&gt;&lt;circle cx=\'12\' cy=\'8\' r=\'4\' fill=\'%2394a3b8\'/&gt;&lt;path d=\'M20 21a8 8 0 0 0-16 0\' fill=\'%2394a3b8\'/&gt;&lt;/svg&gt;'" src="https://lh3.googleusercontent.com/aida/AEtjO1W-DT-w_JDebKpSIIlZHbrqORmWc4COxFTyMlP4LkrQ9tcnlscFz0eDefI576DBtlulrxoPpW9Db5PemZD-X6iRCVEf0DQzXaVXrgcSrVif1ymys03y1U9OrwvDWzEdu8piCMWEvBf9VuGMgVhj0l_JgT5ONEqXyAatyVVJ3vcFyDorwom3tHVgk1AeDFaJdhYG6lADvBUJ-xLVyS_DV350Z06apK8U-i6h_ufnTMJucKi1EKkYGePuKBc"/>
+<div class="hidden lg:block text-left leading-tight">
+<div class="text-xs font-semibold text-slate-800">Researcher / Admin</div>
+<div class="text-[10px] text-slate-400 font-medium">Session Tracking Active</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Sub-header Alert Banner -->
+<div class="bg-sky-50/60 border-b border-sky-100 px-6 py-2 flex items-center justify-between text-xs text-slate-600"><div class="flex items-center space-x-2"><span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold font-mono tracking-wide bg-sky-100 text-sky-800 border border-sky-200 uppercase">Representative UI Demo Data</span><span class="text-slate-400">•</span><span class="font-medium text-slate-600">Sensor Calibration &amp; Error Comparison Records</span></div><div class="flex items-center space-x-3 text-slate-500"><span class="flex items-center space-x-1.5 font-mono text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span><span>10 Sensors • Before and After Filtration</span></span></div></div>
+<!-- Page Body Container -->
+<main class="p-6 space-y-6 max-w-[1600px] w-full mx-auto">
+<!-- ===================================================================== -->
+<!-- PAGE TITLE & PRIMARY ACTIONS                                          -->
+<!-- ===================================================================== -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div>
+<div class="flex items-center space-x-3">
+<h2 class="text-2xl font-bold text-slate-900 tracking-tight">Sensor Calibration</h2>
+<span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-800 border border-sky-200 font-mono">
+              STAGE 1 &amp; 2
+            </span>
+</div>
+<p class="text-sm text-slate-500 mt-1">
+            Record and review calibration activities for pre- and post-filtration sensors
+          </p>
+</div>
+<div class="flex items-center space-x-3 shrink-0">
+<button class="inline-flex items-center space-x-2 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors shadow-xs" type="button">
+<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+<polyline points="7 10 12 15 17 10"></polyline>
+<line x1="12" x2="12" y1="15" y2="3"></line>
+</svg>
+<span>Export Calibration CSV</span>
+</button>
+<button class="inline-flex items-center space-x-2 px-4 py-2 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700 rounded-lg shadow-sm transition-colors" onclick="document.getElementById('new-calibration-modal').classList.remove('hidden')" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<line x1="12" x2="12" y1="5" y2="19"></line>
+<line x1="5" x2="19" y1="12" y2="12"></line>
+</svg>
+<span>New Calibration Record</span>
+</button>
+</div>
+</div>
+<!-- ===================================================================== -->
+<!-- SUMMARY METRIC CARDS                                                  -->
+<!-- ===================================================================== -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Total Sensors -->
+<div class="p-4 bg-white rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+<div class="flex items-center justify-between text-slate-500">
+<span class="text-xs font-bold uppercase tracking-wider font-mono">Total Sensors</span>
+<span class="p-1.5 bg-slate-100 text-slate-600 rounded-lg">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M3 9h18v6H3z"></path></svg>
+</span>
+</div>
+<div class="mt-3">
+<div class="text-2xl font-bold font-mono text-slate-900">10</div>
+<div class="text-xs text-slate-500 mt-0.5">5 Pre-Filter • 5 Post-Filter</div>
+</div>
+</div>
+<!-- Calibration Records -->
+<div class="p-4 bg-white rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+<div class="flex items-center justify-between text-slate-500">
+<span class="text-xs font-bold uppercase tracking-wider font-mono">Calibration Records</span>
+<span class="p-1.5 bg-sky-50 text-sky-600 rounded-lg">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" x2="8" y1="13" y2="13"></line><line x1="16" x2="8" y1="17" y2="17"></line></svg>
+</span>
+</div>
+<div class="mt-3">
+<div class="text-2xl font-bold font-mono text-slate-900">18</div>
+<div class="text-xs text-emerald-600 font-medium mt-0.5">Logged research comparisons</div>
+</div>
+</div>
+<!-- Calibration Due -->
+<div class="p-4 bg-white rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+<div class="flex items-center justify-between text-slate-500">
+<span class="text-xs font-bold uppercase tracking-wider font-mono">Calibration Due</span>
+<span class="p-1.5 bg-amber-50 text-amber-600 rounded-lg">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+</span>
+</div>
+<div class="mt-3">
+<div class="text-base font-semibold font-mono text-slate-700">Schedule Not Configured</div>
+<div class="text-xs text-slate-400 mt-0.5">Intervals pending research team</div>
+</div>
+</div>
+<!-- Latest Calibration -->
+<div class="p-4 bg-white rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between"><div class="flex items-center justify-between text-slate-500"><span class="text-xs font-bold uppercase tracking-wider font-mono">Latest Calibration</span><span class="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="mt-3"><div class="text-base font-bold font-mono text-slate-800">2026-09-30 09:15</div><div class="text-xs text-slate-500 mt-0.5">Post-Filtration TDS (CAL-2026-004)</div></div></div>
+</div>
+<!-- ===================================================================== -->
+<!-- SENSOR CALIBRATION OVERVIEW (BEFORE & AFTER FILTRATION GROUPS)        -->
+<!-- ===================================================================== -->
+<section class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs"><div class="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-slate-100 gap-2"><div><h3 class="text-base font-bold text-slate-900 tracking-tight flex items-center space-x-2"><span>Sensor Calibration Status</span></h3><p class="text-xs text-slate-500 mt-0.5">Hardware sensor models and current calibration documentation status across filtration stages</p></div><div class="flex items-center space-x-4 text-xs"><span class="flex items-center space-x-1.5 text-slate-600 font-medium"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>Record Available</span></span><span class="flex items-center space-x-1.5 text-slate-600 font-medium"><span class="w-2 h-2 rounded-full bg-amber-500"></span><span>Review Needed</span></span><span class="flex items-center space-x-1.5 text-slate-600 font-medium"><span class="w-2 h-2 rounded-full bg-slate-400"></span><span>No Record</span></span></div></div><div class="mt-5 space-y-6"><div><div class="flex items-center space-x-2 mb-3"><span class="px-2 py-0.5 bg-slate-100 text-slate-700 text-xs font-bold font-mono rounded uppercase tracking-wide">Stage 1</span><h4 class="text-sm font-bold text-slate-800">Before Filtration Sensors</h4></div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3"><div class="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors"><div class="flex items-center justify-between"><span class="text-xs font-bold text-slate-900">pH Sensor</span><span class="px-1.5 py-0.5 text-[10px] font-semibold font-mono rounded bg-emerald-50 text-emerald-700 border border-emerald-200">Record Available</span></div><div class="mt-2 text-[11px] text-slate-600">Model: <span class="font-mono font-medium text-slate-800">PH-4502C</span></div><div class="mt-1 text-[11px] text-slate-500">Last Cal: <span class="font-mono text-slate-700">2026-09-29</span></div><div class="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px] text-slate-500"><span class="font-mono">CAL-2026-001</span><span class="text-sky-600 font-semibold cursor-pointer hover:underline">Inspect</span></div></div><div class="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors"><div class="flex items-center justify-between"><span class="text-xs font-bold text-slate-900">Turbidity Sensor</span><span class="px-1.5 py-0.5 text-[10px] font-semibold font-mono rounded bg-amber-50 text-amber-700 border border-amber-200">Review Needed</span></div><div class="mt-2 text-[11px] text-slate-600">Model: <span class="font-mono text-slate-500 italic">Pending Confirmation</span></div><div class="mt-1 text-[11px] text-slate-500">Last Cal: <span class="font-mono text-slate-700">2026-09-27</span></div><div class="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px] text-slate-500"><span class="font-mono">CAL-2026-002</span><span class="text-sky-600 font-semibold cursor-pointer hover:underline">Inspect</span></div></div><div class="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors"><div class="flex items-center justify-between"><span class="text-xs font-bold text-slate-900">TDS Sensor</span><span class="px-1.5 py-0.5 text-[10px] font-semibold font-mono rounded bg-emerald-50 text-emerald-700 border border-emerald-200">Record Available</span></div><div class="mt-2 text-[11px] text-slate-600">Model: <span class="font-mono font-medium text-slate-800">DFRobot TDS</span></div><div class="mt-1 text-[11px] text-slate-500">Last Cal: <span class="font-mono text-slate-700">2026-09-29</span></div><div class="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px] text-slate-500"><span class="font-mono">CAL-2026-003</span><span class="text-sky-600 font-semibold cursor-pointer hover:underline">Inspect</span></div></div><div class="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors"><div class="flex items-center justify-between"><span class="text-xs font-bold text-slate-900">Temperature</span><span class="px-1.5 py-0.5 text-[10px] font-semibold font-mono rounded bg-emerald-50 text-emerald-700 border border-emerald-200">Record Available</span></div><div class="mt-2 text-[11px] text-slate-600">Model: <span class="font-mono font-medium text-slate-800">DS18B20</span></div><div class="mt-1 text-[11px] text-slate-500">Last Cal: <span class="font-mono text-slate-700">2026-09-28</span></div><div class="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px] text-slate-500"><span class="font-mono">CAL-2026-005</span><span class="text-sky-600 font-semibold cursor-pointer hover:underline">Inspect</span></div></div><div class="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors"><div class="flex items-center justify-between"><span class="text-xs font-bold text-slate-900">Flow Sensor</span><span class="px-1.5 py-0.5 text-[10px] font-semibold font-mono rounded bg-slate-100 text-slate-600 border border-slate-200">No Record</span></div><div class="mt-2 text-[11px] text-slate-600">Model: <span class="font-mono font-medium text-slate-800">ZJ-S201C</span></div><div class="mt-1 text-[11px] text-slate-500">Last Cal: <span class="font-mono text-slate-400">None logged</span></div><div class="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px] text-slate-500"><span class="font-mono">Flow Sensor</span><span class="text-slate-400 font-medium">Pending Record</span></div></div></div></div><div><div class="flex items-center space-x-2 mb-3"><span class="px-2 py-0.5 bg-sky-100 text-sky-800 text-xs font-bold font-mono rounded uppercase tracking-wide">Stage 2</span><h4 class="text-sm font-bold text-slate-800">After Filtration Sensors</h4></div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3"><div class="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors"><div class="flex items-center justify-between"><span class="text-xs font-bold text-slate-900">pH Sensor</span><span class="px-1.5 py-0.5 text-[10px] font-semibold font-mono rounded bg-emerald-50 text-emerald-700 border border-emerald-200">Record Available</span></div><div class="mt-2 text-[11px] text-slate-600">Model: <span class="font-mono font-medium text-slate-800">PH-4502C</span></div><div class="mt-1 text-[11px] text-slate-500">Last Cal: <span class="font-mono text-slate-700">2026-09-29</span></div><div class="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px] text-slate-500"><span class="font-mono">CAL-2026-006</span><span class="text-sky-600 font-semibold cursor-pointer hover:underline">Inspect</span></div></div><div class="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors"><div class="flex items-center justify-between"><span class="text-xs font-bold text-slate-900">Turbidity Sensor</span><span class="px-1.5 py-0.5 text-[10px] font-semibold font-mono rounded bg-amber-50 text-amber-700 border border-amber-200">Review Needed</span></div><div class="mt-2 text-[11px] text-slate-600">Model: <span class="font-mono text-slate-500 italic">Pending Confirmation</span></div><div class="mt-1 text-[11px] text-slate-500">Last Cal: <span class="font-mono text-slate-400">None logged</span></div><div class="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px] text-slate-500"><span class="font-mono">Turbidity</span><span class="text-slate-400 font-medium">Pending Record</span></div></div><div class="p-3.5 rounded-lg border-2 border-sky-500 bg-sky-50/40 shadow-xs transition-colors relative"><div class="absolute -top-2 right-2 px-1.5 py-0.2 bg-sky-600 text-white font-mono text-[9px] font-bold rounded uppercase">Active View</div><div class="flex items-center justify-between"><span class="text-xs font-bold text-sky-950">TDS Sensor</span><span class="px-1.5 py-0.5 text-[10px] font-semibold font-mono rounded bg-emerald-100 text-emerald-800 border border-emerald-200">Record Available</span></div><div class="mt-2 text-[11px] text-slate-600">Model: <span class="font-mono font-medium text-slate-800">DFRobot TDS</span></div><div class="mt-1 text-[11px] text-slate-500">Last Cal: <span class="font-mono font-semibold text-slate-800">2026-09-30 09:15</span></div><div class="mt-2 pt-2 border-t border-sky-200/70 flex items-center justify-between text-[10px] text-slate-500"><span class="font-mono font-bold text-sky-800">CAL-2026-004</span><span class="text-sky-700 font-bold">Selected</span></div></div><div class="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors"><div class="flex items-center justify-between"><span class="text-xs font-bold text-slate-900">Temperature</span><span class="px-1.5 py-0.5 text-[10px] font-semibold font-mono rounded bg-emerald-50 text-emerald-700 border border-emerald-200">Record Available</span></div><div class="mt-2 text-[11px] text-slate-600">Model: <span class="font-mono font-medium text-slate-800">DS18B20</span></div><div class="mt-1 text-[11px] text-slate-500">Last Cal: <span class="font-mono text-slate-700">2026-09-28</span></div><div class="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px] text-slate-500"><span class="font-mono">CAL-2026-008</span><span class="text-sky-600 font-semibold cursor-pointer hover:underline">Inspect</span></div></div><div class="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors"><div class="flex items-center justify-between"><span class="text-xs font-bold text-slate-900">Flow Sensor</span><span class="px-1.5 py-0.5 text-[10px] font-semibold font-mono rounded bg-slate-100 text-slate-600 border border-slate-200">No Record</span></div><div class="mt-2 text-[11px] text-slate-600">Model: <span class="font-mono font-medium text-slate-800">ZJ-S201C</span></div><div class="mt-1 text-[11px] text-slate-500">Last Cal: <span class="font-mono text-slate-400">None logged</span></div><div class="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px] text-slate-500"><span class="font-mono">Flow Sensor</span><span class="text-slate-400 font-medium">Pending Record</span></div></div></div></div></div></section>
+<!-- ===================================================================== -->
+<!-- FILTER TOOLBAR                                                        -->
+<!-- ===================================================================== -->
+<div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 flex-1">
+<!-- Date Range -->
+<div>
+<label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono mb-1">Date Range</label>
+<div class="relative">
+<input class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500" type="text" value="2026-09-25 - 2026-09-30"/>
+</div>
+</div>
+<!-- Parameter -->
+<div>
+<label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono mb-1">Parameter</label>
+<select class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500">
+<option selected="">All Parameters</option>
+<option>pH</option>
+<option>Turbidity</option>
+<option>TDS</option>
+<option>Temperature</option>
+<option>Flow Rate</option>
+</select>
+</div>
+<!-- Stage -->
+<div>
+<label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono mb-1">Stage</label>
+<select class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500">
+<option selected="">Both Stages</option>
+<option>Before Filtration</option>
+<option>After Filtration</option>
+</select>
+</div>
+<!-- Record Status -->
+<div>
+<label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono mb-1">Record Status</label>
+<select class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500">
+<option selected="">All Statuses</option>
+<option>Record Available</option>
+<option>Review Needed</option>
+</select>
+</div>
+</div>
+<!-- Buttons -->
+<div class="flex items-center space-x-2 pt-2 md:pt-4 self-end">
+<button class="px-4 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-lg shadow-xs transition-colors" type="button">
+              Apply Filters
+            </button>
+<button class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-lg transition-colors" type="button">
+              Reset
+            </button>
+</div>
+</div>
+</div>
+<!-- ===================================================================== -->
+<!-- MAIN WORKSPACE SPLIT: TABLE (LEFT) & DETAIL INSPECTOR (RIGHT)         -->
+<!-- ===================================================================== -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+<!-- LEFT COLUMN: CALIBRATION RECORDS TABLE (7 COLUMNS / 12) -->
+<div class="xl:col-span-7 bg-white rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between overflow-hidden">
+<div>
+<!-- Table Header -->
+<div class="p-4 border-b border-slate-100 flex items-center justify-between">
+<div>
+<h3 class="text-base font-bold text-slate-900 tracking-tight">Calibration Records</h3>
+<p class="text-xs text-slate-500 mt-0.5">Chronological sensor calibration and research comparison records</p>
+</div>
+<div class="flex items-center space-x-2">
+<span class="text-xs text-slate-400 font-mono">Showing 5 of 18 records</span>
+</div>
+</div>
+<!-- Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs">
+<thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-mono uppercase text-[10px] tracking-wider">
+<tr>
+<th class="py-3 px-3.5">Calibration ID</th>
+<th class="py-3 px-3">Date (UTC)</th>
+<th class="py-3 px-3">Sensor</th>
+<th class="py-3 px-3">Stage</th>
+<th class="py-3 px-3">Model</th>
+<th class="py-3 px-3 text-right">Reference</th>
+<th class="py-3 px-3 text-right">Sensor Rdg</th>
+<th class="py-3 px-3 text-right">% Error</th>
+<th class="py-3 px-3">Status</th>
+<th class="py-3 px-3 text-center">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 text-slate-700"><tr class="bg-sky-50/60 font-medium hover:bg-sky-50 transition-colors"><td class="py-3 px-3.5 font-mono font-bold text-sky-800 flex items-center space-x-1.5"><span class="w-1.5 h-1.5 rounded-full bg-sky-600"></span><span>CAL-2026-004</span></td><td class="py-3 px-3 font-mono text-slate-600">2026-09-30 09:15</td><td class="py-3 px-3 font-semibold text-slate-900">TDS</td><td class="py-3 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] bg-sky-100 text-sky-800 font-medium">After Filter</span></td><td class="py-3 px-3 font-mono text-slate-700 text-[11px]">DFRobot TDS</td><td class="py-3 px-3 font-mono text-right text-slate-900">300.0 <span class="text-[10px] text-slate-400">ppm</span></td><td class="py-3 px-3 font-mono text-right text-slate-900 font-semibold">306.0 <span class="text-[10px] text-slate-400">ppm</span></td><td class="py-3 px-3 font-mono text-right font-bold text-emerald-600">2.00%</td><td class="py-3 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">Record Available</span></td><td class="py-3 px-3 text-center"><button class="px-2 py-1 bg-white border border-sky-300 text-sky-700 rounded font-semibold text-[11px] shadow-2xs hover:bg-sky-50">Selected</button></td></tr><tr class="hover:bg-slate-50 transition-colors"><td class="py-3 px-3.5 font-mono font-bold text-slate-800">CAL-2026-003</td><td class="py-3 px-3 font-mono text-slate-600">2026-09-29 16:30</td><td class="py-3 px-3 font-semibold text-slate-900">TDS</td><td class="py-3 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 text-slate-700 font-medium">Before Filter</span></td><td class="py-3 px-3 font-mono text-slate-700 text-[11px]">DFRobot TDS</td><td class="py-3 px-3 font-mono text-right text-slate-900">300.0 <span class="text-[10px] text-slate-400">ppm</span></td><td class="py-3 px-3 font-mono text-right text-slate-900">306.0 <span class="text-[10px] text-slate-400">ppm</span></td><td class="py-3 px-3 font-mono text-right font-bold text-emerald-600">2.00%</td><td class="py-3 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">Record Available</span></td><td class="py-3 px-3 text-center"><button class="px-2 py-1 bg-slate-50 border border-slate-200 text-slate-600 rounded font-semibold text-[11px] hover:bg-slate-100">Inspect</button></td></tr><tr class="hover:bg-slate-50 transition-colors"><td class="py-3 px-3.5 font-mono font-bold text-slate-800">CAL-2026-002</td><td class="py-3 px-3 font-mono text-slate-600">2026-09-27 11:20</td><td class="py-3 px-3 font-semibold text-slate-900">Turbidity</td><td class="py-3 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 text-slate-700 font-medium">Before Filter</span></td><td class="py-3 px-3 font-mono text-slate-500 italic text-[11px]">Pending Conf.</td><td class="py-3 px-3 font-mono text-right text-slate-900">10.00 <span class="text-[10px] text-slate-400">NTU</span></td><td class="py-3 px-3 font-mono text-right text-slate-900">11.45 <span class="text-[10px] text-slate-400">NTU</span></td><td class="py-3 px-3 font-mono text-right font-bold text-amber-600">14.50%</td><td class="py-3 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-amber-50 text-amber-700 border border-amber-200">Review Needed</span></td><td class="py-3 px-3 text-center"><button class="px-2 py-1 bg-slate-50 border border-slate-200 text-slate-600 rounded font-semibold text-[11px] hover:bg-slate-100">Inspect</button></td></tr><tr class="hover:bg-slate-50 transition-colors"><td class="py-3 px-3.5 font-mono font-bold text-slate-800">CAL-2026-001</td><td class="py-3 px-3 font-mono text-slate-600">2026-09-29 10:05</td><td class="py-3 px-3 font-semibold text-slate-900">pH</td><td class="py-3 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 text-slate-700 font-medium">Before Filter</span></td><td class="py-3 px-3 font-mono text-slate-700 text-[11px]">PH-4502C</td><td class="py-3 px-3 font-mono text-right text-slate-900">7.00 <span class="text-[10px] text-slate-400">pH</span></td><td class="py-3 px-3 font-mono text-right text-slate-900">7.15 <span class="text-[10px] text-slate-400">pH</span></td><td class="py-3 px-3 font-mono text-right font-bold text-emerald-600">2.14%</td><td class="py-3 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">Record Available</span></td><td class="py-3 px-3 text-center"><button class="px-2 py-1 bg-slate-50 border border-slate-200 text-slate-600 rounded font-semibold text-[11px] hover:bg-slate-100">Inspect</button></td></tr><tr class="hover:bg-slate-50 transition-colors"><td class="py-3 px-3.5 font-mono font-bold text-slate-800">CAL-2026-005</td><td class="py-3 px-3 font-mono text-slate-600">2026-09-28 14:40</td><td class="py-3 px-3 font-semibold text-slate-900">Temperature</td><td class="py-3 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 text-slate-700 font-medium">Before Filter</span></td><td class="py-3 px-3 font-mono text-slate-700 text-[11px]">DS18B20</td><td class="py-3 px-3 font-mono text-right text-slate-900">25.0 <span class="text-[10px] text-slate-400">°C</span></td><td class="py-3 px-3 font-mono text-right text-slate-900">25.3 <span class="text-[10px] text-slate-400">°C</span></td><td class="py-3 px-3 font-mono text-right font-bold text-emerald-600">1.20%</td><td class="py-3 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">Record Available</span></td><td class="py-3 px-3 text-center"><button class="px-2 py-1 bg-slate-50 border border-slate-200 text-slate-600 rounded font-semibold text-[11px] hover:bg-slate-100">Inspect</button></td></tr></tbody>
+</table>
+</div>
+</div>
+<!-- Table Footer Pagination -->
+<div class="p-3 border-t border-slate-100 bg-slate-50/60 flex items-center justify-between text-xs text-slate-500">
+<span class="font-mono text-[11px]">Page 1 of 4</span>
+<div class="flex items-center space-x-1">
+<button class="px-2 py-1 rounded bg-sky-600 text-white font-mono font-semibold">1</button>
+<button class="px-2 py-1 rounded hover:bg-slate-200 font-mono">2</button>
+<button class="px-2 py-1 rounded hover:bg-slate-200 font-mono">3</button>
+<button class="px-2 py-1 rounded hover:bg-slate-200 font-mono">4</button>
+<button class="px-2.5 py-1 rounded hover:bg-slate-200 font-mono">Next &gt;</button>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: CALIBRATION DETAIL PANEL & ERROR COMPARISON (5 COLUMNS / 12) -->
+<div class="xl:col-span-5 space-y-6">
+<!-- CALIBRATION DETAIL INSPECTOR CARD -->
+<div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-5"><div class="flex items-center justify-between pb-3 border-b border-slate-100"><div><div class="text-[10px] font-bold font-mono text-slate-400 uppercase tracking-wider">Calibration Inspector</div><h3 class="text-base font-bold text-slate-900 tracking-tight flex items-center space-x-2"><span class="font-mono text-sky-800">CAL-2026-004</span><span class="px-1.5 py-0.5 text-[10px] font-mono font-medium rounded bg-emerald-50 text-emerald-700 border border-emerald-200">Record Available</span></h3></div><div class="text-right"><span class="text-[10px] font-mono text-slate-400 block">RECORDED DATE (UTC)</span><span class="text-xs font-mono font-semibold text-slate-700">2026-09-30 09:15:22</span></div></div><div class="grid grid-cols-2 gap-3 text-xs"><div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100"><span class="text-[10px] font-mono text-slate-400 uppercase block">Sensor / Parameter</span><span class="font-semibold text-slate-900">Post-Filtration TDS</span></div><div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100"><span class="text-[10px] font-mono text-slate-400 uppercase block">Stage</span><span class="font-semibold text-slate-900">After Filtration</span></div><div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100"><span class="text-[10px] font-mono text-slate-400 uppercase block">Sensor Model</span><span class="font-mono text-slate-800 font-medium">DFRobot TDS</span></div><div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100"><span class="text-[10px] font-mono text-slate-400 uppercase block">Related Test Run</span><span class="font-mono font-bold text-sky-700">RUN-2026-001</span></div><div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100"><span class="text-[10px] font-mono text-slate-400 uppercase block">Performed By</span><span class="font-medium text-slate-800">Researcher / Admin</span></div><div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100"><span class="text-[10px] font-mono text-slate-400 uppercase block">Reference Source / Method</span><span class="font-medium text-slate-700">Approved Reference Method</span></div></div><div class="p-4 rounded-xl bg-slate-50/80 border border-slate-200/80 space-y-3"><div class="flex items-center justify-between"><h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 font-mono">Sensor vs Reference Comparison</h4><span class="text-[10px] font-mono text-slate-400">Percentage Error = |Sensor Reading - Reference Value| / |Reference Value| × 100</span></div><div class="grid grid-cols-4 gap-2 text-center pt-1"><div class="bg-white p-2.5 rounded-lg border border-slate-200"><div class="text-[10px] font-mono text-slate-400 uppercase">Reference</div><div class="text-sm font-bold font-mono text-slate-900 mt-0.5">300.0 <span class="text-[9px] font-normal text-slate-500">ppm</span></div></div><div class="bg-white p-2.5 rounded-lg border border-slate-200"><div class="text-[10px] font-mono text-slate-400 uppercase">Sensor Rdg</div><div class="text-sm font-bold font-mono text-sky-700 mt-0.5">306.0 <span class="text-[9px] font-normal text-slate-500">ppm</span></div></div><div class="bg-white p-2.5 rounded-lg border border-slate-200"><div class="text-[10px] font-mono text-slate-400 uppercase">Difference</div><div class="text-sm font-bold font-mono text-slate-800 mt-0.5">+6.0 <span class="text-[9px] font-normal text-slate-500">ppm</span></div></div><div class="bg-emerald-50 p-2.5 rounded-lg border border-emerald-200"><div class="text-[10px] font-mono text-emerald-700 uppercase font-bold">% Error</div><div class="text-sm font-bold font-mono text-emerald-800 mt-0.5">2.00%</div></div></div><div class="space-y-2 pt-2"><div><div class="flex justify-between text-[11px] font-mono text-slate-600 mb-1"><span>Reference Value</span><span class="font-bold">300.0 ppm (100%)</span></div><div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden"><div class="bg-slate-600 h-full rounded-full" style="width: 100%"></div></div></div><div><div class="flex justify-between text-[11px] font-mono text-slate-600 mb-1"><span>Sensor Reading</span><span class="font-bold text-sky-800">306.0 ppm (102.0%)</span></div><div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden"><div class="bg-sky-600 h-full rounded-full" style="width: 100%"></div></div></div></div></div><div class="p-3.5 rounded-xl bg-white border border-slate-200 space-y-2"><div class="flex items-center justify-between"><span class="text-xs font-bold text-slate-800">Percentage Error by Calibration Record</span><span class="text-[10px] font-mono text-slate-500">Post-Filtration TDS</span></div><div class="h-20 w-full relative pt-2"><svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 400 70"><line stroke="#f1f5f9" stroke-width="1" x1="0" x2="400" y1="20" y2="20"></line><line stroke="#f1f5f9" stroke-width="1" x1="0" x2="400" y1="45" y2="45"></line><line stroke="#e2e8f0" stroke-width="1" x1="0" x2="400" y1="65" y2="65"></line><path d="M 30,48 L 120,53 L 210,50 L 370,54 L 370,65 L 30,65 Z" fill="#eff6ff" opacity="0.8"></path><polyline fill="none" points="30,48 120,53 210,50 370,54" stroke="#0284c7" stroke-linecap="round" stroke-width="2"></polyline><circle cx="30" cy="48" fill="#0284c7" r="3"></circle><circle cx="120" cy="53" fill="#0284c7" r="3"></circle><circle cx="210" cy="50" fill="#0284c7" r="3"></circle><circle cx="370" cy="54" fill="#0369a1" r="4" stroke="#ffffff" stroke-width="1.5"></circle><text fill="#64748b" font-family="'JetBrains Mono'" font-size="8" text-anchor="middle" x="30" y="16">2.5%</text><text fill="#64748b" font-family="'JetBrains Mono'" font-size="8" text-anchor="middle" x="120" y="16">2.1%</text><text fill="#64748b" font-family="'JetBrains Mono'" font-size="8" text-anchor="middle" x="210" y="16">2.3%</text><text fill="#0284c7" font-family="'JetBrains Mono'" font-size="8" font-weight="bold" text-anchor="middle" x="370" y="16">2.00%</text></svg></div><div class="flex justify-between text-[9px] font-mono text-slate-400"><span>CAL-001 (Sep 12)</span><span>CAL-002 (Sep 18)</span><span>CAL-003 (Sep 24)</span><span>CAL-004 (Today)</span></div></div><div class="space-y-1.5"><label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">Calibration Procedure / Method Notes</label><div class="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-700 leading-relaxed font-sans">Representative calibration record. The approved reference source, calibration procedure, observations, and measurement conditions should be recorded by the researcher when the actual calibration is performed.</div></div><div class="p-3 rounded-lg bg-sky-50/60 border border-sky-200/70 text-[11px] text-sky-900 leading-relaxed flex items-start space-x-2"><svg class="w-4 h-4 text-sky-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="16" y2="12"></line><line x1="12" x2="12.01" y1="8" y2="8"></line></svg><div><strong>Safety &amp; Scientific Notice:</strong> Calibration records support sensor accuracy evaluation. Calibration status and IoT sensor readings alone do not establish water potability or laboratory compliance.</div></div></div>
+</div>
+</div>
+</main>
+</div>
+<!-- ========================================================================= -->
+<!-- MODAL: NEW CALIBRATION RECORD FORM                                        -->
+<!-- ========================================================================= -->
+<div class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50" id="new-calibration-modal">
+<div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-xl w-full p-6 space-y-5 animate-in fade-in zoom-in duration-150">
+<!-- Modal Header -->
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div>
+<h3 class="text-lg font-bold text-slate-900 tracking-tight">New Calibration Record</h3>
+<p class="text-xs text-slate-500 mt-0.5">Record experimental calibration observations and reference comparisons</p>
+</div>
+<button class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors" onclick="document.getElementById('new-calibration-modal').classList.add('hidden')" type="button">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
+</button>
+</div>
+<!-- Form Grid -->
+<form class="space-y-4 text-xs" onsubmit="event.preventDefault(); document.getElementById('new-calibration-modal').classList.add('hidden');"><div class="grid grid-cols-2 gap-3"><div><label class="block font-mono text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Calibration ID</label><input class="w-full bg-slate-100 border border-slate-300 rounded-lg px-3 py-2 font-mono font-bold text-slate-700 cursor-not-allowed" readonly="" type="text" value="CAL-2026-005"/></div><div><label class="block font-mono text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Date / Time (UTC)</label><input class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 font-mono text-slate-800 focus:ring-1 focus:ring-sky-500" type="text" value="2026-09-30 15:30"/></div></div><div class="grid grid-cols-2 gap-3"><div><label class="block font-mono text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Parameter</label><select class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:ring-1 focus:ring-sky-500"><option>pH</option><option>Turbidity</option><option selected="">TDS</option><option>Temperature</option><option>Flow Rate</option></select></div><div><label class="block font-mono text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Filtration Stage</label><select class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:ring-1 focus:ring-sky-500"><option>Before Filtration</option><option selected="">After Filtration</option></select></div></div><div class="grid grid-cols-2 gap-3"><div><label class="block font-mono text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Sensor</label><input class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:ring-1 focus:ring-sky-500" type="text" value="Post-Filtration TDS Sensor"/></div><div><label class="block font-mono text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Sensor Model</label><input class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 font-mono text-slate-800 focus:ring-1 focus:ring-sky-500" type="text" value="DFRobot TDS"/></div></div><div class="grid grid-cols-3 gap-3"><div><label class="block font-mono text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Reference Value</label><input class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 font-mono text-slate-800 focus:ring-1 focus:ring-sky-500" placeholder="e.g. 300.0" step="0.01" type="number" value="300.0"/></div><div><label class="block font-mono text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Sensor Reading</label><input class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 font-mono text-slate-800 focus:ring-1 focus:ring-sky-500" placeholder="e.g. 306.0" step="0.01" type="number" value="306.0"/></div><div><label class="block font-mono text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Unit</label><input class="w-full bg-slate-100 border border-slate-300 rounded-lg px-3 py-2 font-mono text-slate-700" type="text" value="ppm"/></div></div><div><label class="block font-mono text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Reference Source / Method</label><input class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:ring-1 focus:ring-sky-500" placeholder="Record the approved reference source or method used." type="text"/></div><div class="grid grid-cols-2 gap-3"><div><label class="block font-mono text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Performed By</label><input class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:ring-1 focus:ring-sky-500" type="text" value="Researcher / Admin"/></div><div><label class="block font-mono text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Related Test Run (Optional)</label><input class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 font-mono text-slate-800 focus:ring-1 focus:ring-sky-500" placeholder="e.g. RUN-2026-001" type="text" value="RUN-2026-001"/></div></div><div><label class="block font-mono text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Calibration Procedure / Method Notes</label><textarea class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:ring-1 focus:ring-sky-500" placeholder="Record the approved calibration procedure used for this sensor." rows="3"></textarea></div><div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] text-slate-500 leading-normal"><strong>Notice:</strong> Saving this form records a research calibration record only. It does not automatically reprogram the ESP32 or modify sensor firmware.</div><div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100"><button class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-colors" onclick="document.getElementById('new-calibration-modal').classList.add('hidden')" type="button">Cancel</button><button class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg shadow-sm transition-colors" type="submit">Save Calibration Record</button></div></form>
+</div>
+</div>
+</body>
+</html>

@@ -1,45 +1,62 @@
 # Development
 
-## Current phase
+This document defines the development workflow for the IoT Embedded Water
+Filtration System.
 
-Phase 1 creates structure and documentation only. The repository currently has
-no initialized frontend, backend, firmware, simulator, or database project.
+---
 
-## Workspace boundaries
+## 1. Team
 
-- `frontend/` — React dashboard implementation when approved.
-- `backend/` — Node.js and Express API and server-side implementation when
-  approved.
-- `firmware/esp32/` — ESP32 firmware implementation when approved.
-- `simulator/` — disconnected development simulation when approved.
-- `database/` — database artifacts when approved.
-- `docs/` — shared contracts, requirements, and decisions.
+Nash:
+- Project Lead
+- Frontend
+- Integration
+- Cross-component assistance
 
-## Change workflow
+Alejandro:
+- Backend
+- Database
+- API
 
-1. Inspect the existing files and Git status.
-2. Confirm the requested work belongs to the active phase.
-3. Make a small, focused change in the responsible area.
-4. Update the relevant documentation when a contract changes.
-5. Run only the validation appropriate to the initialized tooling.
-6. Review the diff for secrets, unrelated work, invented hardware details, and
-   unsupported safety claims.
+Edgar:
+- ESP32
+- Firmware
+- Hardware Integration
 
-No dependencies are installed and no framework initialization is performed as
-part of Phase 1.
+---
 
-## Local development principles
+## 2. Repository Areas
 
-- Use synthetic or clearly disconnected data for development until approved
-  data sources are available.
-- Keep critical control testable without internet access.
-- Treat network synchronization as recoverable and non-critical to local
-  hardware behavior.
-- Never commit `.env` files, credentials, private keys, or generated local
-  secrets.
+```text
+frontend/        React frontend
+backend/         Node.js + Express backend
+firmware/esp32/  ESP32 firmware
+simulator/       synthetic device simulator
+database/        migrations/schema artifacts
+docs/            shared documentation
+```
 
-## Validation boundary
+## 3. Frontend
 
-The approved thresholds, timing, wiring, pin map, power design, control rules,
-and validation protocol must be documented before implementation claims can be
-made. See [PENDING_DECISIONS.md](PENDING_DECISIONS.md).
+The frontend uses React, TypeScript, Vite, Tailwind CSS, React Router, Recharts,
+and Lucide icons. Pages consume typed domain services, which currently use local
+development adapters and are prepared for the planned Express REST API. The
+frontend does not connect directly to Supabase or control hardware.
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Before review, run:
+
+```powershell
+npm run build
+npm run lint
+```
+
+`VITE_API_BASE_URL` is the public frontend environment variable for the Express
+API base URL. Copy `frontend/.env.example` to a local `.env` when an approved API
+is available. Do not place secrets, service-role credentials, or device
+credentials in the frontend environment.

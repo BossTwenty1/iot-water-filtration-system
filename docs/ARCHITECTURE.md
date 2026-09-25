@@ -1,66 +1,79 @@
+
 # Architecture
 
-## System boundary
+This document defines the technical architecture of the IoT Embedded Water
+Filtration System.
+
+Unconfirmed technical decisions must remain `TBD`.
+
+---
+
+## 1. Physical Water Flow
+
+Current planned process:
+
+Water Source
+-> Booster Pump
+-> Pre-Filtration Sensors
+-> Ultrafiltration
+-> UV-C
+-> Post-Filtration Sensors
+-> LCD
+-> Output / Collection Tank
+
+The exact electrical wiring and actuator implementation remain subject to
+hardware-team confirmation.
+
+---
+
+## 2. High-Level Software Architecture
 
 ```text
-Pre-filtration sensors ─┐
-                        ├─> ESP32-WROOM-32 ──HTTPS / JSON──> Node.js + Express API
-Post-filtration sensors ┘                                  │
-                                                           v
-                                                   Supabase PostgreSQL
-                                                           │
-                                                           v
-                                                     React Dashboard
+Pre-Filtration Sensors ----\
+                            \
+                             -> ESP32-WROOM-32
+                            /
+Post-Filtration Sensors ---/
+
+ESP32
+  |
+  | Wi-Fi / HTTPS / JSON
+  v
+Node.js + Express API
+  |
+  v
+Supabase PostgreSQL
+  |
+  v
+React Dashboard
+
+Simulator
+   |
+   v
+Express API
+   |
+   v
+Supabase
+   |
+   v
+React Dashboard
 ```
 
-The normal frontend path is:
+The frontend request path is:
 
-`React Dashboard -> Express API -> Supabase PostgreSQL`
+`React Dashboard -> HTTPS REST API -> Node.js + Express API -> Supabase PostgreSQL`
 
-The simulator is a separate development aid. It must not be treated as a
-replacement for hardware measurements or laboratory validation.
+The diagram's database-to-dashboard direction represents returned data; the
+browser does not connect directly to Supabase PostgreSQL.
 
-## Responsibility boundaries
+Critical physical control remains local to the ESP32 and must continue safely
+when internet or cloud services are unavailable. Remote commands, if approved,
+must be accepted or rejected by the ESP32's local safety logic before hardware
+state changes.
 
-### ESP32 firmware
+Simulator records must remain explicitly identified as simulated data and must
+not be presented as real experimental or laboratory results.
 
-- Read the confirmed sensor categories from the pre- and post-filtration
-  positions.
-- Perform the local control and safety behavior required by the hardware.
-- Continue critical control during internet loss.
-- Queue or otherwise handle synchronization according to an approved offline
-  strategy.
-
-Final pins, control rules, sampling, and local storage behavior are `TBD`.
-
-### Node.js + Express API
-
-- Authenticate and validate device/API input once implemented.
-- Normalize and persist device readings and operational records.
-- Provide dashboard-facing data and export behavior.
-- Keep cloud availability separate from local hardware control.
-
-No backend framework or endpoint implementation is created in Phase 1.
-
-### Supabase PostgreSQL
-
-- Store the approved historical data model and audit-relevant records.
-- Support test runs, readings, alerts, calibration records, and laboratory
-  validation records after the schema is approved.
-
-No Supabase project, migration, or schema is created in Phase 1.
-
-### React dashboard
-
-- Present current and historical measurements with clear sensor-position
-  context.
-- Present alerts and test-run records without overstating safety conclusions.
-- Support CSV export through the approved backend contract.
-
-No React application is initialized in Phase 1.
-
-## Offline-first control principle
-
-The cloud is an optional synchronization and reporting path. It must never be
-the only place where critical pump, UV-C, relay, or other hardware-control
-decisions can be made. The exact safe behavior and control rules remain `TBD`.
+The web dashboard is intended to be reachable through the public internet and
+through a local network where practical. The local deployment method and exact
+behavior when public internet or cloud services are unavailable remain `TBD`.

@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>IoT Embedded Water Filtration System</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"on-secondary":"#ffffff","surface-container":"#e5eeff","surface-container-lowest":"#ffffff","on-secondary-fixed":"#001e2f","on-surface-variant":"#3f4850","inverse-surface":"#213145","on-primary":"#ffffff","tertiary-container":"#00855b","surface-tint":"#006398","primary":"#006194","secondary-fixed":"#c9e6ff","on-error":"#ffffff","tertiary-fixed-dim":"#4edea3","primary-container":"#007bb9","error-container":"#ffdad6","primary-fixed":"#cce5ff","tertiary-fixed":"#6ffbbe","on-primary-container":"#fdfcff","on-tertiary":"#ffffff","on-primary-fixed":"#001d31","on-tertiary-container":"#f5fff6","on-background":"#0b1c30","on-tertiary-fixed":"#002113","on-surface":"#0b1c30","surface":"#f8f9ff","surface-container-low":"#eff4ff","inverse-on-surface":"#eaf1ff","secondary":"#006591","on-error-container":"#93000a","secondary-fixed-dim":"#89ceff","tertiary":"#006947","outline":"#707881","secondary-container":"#39b8fd","surface-bright":"#f8f9ff","on-secondary-fixed-variant":"#004c6e","surface-container-highest":"#d3e4fe","on-tertiary-fixed-variant":"#005236","on-secondary-container":"#004666","outline-variant":"#bfc7d2","surface-dim":"#cbdbf5","surface-container-high":"#dce9ff","primary-fixed-dim":"#93ccff","background":"#f8f9ff","error":"#ba1a1a","on-primary-fixed-variant":"#004b73","surface-variant":"#d3e4fe","inverse-primary":"#93ccff"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"space-lg":"1.5rem","gutter":"1rem","margin":"1.5rem","gutter-mobile":"0.75rem","margin-mobile":"1rem","space-xl":"2rem","space-sm":"0.5rem","space-md":"1rem","space-xs":"0.25rem"},"fontFamily":{"body-sm":["Hanken Grotesk"],"label-sm":["JetBrains Mono"],"body-lg":["Hanken Grotesk"],"label-xs":["JetBrains Mono"],"headline-lg":["Hanken Grotesk"],"telemetry-lg":["JetBrains Mono"],"body-md":["Hanken Grotesk"],"headline-xl":["Hanken Grotesk"],"telemetry-xl":["JetBrains Mono"],"telemetry-md":["JetBrains Mono"],"headline-md":["Hanken Grotesk"]},"fontSize":{"body-sm":["12px",{"lineHeight":"16px","fontWeight":"400"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.04em","fontWeight":"500"}],"body-lg":["15px",{"lineHeight":"22px","fontWeight":"400"}],"label-xs":["10px",{"lineHeight":"12px","letterSpacing":"0.06em","fontWeight":"500"}],"headline-lg":["22px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"600"}],"telemetry-lg":["20px",{"lineHeight":"26px","letterSpacing":"-0.02em","fontWeight":"500"}],"body-md":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-xl":["28px",{"lineHeight":"36px","letterSpacing":"-0.02em","fontWeight":"700"}],"telemetry-xl":["30px",{"lineHeight":"36px","letterSpacing":"-0.03em","fontWeight":"600"}],"telemetry-md":["14px",{"lineHeight":"20px","fontWeight":"500"}],"headline-md":["18px",{"lineHeight":"24px","fontWeight":"600"}]}}}};</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex flex-col justify-between border-r border-outline-variant"><div class="flex flex-col"><div class="h-16 px-gutter flex items-center border-b border-outline-variant bg-surface-container-low"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-primary text-[20px]">hub</span><span class="font-label-sm text-label-sm text-on-surface tracking-wider uppercase font-semibold">Console Navigation</span></div></div><div class="px-gutter py-space-sm"><div class="px-space-sm py-space-xs font-label-xs text-label-xs text-on-surface-variant uppercase tracking-widest">System Architecture</div></div><nav class="flex flex-col px-space-xs space-y-0.5"><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[18px]">space_dashboard</span><span class="font-body-md text-body-md">Dashboard</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-sm transition-colors rounded bg-surface-container text-primary font-semibold border-l-2 border-primary" data-path="history" href="#"><span class="material-symbols-outlined text-[18px]">history</span><span class="font-body-md text-body-md">History</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="alerts" href="#"><span class="material-symbols-outlined text-[18px]">notifications_active</span><span class="font-body-md text-body-md">Alerts</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="test-runs" href="#"><span class="material-symbols-outlined text-[18px]">science</span><span class="font-body-md text-body-md">Test Runs</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="calibration" href="#"><span class="material-symbols-outlined text-[18px]">tune</span><span class="font-body-md text-body-md">Calibration</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="laboratory-validation" href="#"><span class="material-symbols-outlined text-[18px]">verified</span><span class="font-body-md text-body-md">Laboratory Validation</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="maintenance" href="#"><span class="material-symbols-outlined text-[18px]">build_circle</span><span class="font-body-md text-body-md">Maintenance</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors rounded" data-path="settings" href="#"><span class="material-symbols-outlined text-[18px]">settings_input_component</span><span class="font-body-md text-body-md">Settings</span></a></nav></div><div class="p-gutter border-t border-outline-variant bg-surface-container-lowest"><div class="bg-surface-container-low p-space-sm rounded border border-outline-variant flex flex-col gap-space-xs"><div class="flex items-center justify-between"><span class="font-label-sm text-label-sm font-semibold text-on-surface">ESP32-WROOM-32</span><div class="flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-tertiary"></span><span class="font-label-xs text-label-xs text-on-surface-variant">Device Online</span></div></div></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md z-40 flex items-center justify-between px-margin border-b border-outline-variant"><div class="flex items-center gap-space-md"><img alt="Minimalist technical scientific logo mark representing IoT water filtration: clean stylized water droplet integrated with circuit lines and geometric filtration layers, clean cyan and deep ocean blue vector icon, precision academic engineering symbol. Design context: - Primary color: #0284c7
+- Font: hankenGrotesk
+- Mode: light
+- Roundness: rounded-sm
+. The logo should be visually consistent with these brand tokens." class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UzaRFYVczjcEAThJUKNiFlXlocQX2MHgsRotoYcKvIL-Cvj1JE-AmMnywjqPsKDgIg8Go_IWI2DI_Vsl62lGk9bOUIxOirGFMGCcOQAzBYKyZBlvI07qVeDr5DKPLN8WELzhtfzHAcaUMVdqEJEa35NSWUrrAgygmnrEKMy6K6dRotXP-F1T_OX2ijjMBzQ1TWTcX8tIxo0s8fM2XIF8eH0lFN22hY28KPJ2Xq9MHeTBfqjb2tkS0WVVU"/><div class="flex flex-col"><span class="font-headline-md text-headline-md text-on-surface leading-tight tracking-tight">IoT Embedded Water Filtration System</span><span class="font-label-xs text-label-xs text-on-surface-variant tracking-normal uppercase">Real-Time Water Quality Monitoring &amp; Filtration</span></div></div><div class="flex items-center gap-space-md"><div class="hidden xl:flex items-center gap-space-xs px-space-sm py-space-xs rounded bg-surface-container-low border border-outline-variant"><span class="font-label-xs text-label-xs text-on-surface-variant uppercase">Last Synced:</span><span class="font-label-xs text-label-xs text-on-surface font-medium">10:42:19 AM UTC</span></div><div class="flex items-center gap-space-xs px-space-sm py-space-xs rounded border border-outline-variant bg-surface-container-low"><span class="h-2 w-2 rounded-full bg-tertiary"></span><span class="font-label-xs text-label-xs text-on-surface font-medium">ESP32 Online • Updated 8s ago</span></div><button aria-label="Alert Notifications" class="p-space-xs text-on-surface-variant hover:text-on-surface transition-colors rounded hover:bg-surface-container-low relative" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-error"></span></button><div class="h-5 w-px bg-outline-variant"></div><div class="flex items-center gap-space-sm"><div class="flex flex-col text-right"><span class="font-body-md text-body-md font-semibold text-on-surface leading-none">Researcher / Admin</span></div><img alt="Profile" class="w-8 h-8 rounded-full object-cover border border-outline-variant" src="https://lh3.googleusercontent.com/aida/AEtjO1Ukx5UAa6XlP0AuGWUNr7iNaZDbLM0mEsHiMr3fSj9qnCznaVQtazxbiP33Gs2mME0_C0WVDLxqdcKkDyaSrCRMVBEU5vi7NYc4gh2ZMS0EO-whSHFQTGutsO7SuL6TI1nFVuIxQ43ZIqvfvk0LO-YKr9W2PL10LQIaW6kGl7KeSS16T-p1NBydzSb3KGz--BrsiIJZrO72Tv-vp34wuu9gv9ObMH1CU9hH_5zeHSdi25igiv83dHH4d7k"/></div></div></header><main class="relative pt-16 w-full px-margin bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- ACADEMIC RIGOR PROTOCOL BANNER -->
+<section class="w-full bg-surface-container-low px-space-md py-space-xs mb-space-md flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[18px]">verified_user</span>
+<span class="bg-surface-container px-space-xs py-0.5 font-label-xs text-label-xs text-primary font-medium">
+        Representative UI Demo Data
+      </span>
+</div>
+<div class="flex items-center gap-space-md font-label-xs text-label-xs text-on-surface-variant">
+<span>Bench Station: Unit 04-B</span>
+<span class="text-outline-variant">|</span>
+<span>Sampling Configuration Pending</span>
+<span class="text-outline-variant">|</span>
+<span class="text-tertiary font-semibold flex items-center gap-1">
+<span class="h-1.5 w-1.5 rounded-full bg-tertiary"></span> Historic Archive Synced
+      </span>
+</div>
+</section>
+<!-- PAGE HEADER & ACTION TOOLBAR -->
+<header class="w-full flex flex-col md:flex-row md:items-center justify-between gap-space-md mb-space-lg">
+<div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight">Telemetry History</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-space-xs">
+        Review and compare historical pre- and post-filtration sensor measurements
+      </p>
+</div>
+<div class="flex flex-wrap items-center gap-space-sm">
+<button class="bg-primary hover:bg-primary-container text-on-primary font-body-md text-body-md px-space-md py-space-sm flex items-center gap-space-xs shadow-sm transition-colors" id="exportBtn" type="button">
+<span class="material-symbols-outlined text-[18px]">download</span>
+<span class="font-medium">Export CSV</span>
+</button>
+</div>
+</header>
+<!-- FILTER CONSOLE TOOLBAR -->
+<section class="w-full bg-surface-container-lowest p-space-md shadow-sm mb-space-lg">
+<div class="flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[18px]">tune</span>
+<span class="font-label-sm text-label-sm font-semibold uppercase tracking-wider text-on-surface">Scientific Filter Console</span>
+</div>
+<div class="flex items-center gap-space-xs font-label-xs text-label-xs text-on-surface-variant bg-surface-container-low px-space-sm py-space-xs">
+<span class="material-symbols-outlined text-tertiary text-[14px]">filter_alt</span>
+<span>Showing 50 records from RUN-2026-001 • Filtered sample interval</span>
+</div>
+</div>
+<!-- Filters Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-sm items-end">
+<!-- Date Range (From / To) -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-xs text-label-xs uppercase text-on-surface-variant font-medium">Date Range (From / To)</label>
+<div class="flex items-center gap-1 bg-surface-container-low px-space-sm py-space-xs">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">calendar_today</span>
+<input aria-label="From Date" class="bg-transparent font-telemetry-md text-telemetry-md text-on-surface w-full focus:outline-none" type="text" value="2026-03-30 14:00"/>
+<span class="font-label-xs text-label-xs text-outline">→</span>
+<input aria-label="To Date" class="bg-transparent font-telemetry-md text-telemetry-md text-on-surface w-20 focus:outline-none" type="text" value="15:00"/>
+</div>
+</div>
+<!-- Test Run ID -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-xs text-label-xs uppercase text-on-surface-variant font-medium">Test Run ID</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low text-on-surface font-body-md text-body-md px-space-sm py-space-xs appearance-none focus:outline-none pr-8">
+<option selected="" value="RUN-2026-001">RUN-2026-001</option>
+<option value="RUN-2026-002">RUN-2026-002</option>
+<option value="ALL">All Recorded Batches</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-2 text-[16px] pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+</div>
+<!-- Parameter -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-xs text-label-xs uppercase text-on-surface-variant font-medium">Parameter</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low text-on-surface font-body-md text-body-md px-space-sm py-space-xs appearance-none focus:outline-none pr-8" id="parameterSelect">
+<option value="all">All Parameters</option>
+<option value="ph">pH</option>
+<option selected="" value="turbidity">Turbidity (NTU)</option>
+<option value="tds">TDS (ppm)</option>
+<option value="temperature">Temperature (°C)</option>
+<option value="flow">Flow Rate (L/min)</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-2 text-[16px] pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+</div>
+<!-- Stage -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-xs text-label-xs uppercase text-on-surface-variant font-medium">Stage</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low text-on-surface font-body-md text-body-md px-space-sm py-space-xs appearance-none focus:outline-none pr-8">
+<option selected="" value="both">Both</option>
+<option value="pre">Before Filtration</option>
+<option value="post">After Filtration</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-2 text-[16px] pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-space-xs">
+<button class="flex-1 bg-primary hover:bg-primary-container text-on-primary font-body-md text-body-md py-space-xs px-space-sm font-medium transition-colors flex items-center justify-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">filter_list</span>
+<span>Apply Filters</span>
+</button>
+<button class="bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-body-md text-body-md py-space-xs px-space-sm transition-colors" type="button">
+            Reset
+          </button>
+</div>
+</div>
+</div>
+</section>
+<!-- STATISTICAL SUMMARY CARDS (Active metric: Turbidity NTU) -->
+<section class="w-full mb-space-lg">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[18px]">analytics</span>
+<span class="font-label-sm text-label-sm uppercase font-semibold text-on-surface">Statistical Summary: Turbidity (NTU)</span>
+</div>
+<span class="font-label-xs text-label-xs text-on-surface-variant">Batch Metric Span: N=50 data points</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest p-space-md shadow-sm relative flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Before Filtration Average</span>
+</div>
+<div class="my-space-xs">
+<span class="font-telemetry-xl text-telemetry-xl text-on-surface">9.38</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-1">NTU</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">
+          Mean baseline measurement across selected records.
+        </p>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest p-space-md shadow-sm relative flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">After Filtration Average</span>
+</div>
+<div class="my-space-xs flex items-baseline gap-space-xs">
+<div>
+<span class="font-telemetry-xl text-telemetry-xl text-tertiary font-bold">0.73</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-1">NTU</span>
+</div>
+<span class="font-label-xs text-label-xs text-tertiary bg-surface-container px-space-xs py-0.5">-92.2% Difference</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">
+          Mean post-filtration reading across selected records.
+        </p>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest p-space-md shadow-sm relative flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Before Minimum / Maximum</span>
+</div>
+<div class="my-space-xs flex items-center justify-between bg-surface-container-low px-space-sm py-space-xs">
+<div>
+<span class="font-label-xs text-label-xs uppercase text-on-surface-variant block">Min</span>
+<span class="font-telemetry-lg text-telemetry-lg text-on-surface font-semibold">9.18</span>
+<span class="font-label-xs text-label-xs text-outline">NTU</span>
+</div>
+<span class="font-label-xs text-label-xs text-outline">—</span>
+<div>
+<span class="font-label-xs text-label-xs uppercase text-on-surface-variant block">Max</span>
+<span class="font-telemetry-lg text-telemetry-lg text-on-surface font-semibold">9.54</span>
+<span class="font-label-xs text-label-xs text-outline">NTU</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">
+          Range spread across pre-filtration sensor samples.
+        </p>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container-lowest p-space-md shadow-sm relative flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">After Minimum / Maximum</span>
+</div>
+<div class="my-space-xs flex items-center justify-between bg-surface-container-low px-space-sm py-space-xs">
+<div>
+<span class="font-label-xs text-label-xs uppercase text-on-surface-variant block">Min</span>
+<span class="font-telemetry-lg text-telemetry-lg text-tertiary font-semibold">0.70</span>
+<span class="font-label-xs text-label-xs text-outline">NTU</span>
+</div>
+<span class="font-label-xs text-label-xs text-outline">—</span>
+<div>
+<span class="font-label-xs text-label-xs uppercase text-on-surface-variant block">Max</span>
+<span class="font-telemetry-lg text-telemetry-lg text-tertiary font-semibold">0.78</span>
+<span class="font-label-xs text-label-xs text-outline">NTU</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">
+          Range spread across post-filtration sensor samples.
+        </p>
+</div>
+</div>
+<!-- Scientific Disclaimer -->
+<div class="mt-space-sm p-space-sm bg-surface-container-low flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[18px] shrink-0 mt-0.5">info</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        Historical sensor records provide monitored pre- and post-filtration water-quality measurements. Sensor telemetry alone does not establish potability or laboratory compliance.
+      </p>
+</div>
+</section>
+<!-- HISTORICAL SENSOR TRENDS CHART -->
+<section class="w-full bg-surface-container-lowest p-space-md shadow-sm mb-space-lg">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-sm pb-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">show_chart</span>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Historical Sensor Trends</h2>
+</div>
+</div>
+<!-- Parameter Switcher Tabs & Duration Toggles -->
+<div class="flex flex-wrap items-center gap-space-sm">
+<!-- Parameter Tabs -->
+<div class="flex items-center bg-surface-container-low p-0.5">
+<button class="px-space-sm py-space-xs font-label-xs text-label-xs text-on-surface-variant hover:text-on-surface" type="button">pH</button>
+<button class="px-space-sm py-space-xs font-label-xs text-label-xs bg-surface-container-lowest text-primary font-semibold shadow-sm" type="button">Turbidity (NTU)</button>
+<button class="px-space-sm py-space-xs font-label-xs text-label-xs text-on-surface-variant hover:text-on-surface" type="button">TDS (ppm)</button>
+<button class="px-space-sm py-space-xs font-label-xs text-label-xs text-on-surface-variant hover:text-on-surface" type="button">Temperature (°C)</button>
+<button class="px-space-sm py-space-xs font-label-xs text-label-xs text-on-surface-variant hover:text-on-surface" type="button">Flow Rate (L/min)</button>
+</div>
+<!-- Duration Selectors -->
+<div class="flex items-center bg-surface-container-low p-0.5">
+<button class="px-space-xs py-0.5 font-label-xs text-label-xs text-on-surface-variant" type="button">15m</button>
+<button class="px-space-xs py-0.5 font-label-xs text-label-xs text-on-surface-variant" type="button">30m</button>
+<button class="px-space-xs py-0.5 font-label-xs text-label-xs bg-primary text-on-primary font-medium" type="button">1h</button>
+<button class="px-space-xs py-0.5 font-label-xs text-label-xs text-on-surface-variant" type="button">Full Run</button>
+</div>
+</div>
+</div>
+<!-- Chart Legend and Inspection Readout -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm py-space-xs px-space-sm bg-surface-container-low my-space-sm font-label-xs text-label-xs">
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-2">
+<span class="w-5 h-0.5 border-b-2 border-dashed border-outline inline-block"></span>
+<span class="text-on-surface-variant">Before Filtration</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-5 h-0.5 bg-primary inline-block"></span>
+<span class="text-primary font-semibold">After Filtration</span>
+</div>
+</div>
+<div class="text-on-surface font-mono flex items-center gap-2">
+<span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span>Inspection Point: 14:33:40 UTC • Difference: -8.68 NTU (-92.3%)</span>
+</div>
+</div>
+<!-- Dual Series SVG Plot -->
+<div class="relative w-full h-72 bg-surface-container-low overflow-hidden p-space-sm">
+<!-- Simulated Grid lines & Y-Axis Labels -->
+<div class="absolute left-space-sm top-space-sm bottom-space-md w-12 flex flex-col justify-between font-label-xs text-label-xs text-on-surface-variant pointer-events-none">
+<span>10.0 NTU</span>
+<span>7.5 NTU</span>
+<span>5.0 NTU</span>
+<span>2.5 NTU</span>
+<span>0.0 NTU</span>
+</div>
+<!-- Chart Content Area -->
+<div class="ml-14 mr-4 h-56 relative">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 1000 240">
+<defs>
+<lineargradient id="permeateGrad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#006194" stop-opacity="0.25"></stop>
+<stop offset="100%" stop-color="#006194" stop-opacity="0.0"></stop>
+</lineargradient>
+<lineargradient id="rawGrad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#707881" stop-opacity="0.15"></stop>
+<stop offset="100%" stop-color="#707881" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Horizontal Reference Grids -->
+<line stroke="#dce9ff" stroke-width="1" x1="0" x2="1000" y1="20" y2="20"></line>
+<line stroke="#dce9ff" stroke-width="1" x1="0" x2="1000" y1="75" y2="75"></line>
+<line stroke="#dce9ff" stroke-width="1" x1="0" x2="1000" y1="130" y2="130"></line>
+<line stroke="#dce9ff" stroke-width="1" x1="0" x2="1000" y1="185" y2="185"></line>
+<line stroke="#bfc7d2" stroke-width="1" x1="0" x2="1000" y1="235" y2="235"></line>
+<!-- Before Filtration Area & Series (Dashed Slate) -->
+<polygon fill="url(#rawGrad)" points="0,28 100,26 200,31 300,24 400,29 500,25 600,27 700,24 800,26 900,28 1000,25 1000,235 0,235"></polygon>
+<polyline fill="none" points="0,28 100,26 200,31 300,24 400,29 500,25 600,27 700,24 800,26 900,28 1000,25" stroke="#707881" stroke-dasharray="6,4" stroke-width="2"></polyline>
+<!-- After Filtration Area & Series (Solid Cyan/Blue) -->
+<polygon fill="url(#permeateGrad)" points="0,221 100,222 200,220 300,223 400,221 500,220 600,222 700,221 800,222 900,220 1000,221 1000,235 0,235"></polygon>
+<polyline fill="none" points="0,221 100,222 200,220 300,223 400,221 500,220 600,222 700,221 800,222 900,220 1000,221" stroke="#006194" stroke-width="3"></polyline>
+<!-- Active Cursor Guide at X=800 (14:33:40) -->
+<line stroke="#006194" stroke-dasharray="2,2" stroke-width="1.5" x1="800" x2="800" y1="10" y2="235"></line>
+<!-- Point Markers on active tick -->
+<circle cx="800" cy="26" fill="#ffffff" r="4" stroke="#707881" stroke-width="2"></circle>
+<circle cx="800" cy="222" fill="#006194" r="5" stroke="#ffffff" stroke-width="2"></circle>
+</svg>
+<!-- Dynamic Tooltip / High Fidelity Callout -->
+<div class="absolute left-[72%] top-6 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface p-space-sm shadow-xl pointer-events-none z-10 w-64">
+<div class="flex items-center justify-between pb-1 mb-1 border-b border-outline/30">
+<span class="font-label-xs text-label-xs text-inverse-primary font-mono">14:33:40 UTC</span>
+<span class="font-label-xs text-label-xs text-inverse-on-surface font-mono">RUN-2026-001</span>
+</div>
+<div class="flex flex-col gap-1 font-telemetry-md text-telemetry-md">
+<div class="flex justify-between text-[11px]">
+<span class="text-outline-variant">Before Filtration:</span>
+<span class="text-inverse-on-surface font-semibold">9.40 NTU</span>
+</div>
+<div class="flex justify-between text-[11px]">
+<span class="text-secondary-fixed">After Filtration:</span>
+<span class="text-secondary-fixed font-bold">0.72 NTU</span>
+</div>
+<div class="flex justify-between text-[11px] pt-1 border-t border-outline/20">
+<span class="text-outline-variant">Difference:</span>
+<span class="text-tertiary-fixed font-semibold">-8.68 NTU (-92.3%)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- X-Axis Timestamps -->
+<div class="ml-14 mr-4 flex justify-between font-label-xs text-label-xs text-on-surface-variant pt-space-xs">
+<span>14:15:00</span>
+<span>14:20:00</span>
+<span>14:25:00</span>
+<span>14:30:00</span>
+<span class="font-bold text-primary">14:33:40</span>
+<span>14:35:00</span>
+</div>
+</div>
+</section>
+<!-- TWO-COLUMN SPLIT: HISTORICAL TELEMETRY RECORDS & RECORD DETAIL INSPECTOR -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- LEFT SIDE: DETAILED TELEMETRY TABLE (8 COLS / ~67%) -->
+<div class="lg:col-span-8 flex flex-col bg-surface-container-lowest p-space-md shadow-sm">
+<!-- Table Header & Controls -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-sm mb-space-sm">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Historical Telemetry Records</h3>
+<span class="font-label-xs text-label-xs text-on-surface-variant">Recorded Pre- and Post-Filtration Sensor Telemetry</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<div class="relative">
+<input class="bg-surface-container-low text-on-surface placeholder:text-outline font-body-sm text-body-sm pl-7 pr-space-sm py-1 focus:outline-none w-44 sm:w-52" placeholder="Search timestamp, run..." type="text"/>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant absolute left-1.5 top-1.5">search</span>
+</div>
+<div class="flex items-center gap-1 font-label-xs text-label-xs text-on-surface-variant bg-surface-container-low px-space-xs py-1">
+<span>Rows:</span>
+<select class="bg-transparent font-medium text-on-surface focus:outline-none">
+<option>10</option>
+<option>25</option>
+<option>50</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Synchronized Data Table -->
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left font-telemetry-md text-telemetry-md border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface font-label-xs text-label-xs uppercase">
+<th class="py-2.5 px-space-sm whitespace-nowrap">Timestamp</th>
+<th class="py-2.5 px-space-sm whitespace-nowrap">Test Run ID</th>
+<th class="py-2.5 px-space-sm whitespace-nowrap text-right">Pre pH / Post pH</th>
+<th class="py-2.5 px-space-sm whitespace-nowrap text-right">Pre Turbidity / Post Turbidity</th>
+<th class="py-2.5 px-space-sm whitespace-nowrap text-right">Pre TDS / Post TDS</th>
+<th class="py-2.5 px-space-sm whitespace-nowrap text-right">Pre Temp / Post Temp</th>
+<th class="py-2.5 px-space-sm whitespace-nowrap text-right">Pre Flow / Post Flow</th>
+<th class="py-2.5 px-space-sm whitespace-nowrap text-right">Total Volume</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 text-on-surface">
+<!-- Row 1: Selected Record -->
+<tr class="bg-surface-container text-on-surface cursor-pointer font-medium transition-colors" data-record="14:33:40">
+<td class="py-2 px-space-sm flex items-center gap-1 font-semibold text-primary">
+<span class="material-symbols-outlined text-[14px]">arrow_right</span>
+<span>14:33:40</span>
+</td>
+<td class="py-2 px-space-sm font-label-xs text-label-xs text-on-surface-variant">RUN-2026-001</td>
+<td class="py-2 px-space-sm text-right">6.72 / <span class="font-bold text-primary">7.01</span></td>
+<td class="py-2 px-space-sm text-right">9.40 / <span class="font-bold text-primary">0.72</span></td>
+<td class="py-2 px-space-sm text-right">302 / <span class="font-bold text-primary">181</span></td>
+<td class="py-2 px-space-sm text-right text-on-surface-variant">26.3 / 26.5</td>
+<td class="py-2 px-space-sm text-right text-on-surface-variant">2.4 / 2.1</td>
+<td class="py-2 px-space-sm text-right text-primary font-bold">0.72 L</td>
+</tr>
+<!-- Row 2 -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer transition-colors" data-record="14:33:30">
+<td class="py-2 px-space-sm text-on-surface">14:33:30</td>
+<td class="py-2 px-space-sm font-label-xs text-label-xs text-on-surface-variant">RUN-2026-001</td>
+<td class="py-2 px-space-sm text-right">6.71 / <span class="text-secondary font-medium">7.00</span></td>
+<td class="py-2 px-space-sm text-right">9.38 / <span class="text-secondary font-medium">0.73</span></td>
+<td class="py-2 px-space-sm text-right">301 / <span class="text-secondary font-medium">182</span></td>
+<td class="py-2 px-space-sm text-right text-on-surface-variant">26.3 / 26.4</td>
+<td class="py-2 px-space-sm text-right text-on-surface-variant">2.4 / 2.1</td>
+<td class="py-2 px-space-sm text-right font-medium">0.71 L</td>
+</tr>
+<!-- Row 3 -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer transition-colors" data-record="14:33:20">
+<td class="py-2 px-space-sm text-on-surface">14:33:20</td>
+<td class="py-2 px-space-sm font-label-xs text-label-xs text-on-surface-variant">RUN-2026-001</td>
+<td class="py-2 px-space-sm text-right">6.72 / <span class="text-secondary font-medium">7.02</span></td>
+<td class="py-2 px-space-sm text-right">9.42 / <span class="text-secondary font-medium">0.71</span></td>
+<td class="py-2 px-space-sm text-right">304 / <span class="text-secondary font-medium">180</span></td>
+<td class="py-2 px-space-sm text-right text-on-surface-variant">26.2 / 26.5</td>
+<td class="py-2 px-space-sm text-right text-on-surface-variant">2.4 / 2.1</td>
+<td class="py-2 px-space-sm text-right font-medium">0.70 L</td>
+</tr>
+<!-- Row 4 -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer transition-colors" data-record="14:33:10">
+<td class="py-2 px-space-sm text-on-surface">14:33:10</td>
+<td class="py-2 px-space-sm font-label-xs text-label-xs text-on-surface-variant">RUN-2026-001</td>
+<td class="py-2 px-space-sm text-right">6.70 / <span class="text-secondary font-medium">6.99</span></td>
+<td class="py-2 px-space-sm text-right">9.37 / <span class="text-secondary font-medium">0.74</span></td>
+<td class="py-2 px-space-sm text-right">302 / <span class="text-secondary font-medium">182</span></td>
+<td class="py-2 px-space-sm text-right text-on-surface-variant">26.3 / 26.5</td>
+<td class="py-2 px-space-sm text-right text-on-surface-variant">2.4 / 2.1</td>
+<td class="py-2 px-space-sm text-right font-medium">0.69 L</td>
+</tr>
+<!-- Row 5 -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer transition-colors" data-record="14:33:00">
+<td class="py-2 px-space-sm text-on-surface">14:33:00</td>
+<td class="py-2 px-space-sm font-label-xs text-label-xs text-on-surface-variant">RUN-2026-001</td>
+<td class="py-2 px-space-sm text-right">6.72 / <span class="text-secondary font-medium">7.01</span></td>
+<td class="py-2 px-space-sm text-right">9.39 / <span class="text-secondary font-medium">0.72</span></td>
+<td class="py-2 px-space-sm text-right">303 / <span class="text-secondary font-medium">181</span></td>
+<td class="py-2 px-space-sm text-right text-on-surface-variant">26.3 / 26.4</td>
+<td class="py-2 px-space-sm text-right text-on-surface-variant">2.4 / 2.1</td>
+<td class="py-2 px-space-sm text-right font-medium">0.68 L</td>
+</tr>
+<!-- Row 6 -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer transition-colors" data-record="14:32:50">
+<td class="py-2 px-space-sm text-on-surface">14:32:50</td>
+<td class="py-2 px-space-sm font-label-xs text-label-xs text-on-surface-variant">RUN-2026-001</td>
+<td class="py-2 px-space-sm text-right">6.71 / <span class="text-secondary font-medium">7.00</span></td>
+<td class="py-2 px-space-sm text-right">9.41 / <span class="text-secondary font-medium">0.73</span></td>
+<td class="py-2 px-space-sm text-right">301 / <span class="text-secondary font-medium">183</span></td>
+<td class="py-2 px-space-sm text-right text-on-surface-variant">26.2 / 26.4</td>
+<td class="py-2 px-space-sm text-right text-on-surface-variant">2.3 / 2.1</td>
+<td class="py-2 px-space-sm text-right font-medium">0.67 L</td>
+</tr>
+<!-- Row 7 -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer transition-colors" data-record="14:32:40">
+<td class="py-2 px-space-sm text-on-surface">14:32:40</td>
+<td class="py-2 px-space-sm font-label-xs text-label-xs text-on-surface-variant">RUN-2026-001</td>
+<td class="py-2 px-space-sm text-right">6.69 / <span class="text-secondary font-medium">7.00</span></td>
+<td class="py-2 px-space-sm text-right">9.45 / <span class="text-secondary font-medium">0.75</span></td>
+<td class="py-2 px-space-sm text-right">305 / <span class="text-secondary font-medium">184</span></td>
+<td class="py-2 px-space-sm text-right text-on-surface-variant">26.3 / 26.5</td>
+<td class="py-2 px-space-sm text-right text-on-surface-variant">2.4 / 2.1</td>
+<td class="py-2 px-space-sm text-right font-medium">0.65 L</td>
+</tr>
+<!-- Row 8 -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer transition-colors" data-record="14:32:30">
+<td class="py-2 px-space-sm text-on-surface">14:32:30</td>
+<td class="py-2 px-space-sm font-label-xs text-label-xs text-on-surface-variant">RUN-2026-001</td>
+<td class="py-2 px-space-sm text-right">6.73 / <span class="text-secondary font-medium">7.02</span></td>
+<td class="py-2 px-space-sm text-right">9.36 / <span class="text-secondary font-medium">0.72</span></td>
+<td class="py-2 px-space-sm text-right">300 / <span class="text-secondary font-medium">181</span></td>
+<td class="py-2 px-space-sm text-right text-on-surface-variant">26.3 / 26.5</td>
+<td class="py-2 px-space-sm text-right text-on-surface-variant">2.4 / 2.0</td>
+<td class="py-2 px-space-sm text-right font-medium">0.64 L</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-space-sm pt-space-md mt-space-md bg-surface-container-low p-space-sm">
+<span class="font-label-xs text-label-xs text-on-surface-variant">
+          Showing 1 to 8 of 254 logged telemetry rows • Batch RUN-2026-001
+        </span>
+<div class="flex items-center gap-1 font-label-xs text-label-xs">
+<button class="px-space-sm py-1 bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors" type="button">Previous</button>
+<button class="px-space-sm py-1 bg-primary text-on-primary font-bold" type="button">1</button>
+<button class="px-space-sm py-1 bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors" type="button">2</button>
+<button class="px-space-sm py-1 bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors" type="button">3</button>
+<span class="px-1 text-on-surface-variant">...</span>
+<button class="px-space-sm py-1 bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors" type="button">26</button>
+<button class="px-space-sm py-1 bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors" type="button">Next</button>
+</div>
+</div>
+</div>
+<!-- RIGHT SIDE: SELECTED RECORD DETAIL INSPECTOR (4 COLS / ~33%) -->
+<div class="lg:col-span-4 flex flex-col gap-space-md">
+<div class="bg-surface-container-lowest p-space-md shadow-sm flex flex-col gap-space-md">
+<!-- Panel Header -->
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">troubleshoot</span>
+<span class="font-headline-md text-headline-md text-on-surface">Record Inspector</span>
+</div>
+<span class="bg-secondary-fixed text-on-secondary-fixed font-label-xs text-label-xs px-space-xs py-0.5 font-semibold">
+            14:33:40 UTC
+          </span>
+</div>
+<!-- Hardware & Run Metadata Block -->
+<div class="bg-surface-container-low p-space-sm flex flex-col gap-space-xs font-label-xs text-label-xs">
+<div class="flex justify-between">
+<span class="text-on-surface-variant uppercase">Test Run ID:</span>
+<span class="text-on-surface font-semibold">RUN-2026-001</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant uppercase">Device ID:</span>
+<span class="text-on-surface font-mono">ESP32-001</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant uppercase">System Status:</span>
+<span class="text-tertiary font-semibold flex items-center gap-1">
+<span class="h-1.5 w-1.5 rounded-full bg-tertiary"></span> Device Online • Monitoring
+            </span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant uppercase">Total Volume:</span>
+<span class="text-primary font-bold">0.72 L</span>
+</div>
+</div>
+<!-- Dual Sensor Telemetry Comparisons -->
+<div class="flex flex-col gap-space-sm">
+<!-- INLET (Before Filtration) -->
+<div class="bg-surface-container-low p-space-sm">
+<div class="flex items-center justify-between mb-space-xs pb-1">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase font-semibold">Before Filtration</span>
+<span class="font-label-xs text-label-xs bg-surface-container px-space-xs text-on-surface-variant">Sensor Online</span>
+</div>
+<div class="grid grid-cols-2 gap-y-2 gap-x-space-sm font-telemetry-md text-telemetry-md">
+<div>
+<span class="font-label-xs text-label-xs text-on-surface-variant block">pH</span>
+<span class="text-on-surface font-semibold">6.72</span>
+</div>
+<div>
+<span class="font-label-xs text-label-xs text-on-surface-variant block">Turbidity</span>
+<span class="text-on-surface font-semibold">9.40 <span class="font-label-xs text-label-xs text-outline">NTU</span></span>
+</div>
+<div>
+<span class="font-label-xs text-label-xs text-on-surface-variant block">TDS</span>
+<span class="text-on-surface font-semibold">302 <span class="font-label-xs text-label-xs text-outline">ppm</span></span>
+</div>
+<div>
+<span class="font-label-xs text-label-xs text-on-surface-variant block">Temperature</span>
+<span class="text-on-surface font-semibold">26.3 <span class="font-label-xs text-label-xs text-outline">°C</span></span>
+</div>
+<div class="col-span-2">
+<span class="font-label-xs text-label-xs text-on-surface-variant block">Flow Rate</span>
+<span class="text-on-surface font-semibold">2.4 <span class="font-label-xs text-label-xs text-outline">L/min</span></span>
+</div>
+</div>
+</div>
+<!-- EFFLUENT (After Filtration) -->
+<div class="bg-surface-container-low p-space-sm">
+<div class="flex items-center justify-between mb-space-xs pb-1">
+<span class="font-label-xs text-label-xs text-primary uppercase font-semibold">After Filtration</span>
+<span class="font-label-xs text-label-xs bg-tertiary-fixed text-on-tertiary-fixed font-semibold px-space-xs">Reading Available</span>
+</div>
+<div class="grid grid-cols-2 gap-y-2 gap-x-space-sm font-telemetry-md text-telemetry-md">
+<div>
+<span class="font-label-xs text-label-xs text-on-surface-variant block">pH</span>
+<span class="text-primary font-bold">7.01</span>
+<span class="font-label-xs text-label-xs text-tertiary block">Δ +0.29</span>
+</div>
+<div>
+<span class="font-label-xs text-label-xs text-on-surface-variant block">Turbidity</span>
+<span class="text-primary font-bold">0.72 <span class="font-label-xs text-label-xs text-outline">NTU</span></span>
+<span class="font-label-xs text-label-xs text-tertiary block">Δ -8.68 NTU</span>
+</div>
+<div>
+<span class="font-label-xs text-label-xs text-on-surface-variant block">TDS</span>
+<span class="text-primary font-bold">181 <span class="font-label-xs text-label-xs text-outline">ppm</span></span>
+<span class="font-label-xs text-label-xs text-tertiary block">Δ -121 ppm</span>
+</div>
+<div>
+<span class="font-label-xs text-label-xs text-on-surface-variant block">Temperature</span>
+<span class="text-on-surface font-semibold">26.5 <span class="font-label-xs text-label-xs text-outline">°C</span></span>
+<span class="font-label-xs text-label-xs text-on-surface-variant block">Δ +0.2 °C</span>
+</div>
+<div class="col-span-2">
+<span class="font-label-xs text-label-xs text-on-surface-variant block">Flow Rate</span>
+<span class="text-on-surface font-semibold">2.1 <span class="font-label-xs text-label-xs text-outline">L/min</span></span>
+</div>
+</div>
+</div>
+</div>
+<!-- Laboratory Link Card -->
+<div class="bg-surface-container p-space-sm flex flex-col gap-1">
+<div class="flex items-center gap-space-xs font-label-xs text-label-xs text-primary font-semibold">
+<span class="material-symbols-outlined text-[16px]">biotech</span>
+<span>Laboratory Association</span>
+</div>
+<div class="flex justify-between font-label-xs text-label-xs text-on-surface pt-1">
+<span class="text-on-surface-variant">Linked Sample:</span>
+<span class="font-mono font-semibold">SAMPLE-098</span>
+</div>
+<div class="flex justify-between font-label-xs text-label-xs text-on-surface">
+<span class="text-on-surface-variant">Test Run ID:</span>
+<span class="font-mono font-semibold">RUN-2026-001</span>
+</div>
+<div class="flex justify-between font-label-xs text-label-xs text-on-surface">
+<span class="text-on-surface-variant">Laboratory Validation Status:</span>
+<span class="text-secondary font-semibold">Pending</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple micro-interaction for row selection
+  document.querySelectorAll('tr[data-record]').forEach(row => {
+    row.addEventListener('click', () => {
+      document.querySelectorAll('tr[data-record]').forEach(r => {
+        r.classList.remove('bg-surface-container', 'font-medium');
+        r.classList.add('bg-surface-container-lowest');
+        const arrow = r.querySelector('.material-symbols-outlined');
+        if (arrow) arrow.remove();
+      });
+      row.classList.remove('bg-surface-container-lowest');
+      row.classList.add('bg-surface-container', 'font-medium');
+      const firstCell = row.querySelector('td');
+      if (firstCell && !firstCell.querySelector('.material-symbols-outlined')) {
+        const icon = document.createElement('span');
+        icon.className = 'material-symbols-outlined text-[14px] text-primary';
+        icon.textContent = 'arrow_right';
+        firstCell.insertBefore(icon, firstCell.firstChild);
+      }
+    });
+  });
+
+  // Export CSV mock trigger
+  document.getElementById('exportBtn')?.addEventListener('click', () => {
+    alert('Exporting RUN-2026-001 Telemetry Archive (50 records, CSV format)...');
+  });
+</script></main></div></body></html>
