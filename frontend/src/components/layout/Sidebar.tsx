@@ -8,9 +8,9 @@ export function Sidebar({mobile=false,open=false,expanded,drawerRef,onClose,onTo
   return <aside ref={drawerRef} id={mobile?'mobile-navigation':undefined} role={mobile?'dialog':undefined} aria-modal={mobile?true:undefined} className={`${mobile?`mobile-sidebar ${open?'translate-x-0':'-translate-x-full'}`:`desktop-sidebar ${expanded?'w-64':'w-20'}`} sidebar`} aria-label="Primary navigation">
     <div className="sidebar-brand">
       <div className="flex min-w-0 items-center gap-3">
-        <span className="brand-mark" aria-hidden="true"><img src="/aquasense.png" alt="" width="1024" height="1024"/></span>
+        <span className="brand-mark" aria-hidden="true"><img src="/safe-logo.png" alt="" width="1254" height="1254"/></span>
         <div className={`min-w-0 transition-opacity ${visibleExpanded?'opacity-100':'lg:w-0 lg:opacity-0'}`}>
-          <div className="truncate text-sm font-bold tracking-tight text-ink">AquaSense</div>
+          <div className="truncate text-sm font-bold tracking-tight text-ink">S.A.F.E</div>
           <div className="truncate text-[10px] font-medium uppercase tracking-[0.12em] text-muted">Research console</div>
         </div>
       </div>

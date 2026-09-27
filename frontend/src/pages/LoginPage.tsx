@@ -30,7 +30,7 @@ export function LoginPage(){
   }
 
   return <><a className="skip-link" href="#main-content">Skip to sign in</a><main id="main-content" className="flex min-h-screen items-center justify-center bg-canvas px-4 py-10"><div className="panel w-full max-w-md p-6 sm:p-8">
-    <div className="flex items-center justify-between gap-3"><div className="flex min-w-0 items-center gap-3"><span className="brand-mark" aria-hidden="true"><img src="/aquasense.png" alt="" width="1024" height="1024"/></span><div><div className="text-sm font-semibold text-ink">AquaSense</div><div className="text-xs text-muted">Research console</div></div></div><ThemeToggle theme={theme} onToggle={toggleTheme}/></div>
+    <div className="flex items-center justify-between gap-3"><div className="flex min-w-0 items-center gap-3"><span className="brand-mark" aria-hidden="true"><img src="/safe-logo.png" alt="" width="1254" height="1254"/></span><div><div className="text-sm font-semibold text-ink">S.A.F.E</div><div className="text-xs text-muted">Research console</div></div></div><ThemeToggle theme={theme} onToggle={toggleTheme}/></div>
     <h1 className="mt-3 text-2xl font-semibold">Sign in</h1>
     <p className="mt-2 text-sm text-muted">Use your project account to access the dashboard.</p>
     {auth.notice&&<div className="notice mt-5" role="status">{auth.notice}</div>}
