@@ -28,8 +28,17 @@ building the prototype for the final defense.
 
 Hardware is currently under assembly.
 
-The software team is starting development while hardware construction
-continues.
+Frontend development has progressed to an integrated Mosaic-style dashboard and
+Express API authentication implementation on `integration/frontend-auth-mosaic`,
+including responsive layouts, light/dark themes, and protected routes. Domain
+telemetry and research records remain representative/local while live
+domain-service integration is pending. End-to-end authentication verification
+requires an approved running backend and test account.
+
+This software progress does not confirm physical ESP32 connectivity, laboratory
+validation, finalized permissions, or completion of the prototype. The hardware
+status and final-defense target below are retained as previously documented
+project information, not newly verified by this frontend documentation update.
 
 Target final defense provided by the client:
 

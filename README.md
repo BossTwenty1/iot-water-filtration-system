@@ -6,9 +6,16 @@ Supabase PostgreSQL, and a React web dashboard.
 
 ## Project status
 
-Phase 2 — Frontend Foundation is in progress. The React dashboard is initialized
-with representative local mock data; backend, firmware, simulator, and database
-implementations have not been initialized yet.
+On `integration/frontend-auth-mosaic`, the frontend integrates the Mosaic-style
+dashboard, responsive navigation and layouts, light/dark themes, and Express API
+authentication with protected routes. Domain telemetry and research records
+still use representative local data; live domain-service integration is pending.
+
+The repository also contains Express backend routes, Supabase migration/seed
+artifacts under `backend/supabase/`, and an ESP32 connectivity foundation.
+Their presence is not proof of deployment or a connected physical prototype.
+Real login/session and authenticated-route end-to-end verification still require
+an approved running backend and test account. The whole project is not complete.
 
 ## Confirmed system scope
 
@@ -33,12 +40,13 @@ must not be presented as laboratory proof that water is safe to drink.
 ## Repository layout
 
 ```text
-frontend/       React dashboard (frontend foundation implemented)
-backend/        API and server-side logic (not initialized)
+frontend/       Mosaic dashboard and frontend authentication integration
+backend/        Express API source and backend documentation
+  supabase/     Database migrations, seed, and local configuration artifacts
 firmware/       Device firmware
-  esp32/        ESP32 firmware workspace (not initialized)
-simulator/      Local device/data simulation (not initialized)
-database/       Database-related artifacts (not initialized)
+  esp32/        Connectivity foundation; sensor/actuator implementation pending
+simulator/      Placeholder directory; simulation scripts exist under backend/
+database/       Placeholder directory; database artifacts live under backend/
 docs/           Project foundation and decision records
 ```
 
@@ -54,6 +62,11 @@ items that must remain `TBD` until the team approves them.
 
 ## Frontend development
 
-From `frontend/`, run `npm install`, then `npm run dev`. The frontend currently
-uses representative local mock data and must not be interpreted as a connected
-device, API, database, laboratory, or hardware-control implementation.
+From `frontend/`, run `npm install`, then `npm run dev`. Configure the public
+`VITE_API_BASE_URL` for an approved Express backend to use `/login`; application
+routes require a session. See [frontend/README.md](frontend/README.md) for setup,
+theme/session behavior, and validation commands.
+
+Authentication does not connect domain telemetry to live services, confirm ESP32
+connectivity, approve final permissions, or enable remote hardware control.
+Representative records are not real experimental or laboratory results.
