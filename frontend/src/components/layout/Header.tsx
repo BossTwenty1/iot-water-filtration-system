@@ -1,2 +1,27 @@
 import { Bell,Menu } from 'lucide-react'
-export function Header({onMenu}:{onMenu:()=>void}) { return <header className="fixed left-0 right-0 top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-slate-200 bg-white/95 px-3 backdrop-blur lg:left-64 lg:px-5"><div className="flex min-w-0 items-center gap-3"><button className="icon-button mobile-menu-trigger" type="button" onClick={onMenu} aria-label="Open navigation"><Menu size={19}/></button><div className="min-w-0"><h1 className="truncate text-sm font-semibold leading-tight md:text-base">IoT Embedded Water Filtration System</h1><p className="eyebrow hidden truncate text-hydro sm:block">Real-time water quality monitoring & filtration</p></div></div><div className="flex shrink-0 items-center gap-2 md:gap-4"><div className="hidden rounded border border-slate-300 bg-panel-soft px-3 py-1 xl:block"><div className="eyebrow text-muted">Last synced</div><div className="mono text-[11px]">10:42:19 UTC</div></div><div className="hidden items-center gap-2 rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800 sm:flex"><span className="h-2 w-2 rounded-full bg-emerald-600"/>ESP32 Online</div><button type="button" className="icon-button relative" aria-label="Notifications"><Bell size={17}/><span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-red-600"/></button><div className="hidden text-right md:block"><div className="text-xs font-semibold">Administrator</div><div className="eyebrow text-muted">Current session</div></div><span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full border border-sky-200 bg-blue-100"><img src="/profile-picture.png" alt="Administrator profile" width="1254" height="1254" className="absolute -left-[19px] -top-px h-[70px] w-[70px] max-w-none"/></span></div></header> }
+import { Link,useLocation } from 'react-router-dom'
+import type { RefObject } from 'react'
+import type { ThemeMode } from '../../hooks/useTheme'
+import { ThemeToggle } from '../common/ThemeToggle'
+
+const pageNames:Record<string,string>={dashboard:'Dashboard',history:'Telemetry History',alerts:'System Alerts','test-runs':'Test Runs',calibration:'Sensor Calibration','laboratory-validation':'Laboratory Validation',maintenance:'Maintenance',settings:'Settings'}
+
+export function Header({onMenu,mobileOpen,menuButtonRef,theme,onThemeToggle}:{onMenu:()=>void;mobileOpen:boolean;menuButtonRef:RefObject<HTMLButtonElement|null>;theme:ThemeMode;onThemeToggle:()=>void}){
+  const location=useLocation()
+  const segment=location.pathname.split('/').filter(Boolean)[0]??'dashboard'
+  const pageName=pageNames[segment]??'Dashboard'
+  return <header className="app-header">
+    <div className="flex min-w-0 items-center gap-3">
+      <button ref={menuButtonRef} className="icon-button mobile-menu-trigger" type="button" onClick={onMenu} aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded={mobileOpen}><Menu size={19}/></button>
+      <div className="min-w-0">
+        <div className="truncate text-sm font-semibold text-ink sm:text-base">{pageName}</div>
+        <div className="hidden truncate text-xs text-muted sm:block">IoT Embedded Water Filtration System</div>
+      </div>
+    </div>
+    <div className="flex shrink-0 items-center gap-2">
+      <div className="device-chip" aria-label="Representative data only; live device connection is not confirmed" title="Representative data only · live device connection not confirmed"><span className="status-dot bg-slate-400" aria-hidden="true"/><span className="hidden sm:inline">Representative data</span><span className="sm:hidden">Sample data</span></div>
+      <Link to="/alerts" className="icon-button relative" aria-label="Open system alerts" title="System alerts"><Bell size={17}/></Link>
+      <ThemeToggle theme={theme} onToggle={onThemeToggle}/>
+    </div>
+  </header>
+}

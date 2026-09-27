@@ -6,6 +6,9 @@ const focusableSelector='button:not([disabled]), [href], input:not([disabled]), 
 export function Modal({open,title,children,footer,onClose}:{open:boolean;title:string;children:ReactNode;footer?:ReactNode;onClose:()=>void}) {
   const titleId=useId()
   const dialogRef=useRef<HTMLDivElement>(null)
+  const onCloseRef=useRef(onClose)
+
+  useEffect(()=>{onCloseRef.current=onClose},[onClose])
 
   useEffect(()=>{
     if(!open)return
@@ -20,7 +23,7 @@ export function Modal({open,title,children,footer,onClose}:{open:boolean;title:s
     const handleKeyDown=(event:KeyboardEvent)=>{
       if(event.key==='Escape'){
         event.preventDefault()
-        onClose()
+        onCloseRef.current()
         return
       }
 
@@ -39,7 +42,7 @@ export function Modal({open,title,children,footer,onClose}:{open:boolean;title:s
       document.body.style.overflow=previousOverflow
       previouslyFocused?.focus()
     }
-  },[open,onClose])
+  },[open])
 
   if(!open)return null
 
