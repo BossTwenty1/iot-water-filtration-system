@@ -124,8 +124,32 @@ function buildReadingBatch(): OutgoingReading[] {
   return readings
 }
 
+async function resolveActiveTestRunId(deviceId: string): Promise<string | null> {
+  if (process.env.LIVE_SIM_TEST_RUN_ID) return process.env.LIVE_SIM_TEST_RUN_ID
+  const { data, error } = await supabaseAdmin
+    .from('test_runs')
+    .select('id')
+    .eq('device_id', deviceId)
+    .eq('status', 'In Progress')
+    .order('started_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (error) {
+    console.warn('Failed to resolve active test run:', error.message)
+    return null
+  }
+  return data?.id ?? null
+}
+
 async function postReadings(deviceId: string): Promise<void> {
-  const body = { measuredAt: new Date().toISOString(), readings: buildReadingBatch() }
+  const activeTestRunId = await resolveActiveTestRunId(deviceId)
+  const body: { measuredAt: string; readings: OutgoingReading[]; testRunId?: string } = {
+    measuredAt: new Date().toISOString(),
+    readings: buildReadingBatch(),
+  }
+  if (activeTestRunId) {
+    body.testRunId = activeTestRunId
+  }
   const base = `http://localhost:${env.port}/api/v1`
 
   let response: Response
@@ -145,7 +169,8 @@ async function postReadings(deviceId: string): Promise<void> {
     console.error(`✗ ${response.status}`, payload)
     return
   }
-  console.log(`✓ ${new Date().toLocaleTimeString()} inserted=${payload.inserted} skipped=${payload.skipped.length}`)
+  const runInfo = activeTestRunId ? ` testRunId=${activeTestRunId}` : ''
+  console.log(`✓ ${new Date().toLocaleTimeString()} inserted=${payload.inserted} skipped=${payload.skipped.length}${runInfo}`)
 }
 
 async function main(): Promise<void> {

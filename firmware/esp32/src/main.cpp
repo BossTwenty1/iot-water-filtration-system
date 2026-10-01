@@ -48,7 +48,7 @@ void setup() {
   Serial.begin(config::kSerialBaud);
 
   const bool wifiCredentialsPresent = WIFI_SSID[0] != '\0';
-  gApi.begin(API_BASE_URL, API_ROOT_CA_PEM);
+  gApi.begin(API_BASE_URL, API_ROOT_CA_PEM, DEVICE_KEY);
   boot_diagnostics::print(SECRETS_ARE_PLACEHOLDERS, wifiCredentialsPresent,
                           gApi.isConfigured());
 

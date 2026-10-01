@@ -21,6 +21,7 @@ export interface SensorReading {
   unit: string
   stage: SensorStage
   model?: string
+  status?: string
 }
 
 export interface TelemetryRecord {
@@ -120,6 +121,7 @@ export interface DeviceStatus {
   wifiConnection: string
   failSafeControl: string
   lastUpdatedAt?: string
+  isSimulated?: boolean
 }
 
 export interface NotificationPreferences {

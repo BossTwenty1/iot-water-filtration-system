@@ -92,6 +92,7 @@ export interface TestRunComputedFields {
   telemetryCount: number
   alertCount: number
   validationStatus: 'Pending' | 'Available'
+  processedVolume?: number
 }
 
 export function toTestRun(row: TestRunRow & TestRunComputedFields): TestRun {
@@ -100,7 +101,7 @@ export function toTestRun(row: TestRunRow & TestRunComputedFields): TestRun {
     startedAt: row.started_at,
     endedAt: row.ended_at ?? undefined,
     duration: row.duration,
-    processedVolume: row.target_volume_liters ?? 0,
+    processedVolume: row.processedVolume ?? row.target_volume_liters ?? 0,
     status: (row.status ?? 'In Progress') as TestRun['status'],
     telemetryCount: row.telemetryCount,
     alertCount: row.alertCount,
@@ -187,6 +188,7 @@ export function toDeviceStatus(row: DeviceRow & { latestReadingAt?: string | nul
     wifiConnection: row.wifi_state ?? 'Not Configured',
     failSafeControl: row.fail_safe_state ?? 'Pending Hardware Integration',
     lastUpdatedAt: row.last_seen_at ?? row.latestReadingAt ?? undefined,
+    isSimulated: row.is_simulated === true,
   }
 }
 
@@ -239,5 +241,6 @@ export function toSensorReadings(rows: SensorReadingWithSensor[]): SensorReading
       value: row.value as number,
       unit: row.sensor?.unit ?? '',
       stage: positionToStage(row.sensor?.position),
+      status: row.reading_status ?? 'valid',
     }))
 }

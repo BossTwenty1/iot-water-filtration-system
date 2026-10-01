@@ -98,6 +98,7 @@ describe('toDeviceStatus', () => {
     expect(status.connection).toBe('Pending Hardware Integration')
     expect(status.wifiConnection).toBe('Not Configured')
     expect(status.failSafeControl).toBe('Pending Hardware Integration')
+    expect(status.isSimulated).toBe(false)
   })
 
   it('falls back to latestReadingAt for lastUpdatedAt when last_seen_at is unset', () => {
@@ -113,5 +114,14 @@ describe('toDeviceStatus', () => {
     } as unknown as DeviceRow & { latestReadingAt: string }
 
     expect(toDeviceStatus(row).lastUpdatedAt).toBe('2026-09-20T00:00:00.000Z')
+  })
+
+  it('sets isSimulated to true when row.is_simulated is true', () => {
+    const row = {
+      id: 'device-1',
+      is_simulated: true,
+    } as unknown as DeviceRow
+
+    expect(toDeviceStatus(row).isSimulated).toBe(true)
   })
 })

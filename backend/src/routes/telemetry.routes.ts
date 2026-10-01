@@ -58,11 +58,16 @@ router.get('/current', requireAuth, async (req: Request, res: Response, next: Ne
     builder = builder.order('measured_at', { ascending: false }).limit(50)
 
     const rows = orThrow(await builder, 'Failed to load current telemetry.') as unknown as SensorReadingWithSensor[]
-    const latestPerSensor = new Map<string, SensorReadingWithSensor>()
+    const latestValidPerSensor = new Map<string, SensorReadingWithSensor>()
+    const latestRowPerSensor = new Map<string, SensorReadingWithSensor>()
     for (const row of rows) {
-      if (!latestPerSensor.has(row.sensor_id)) latestPerSensor.set(row.sensor_id, row)
+      if (!latestRowPerSensor.has(row.sensor_id)) latestRowPerSensor.set(row.sensor_id, row)
+      if (row.value !== null && row.value !== undefined && !latestValidPerSensor.has(row.sensor_id)) {
+        latestValidPerSensor.set(row.sensor_id, row)
+      }
     }
-    res.json(toSensorReadings([...latestPerSensor.values()]))
+    const selectedRows = [...latestRowPerSensor.keys()].map((sensorId) => latestValidPerSensor.get(sensorId) ?? latestRowPerSensor.get(sensorId)!)
+    res.json(toSensorReadings(selectedRows))
   } catch (err) {
     next(err)
   }

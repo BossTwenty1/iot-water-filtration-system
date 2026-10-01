@@ -156,24 +156,30 @@ interface SkippedReading {
   reason: string
 }
 
-// POST /devices/:id/readings — device/simulator telemetry ingestion.
+// POST /devices/:id/readings & POST /devices/:id/telemetry — device/simulator telemetry ingestion.
 // Authenticated with X-Device-Key (see requireDeviceKey), not a user Bearer
 // token — a device has no Supabase session. Body:
 // { measuredAt, testRunId?, readings: [{ category, position, value, status? }] }.
+// Accepts either a device UUID or a registered device_identifier (e.g. ESP32-DEV-001).
 // Invalid/unregistered individual readings are skipped and reported back
 // rather than failing the whole batch. On any successful insert, bumps
-// devices.last_seen_at/connection_state — the heartbeat mechanism
-// docs/API_REFERENCE.md's device-status section already anticipated.
-router.post('/:id/readings', requireDeviceKey, validateBody(readingsEnvelopeSchema), async (req: Request, res: Response, next: NextFunction) => {
+// devices.last_seen_at/connection_state — the heartbeat mechanism.
+async function handleReadingsIngestion(req: Request, res: Response, next: NextFunction) {
   try {
-    const deviceId = param(req, 'id')
-    const { measuredAt, testRunId, readings } = req.body
+    const idOrIdentifier = param(req, 'id')
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrIdentifier)
+
+    let deviceQuery = supabaseAdmin.from('devices').select('id, name, device_identifier')
+    deviceQuery = isUuid ? deviceQuery.eq('id', idOrIdentifier) : deviceQuery.eq('device_identifier', idOrIdentifier)
 
     const device = orThrow<Pick<DeviceRow, 'id' | 'name' | 'device_identifier'> | null>(
-      await supabaseAdmin.from('devices').select('id, name, device_identifier').eq('id', deviceId).maybeSingle(),
+      await deviceQuery.maybeSingle(),
       'Failed to load device.'
     )
     if (!device) throw ApiError.notFound('Device was not found.')
+    const deviceId = device.id
+
+    const { measuredAt, testRunId, readings } = req.body
 
     if (testRunId !== undefined) {
       const run = orThrow<{ id: string } | null>(
@@ -189,9 +195,26 @@ router.post('/:id/readings', requireDeviceKey, validateBody(readingsEnvelopeSche
     )
     const sensorByKey = new Map(sensors.map((sensor) => [`${sensor.category}|${sensor.position}`, sensor]))
 
+    // Check existing readings for this device and timestamp to guarantee idempotent retries
+    const existingSensorIds = new Set<string>()
+    const { data: existingReadings, error: existingError } = await supabaseAdmin
+      .from('sensor_readings')
+      .select('sensor_id')
+      .eq('device_id', deviceId)
+      .eq('measured_at', measuredAt)
+
+    if (!existingError && Array.isArray(existingReadings)) {
+      for (const r of existingReadings) {
+        if (r && typeof r.sensor_id === 'string') {
+          existingSensorIds.add(r.sensor_id)
+        }
+      }
+    }
+
     const rows: TablesInsert<'sensor_readings'>[] = []
     const rowMeta: Array<{ category: string; position: string }> = []
     const skipped: SkippedReading[] = []
+    const seenSensorIds = new Set<string>()
 
     for (const reading of readings as IncomingReading[]) {
       const { category, position, value, status } = reading ?? {}
@@ -211,6 +234,19 @@ router.post('/:id/readings', requireDeviceKey, validateBody(readingsEnvelopeSche
       const sensor = sensorByKey.get(`${category}|${position}`)
       if (!sensor) {
         skipped.push({ category, position, reason: 'sensor not registered for this device' })
+        continue
+      }
+
+      // Intra-batch deduplication: skip duplicate sensor reading in the same batch
+      if (seenSensorIds.has(sensor.id)) {
+        skipped.push({ category, position, reason: 'duplicate sensor reading in same batch' })
+        continue
+      }
+      seenSensorIds.add(sensor.id)
+
+      // Retry idempotency: skip reading if already recorded for this measured_at
+      if (existingSensorIds.has(sensor.id)) {
+        skipped.push({ category, position, reason: 'reading already recorded for this measured_at' })
         continue
       }
 
@@ -250,12 +286,26 @@ router.post('/:id/readings', requireDeviceKey, validateBody(readingsEnvelopeSche
       resolveOfflineAlertIfActive(device).catch((err) =>
         console.error('Failed to auto-resolve offline alert:', err instanceof Error ? err.message : err)
       )
+    } else if (skipped.some((s) => s.reason === 'reading already recorded for this measured_at')) {
+      // If all readings were already recorded (idempotent retry), still update heartbeat
+      await supabaseAdmin
+        .from('devices')
+        .update({ last_seen_at: new Date().toISOString(), connection_state: 'Online' })
+        .eq('id', deviceId)
     }
 
-    res.status(rows.length > 0 ? 201 : 400).json({ deviceId, inserted: rows.length, skipped })
+    const isDuplicateRetry =
+      rows.length === 0 &&
+      skipped.length > 0 &&
+      skipped.every((s) => s.reason === 'reading already recorded for this measured_at')
+    const statusCode = rows.length > 0 ? 201 : isDuplicateRetry ? 200 : 400
+    res.status(statusCode).json({ deviceId, inserted: rows.length, skipped })
   } catch (err) {
     next(err)
   }
-})
+}
+
+router.post('/:id/readings', requireDeviceKey, validateBody(readingsEnvelopeSchema), handleReadingsIngestion)
+router.post('/:id/telemetry', requireDeviceKey, validateBody(readingsEnvelopeSchema), handleReadingsIngestion)
 
 export default router

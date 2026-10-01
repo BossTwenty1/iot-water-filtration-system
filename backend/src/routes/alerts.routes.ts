@@ -1,6 +1,6 @@
 import express, { type Request, type Response, type NextFunction } from 'express'
 import { supabaseAdmin } from '../config/supabaseClient'
-import { requireAuth } from '../middleware/auth'
+import { requireAuth, requireRole } from '../middleware/auth'
 import { ApiError } from '../lib/apiError'
 import { param } from '../lib/params'
 import { orThrow, parsePagination, applyDateRange, type DateRangeQuery, type PaginationQuery } from '../lib/queryHelpers'
@@ -97,7 +97,7 @@ router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFu
 })
 
 // PATCH /alerts/:id/acknowledge — status -> Acknowledged.
-router.patch('/:id/acknowledge', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.patch('/:id/acknowledge', requireAuth, requireRole('Administrator', 'Researcher'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const updated = await transitionAlert(param(req, 'id'), 'Acknowledged', (req.profile as { id: string }).id)
     res.json(toAlert(updated))
@@ -107,7 +107,7 @@ router.patch('/:id/acknowledge', requireAuth, async (req: Request, res: Response
 })
 
 // PATCH /alerts/:id/resolve — status -> Resolved.
-router.patch('/:id/resolve', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.patch('/:id/resolve', requireAuth, requireRole('Administrator', 'Researcher'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const updated = await transitionAlert(param(req, 'id'), 'Resolved', (req.profile as { id: string }).id)
     res.json(toAlert(updated))

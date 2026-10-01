@@ -1,6 +1,6 @@
 import express, { type Request, type Response, type NextFunction } from 'express'
 import { supabaseAdmin } from '../config/supabaseClient'
-import { requireAuth } from '../middleware/auth'
+import { requireAuth, requireRole } from '../middleware/auth'
 import { ApiError } from '../lib/apiError'
 import { param } from '../lib/params'
 import { orThrow, parsePagination, type PaginationQuery } from '../lib/queryHelpers'
@@ -57,7 +57,7 @@ router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFu
 
 // POST /laboratory-validation — create. Body accepts CreateLaboratoryValidationRecordInput
 // (testRunId, sampleId, referenceResult) plus optional stage/parameter/sensorReading/unit/notes.
-router.post('/', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/', requireAuth, requireRole('Administrator', 'Researcher'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { testRunId, sampleId, referenceResult, stage, parameter, sensorReading, unit, conclusion, notes } = req.body ?? {}
     if (!testRunId || !sampleId) throw ApiError.badRequest('testRunId and sampleId are required.')
@@ -85,7 +85,7 @@ router.post('/', requireAuth, async (req: Request, res: Response, next: NextFunc
 
 // PATCH /laboratory-validation/:id/result — attach/update referenceResult
 // once the external lab result arrives.
-router.patch('/:id/result', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.patch('/:id/result', requireAuth, requireRole('Administrator', 'Researcher'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { referenceResult, conclusion } = req.body ?? {}
     if (referenceResult === undefined) throw ApiError.badRequest('referenceResult is required.')

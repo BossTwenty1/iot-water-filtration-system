@@ -31,7 +31,8 @@ class ApiClient {
 
   // baseUrl/rootCaPem must outlive this object (string literals from secrets.h).
   // baseUrl must start with "https://"; rootCaPem must be a non-empty PEM.
-  void begin(const char* baseUrl, const char* rootCaPem);
+  // deviceKey is optional; when supplied, sent in the X-Device-Key header.
+  void begin(const char* baseUrl, const char* rootCaPem, const char* deviceKey = nullptr);
   bool isConfigured() const { return configured_; }
 
   // POSTs `jsonBody` to baseUrl + config::kApiBasePath + `path`.
@@ -46,5 +47,6 @@ class ApiClient {
  private:
   const char* baseUrl_ = nullptr;
   const char* rootCaPem_ = nullptr;
+  const char* deviceKey_ = nullptr;
   bool configured_ = false;
 };

@@ -40,3 +40,14 @@ cross join (
 ) as s(category, position, unit)
 where d.device_identifier = 'SIM-DEV-001'
 on conflict do nothing;
+
+-- Provisional water-quality alert thresholds for development and testing.
+-- Tagged provisional: true per AGENTS.md — not final adviser-approved limits.
+insert into public.thresholds (parameter, stage, config)
+values
+    ('pH', 'after', '{"min": 6.5, "max": 8.5, "severity": "Warning", "provisional": true}'::jsonb),
+    ('turbidity', 'after', '{"max": 1.0, "severity": "Warning", "provisional": true}'::jsonb),
+    ('TDS', 'after', '{"max": 300, "severity": "Warning", "provisional": true}'::jsonb),
+    ('temperature', 'after', '{"min": 15.0, "max": 35.0, "severity": "Information", "provisional": true}'::jsonb)
+on conflict (parameter, stage) do nothing;
+

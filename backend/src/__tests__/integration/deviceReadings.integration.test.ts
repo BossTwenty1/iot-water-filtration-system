@@ -62,4 +62,65 @@ describe('POST /api/v1/devices/:id/readings', () => {
     expect(device?.connection_state).toBe('Online')
     expect(device?.last_seen_at).not.toBeNull()
   })
+
+  it('deduplicates multiple readings for the same sensor within a single batch', async () => {
+    const measuredAt = new Date().toISOString()
+    const res = await request(app)
+      .post(`/api/v1/devices/${deviceId}/readings`)
+      .set('X-Device-Key', env.deviceIngestKey)
+      .send({
+        measuredAt,
+        readings: [
+          { category: 'ph', position: 'pre_filtration', value: 7.1 },
+          { category: 'ph', position: 'pre_filtration', value: 7.2 },
+        ],
+      })
+
+    expect(res.status).toBe(201)
+    expect(res.body.inserted).toBe(1)
+    expect(res.body.skipped).toHaveLength(1)
+    expect(res.body.skipped[0]).toEqual(
+      expect.objectContaining({ category: 'ph', position: 'pre_filtration', reason: 'duplicate sensor reading in same batch' })
+    )
+  })
+
+  it('handles retry idempotency gracefully when identical batch is sent twice', async () => {
+    const measuredAt = new Date().toISOString()
+    const payload = {
+      measuredAt,
+      readings: [{ category: 'temperature', position: 'pre_filtration', value: 25.5 }],
+    }
+
+    const first = await request(app).post(`/api/v1/devices/${deviceId}/readings`).set('X-Device-Key', env.deviceIngestKey).send(payload)
+    expect(first.status).toBe(201)
+    expect(first.body.inserted).toBe(1)
+
+    // Immediate retry with the same timestamp & sensor reading
+    const retry = await request(app).post(`/api/v1/devices/${deviceId}/readings`).set('X-Device-Key', env.deviceIngestKey).send(payload)
+    expect(retry.status).toBe(200)
+    expect(retry.body.inserted).toBe(0)
+    expect(retry.body.skipped).toHaveLength(1)
+    expect(retry.body.skipped[0]).toEqual(
+      expect.objectContaining({ reason: 'reading already recorded for this measured_at' })
+    )
+  })
+
+  it('accepts ingestion on the /telemetry alias route and resolves device by device_identifier', async () => {
+    const measuredAt = new Date().toISOString()
+    const payload = {
+      measuredAt,
+      readings: [{ category: 'turbidity', position: 'pre_filtration', value: 3.2 }],
+    }
+
+    // Call /telemetry alias using device_identifier "SIM-DEV-001" instead of UUID
+    const res = await request(app)
+      .post('/api/v1/devices/SIM-DEV-001/telemetry')
+      .set('X-Device-Key', env.deviceIngestKey)
+      .send(payload)
+
+    expect(res.status).toBe(201)
+    expect(res.body.deviceId).toBe(deviceId)
+    expect(res.body.inserted).toBe(1)
+  })
 })
+

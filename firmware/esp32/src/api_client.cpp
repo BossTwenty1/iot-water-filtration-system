@@ -16,9 +16,10 @@ bool isNullOrEmpty(const char* s) { return s == nullptr || s[0] == '\0'; }
 
 }  // namespace
 
-void ApiClient::begin(const char* baseUrl, const char* rootCaPem) {
+void ApiClient::begin(const char* baseUrl, const char* rootCaPem, const char* deviceKey) {
   baseUrl_ = baseUrl;
   rootCaPem_ = rootCaPem;
+  deviceKey_ = deviceKey;
   configured_ = false;
 
   if (isNullOrEmpty(baseUrl_)) {
@@ -76,8 +77,9 @@ ApiClient::Result ApiClient::postJson(const char* path, const char* jsonBody,
     return {Status::kInvalidRequest, 0};
   }
   http.addHeader("Content-Type", "application/json");
-  // TODO(TBD): device authentication header — mechanism and credential
-  // provisioning are undecided (docs/PENDING_DECISIONS.md §8).
+  if (!isNullOrEmpty(deviceKey_)) {
+    http.addHeader("X-Device-Key", deviceKey_);
+  }
 
   // HTTPClient::POST takes a non-const buffer (Arduino-ESP32 2.x API) but only
   // writes it to the socket, so casting away const is safe here.

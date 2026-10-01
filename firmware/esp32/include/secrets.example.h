@@ -26,6 +26,6 @@
 // TODO(TBD): backend hosting/CA not yet confirmed.
 #define API_ROOT_CA_PEM ""
 
-// TODO(TBD): device authentication mechanism and credential provisioning
-// (docs/PENDING_DECISIONS.md §8). Add a device credential here once decided.
-// Never place database/service-role credentials in firmware.
+// Device authentication shared secret for X-Device-Key header (matches
+// DEVICE_INGEST_KEY in backend .env).
+#define DEVICE_KEY ""

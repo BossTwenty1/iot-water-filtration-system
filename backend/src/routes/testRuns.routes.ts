@@ -1,6 +1,6 @@
 import express, { type Request, type Response, type NextFunction } from 'express'
 import { supabaseAdmin } from '../config/supabaseClient'
-import { requireAuth } from '../middleware/auth'
+import { requireAuth, requireRole } from '../middleware/auth'
 import { ApiError } from '../lib/apiError'
 import { param } from '../lib/params'
 import { orThrow, parsePagination, type PaginationQuery } from '../lib/queryHelpers'
@@ -46,7 +46,7 @@ router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFu
 })
 
 // POST /test-runs — create.
-router.post('/', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/', requireAuth, requireRole('Administrator', 'Researcher'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { sampleInformation, notes, deviceId } = req.body ?? {}
     let targetDeviceId: string | undefined = deviceId
@@ -79,7 +79,7 @@ router.post('/', requireAuth, async (req: Request, res: Response, next: NextFunc
 })
 
 // PATCH /test-runs/:id/complete — end run.
-router.patch('/:id/complete', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.patch('/:id/complete', requireAuth, requireRole('Administrator', 'Researcher'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const row = orThrow<TestRunRow | null>(
       await supabaseAdmin
@@ -98,7 +98,7 @@ router.patch('/:id/complete', requireAuth, async (req: Request, res: Response, n
 })
 
 // PATCH /test-runs/:id/notes — update notes field.
-router.patch('/:id/notes', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.patch('/:id/notes', requireAuth, requireRole('Administrator', 'Researcher'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { notes } = req.body ?? {}
     if (typeof notes !== 'string') throw ApiError.badRequest('notes must be a string.')

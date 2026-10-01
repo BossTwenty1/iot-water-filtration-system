@@ -42,10 +42,11 @@ constexpr char kNtpServerSecondary[] = "time.nist.gov";
 // still TBD (docs/PENDING_DECISIONS.md §8).
 constexpr char kApiBasePath[] = "/api/v1";
 
-// TODO(TBD): the telemetry ingestion route is not defined in
-// docs/API_CONTRACT.md. Leave empty until the contract names it;
-// ApiClient::postTelemetry() refuses to send while this is empty.
-constexpr char kApiTelemetryPath[] = "";
+// Telemetry ingestion endpoint path (appended to kApiBasePath).
+// Formally defined in docs/API_CONTRACT.md §6.
+// Backend accepts both "/devices/:id/readings" and "/devices/:id/telemetry",
+// where :id is the device identifier (e.g. "ESP32-DEV-001") or registered UUID.
+constexpr char kApiTelemetryPath[] = "/devices/ESP32-DEV-001/telemetry";
 
 // Provisional default — tune during integration testing.
 constexpr uint32_t kHttpConnectTimeoutMs = 5000;

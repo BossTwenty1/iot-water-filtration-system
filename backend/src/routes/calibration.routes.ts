@@ -1,6 +1,6 @@
 import express, { type Request, type Response, type NextFunction } from 'express'
 import { supabaseAdmin } from '../config/supabaseClient'
-import { requireAuth } from '../middleware/auth'
+import { requireAuth, requireRole } from '../middleware/auth'
 import { ApiError } from '../lib/apiError'
 import { param } from '../lib/params'
 import { orThrow, parsePagination, type PaginationQuery } from '../lib/queryHelpers'
@@ -103,7 +103,7 @@ router.get('/:id/history', requireAuth, async (req: Request, res: Response, next
 })
 
 // POST /calibration — create.
-router.post('/', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/', requireAuth, requireRole('Administrator', 'Researcher'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { parameter, stage, referenceValue, sensorReading, deviceId } = req.body ?? {}
     if (!parameter || !stage || referenceValue === undefined || sensorReading === undefined) {

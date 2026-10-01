@@ -1,6 +1,6 @@
 import express, { type Request, type Response, type NextFunction } from 'express'
 import { supabaseAdmin } from '../config/supabaseClient'
-import { requireAuth } from '../middleware/auth'
+import { requireAuth, requireRole } from '../middleware/auth'
 import { ApiError } from '../lib/apiError'
 import { param } from '../lib/params'
 import { orThrow, parsePagination, type PaginationQuery } from '../lib/queryHelpers'
@@ -35,7 +35,7 @@ router.get('/records', requireAuth, async (req: Request, res: Response, next: Ne
 })
 
 // POST /maintenance/records — create.
-router.post('/records', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/records', requireAuth, requireRole('Administrator', 'Researcher'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { component, notes, type, description } = req.body ?? {}
     if (!component) throw ApiError.badRequest('component is required.')
@@ -75,7 +75,7 @@ router.get('/reminders', requireAuth, async (req: Request, res: Response, next: 
 })
 
 // POST /maintenance/reminders — create.
-router.post('/reminders', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/reminders', requireAuth, requireRole('Administrator', 'Researcher'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { component, label, dueDate, status } = req.body ?? {}
     if (!component || !label || !dueDate) throw ApiError.badRequest('component, label and dueDate are required.')
@@ -96,7 +96,7 @@ router.post('/reminders', requireAuth, async (req: Request, res: Response, next:
 })
 
 // PATCH /maintenance/reminders/:id/dismiss — mark handled.
-router.patch('/reminders/:id/dismiss', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.patch('/reminders/:id/dismiss', requireAuth, requireRole('Administrator', 'Researcher'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const row = orThrow<MaintenanceReminderRow | null>(
       await supabaseAdmin

@@ -1,6 +1,6 @@
 import express, { type Request, type Response, type NextFunction } from 'express'
 import { supabaseAdmin } from '../config/supabaseClient'
-import { requireAuth } from '../middleware/auth'
+import { requireAuth, requireRole } from '../middleware/auth'
 import { ApiError } from '../lib/apiError'
 import { orThrow } from '../lib/queryHelpers'
 import { toAppSettings } from '../lib/mappers'
@@ -23,7 +23,7 @@ router.get('/settings', requireAuth, async (req: Request, res: Response, next: N
 })
 
 // PUT /settings — update general/notification settings.
-router.put('/settings', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.put('/settings', requireAuth, requireRole('Administrator'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { systemName, deviceDisplayName, timezone, dateFormat, timeFormat, notifications } = req.body ?? {}
     const row = orThrow<AppSettingsRow | null>(
@@ -64,7 +64,7 @@ router.get('/thresholds', requireAuth, async (req: Request, res: Response, next:
 
 // PUT /thresholds — replace the full threshold set. Body: array of
 // { parameter, stage?, config }.
-router.put('/thresholds', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.put('/thresholds', requireAuth, requireRole('Administrator', 'Researcher'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const entries: Array<{ parameter: string; stage?: string; config?: unknown }> = Array.isArray(req.body) ? req.body : []
     const rows = orThrow<ThresholdRow[]>(
@@ -104,7 +104,7 @@ router.get('/notifications/providers', requireAuth, async (req: Request, res: Re
 
 // PUT /notifications/providers — upsert one provider's config. Body:
 // { provider, enabled, config }.
-router.put('/notifications/providers', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.put('/notifications/providers', requireAuth, requireRole('Administrator'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { provider, enabled, config } = req.body ?? {}
     if (!provider) throw ApiError.badRequest('provider is required.')
@@ -141,7 +141,7 @@ router.get('/data-retention', requireAuth, async (req: Request, res: Response, n
 })
 
 // PUT /data-retention — update retention policy config.
-router.put('/data-retention', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.put('/data-retention', requireAuth, requireRole('Administrator'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { retentionDays, config } = req.body ?? {}
     const row = orThrow<DataRetentionPolicyRow | null>(

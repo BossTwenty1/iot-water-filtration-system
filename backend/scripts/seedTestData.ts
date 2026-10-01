@@ -284,8 +284,10 @@ async function seedThresholdsAndNotifications(): Promise<void> {
     .from('thresholds')
     .upsert(
       [
-        { parameter: 'turbidity', stage: 'after', config: { max: 1 } },
-        { parameter: 'pH', stage: '', config: { min: 6.5, max: 8.5 } },
+        { parameter: 'pH', stage: 'after', config: { min: 6.5, max: 8.5, severity: 'Warning', provisional: true } },
+        { parameter: 'turbidity', stage: 'after', config: { max: 1.0, severity: 'Warning', provisional: true } },
+        { parameter: 'TDS', stage: 'after', config: { max: 300, severity: 'Warning', provisional: true } },
+        { parameter: 'temperature', stage: 'after', config: { min: 15.0, max: 35.0, severity: 'Information', provisional: true } },
       ],
       { onConflict: 'parameter,stage' }
     )
