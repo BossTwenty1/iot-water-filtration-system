@@ -26,10 +26,10 @@ export interface SensorReading {
 export interface TelemetryRecord {
   id: string
   timestamp: string
-  testRunId: string
+  testRunId: string | null
   deviceId: string
-  before: Record<SensorParameter, number>
-  after: Record<SensorParameter, number>
+  before: Partial<Record<SensorParameter, number>>
+  after: Partial<Record<SensorParameter, number>>
 }
 
 export interface TestRun {
@@ -49,9 +49,9 @@ export interface SystemAlert {
   id: string
   timestamp: string
   severity: AlertSeverity
-  source: string
-  title: string
-  message: string
+  source: string | null
+  title: string | null
+  message: string | null
   testRunId?: string
   status: AlertStatus
 }
@@ -62,8 +62,8 @@ export interface CalibrationRecord {
   parameter: Exclude<SensorParameter, 'totalVolume'>
   stage: SensorStage
   model: string
-  referenceValue: number
-  sensorReading: number
+  referenceValue: number | null
+  sensorReading: number | null
   unit: string
   status: 'Record Available' | 'Review Needed'
   notes: string
@@ -72,13 +72,13 @@ export interface CalibrationRecord {
 export interface LaboratoryValidationRecord {
   id: string
   date: string
-  testRunId: string
-  sampleId: string
-  stage: SensorStage
-  parameter: Exclude<SensorParameter, 'flowRate' | 'totalVolume'>
+  testRunId: string | null
+  sampleId: string | null
+  stage?: SensorStage
+  parameter?: Exclude<SensorParameter, 'flowRate' | 'totalVolume'>
   referenceResult?: number
-  sensorReading: number
-  unit: string
+  sensorReading?: number
+  unit?: string
   status: RecordStatus
   conclusion?: string
   notes: string
@@ -88,9 +88,9 @@ export interface MaintenanceRecord {
   id: string
   date: string
   component: string
-  type: 'Inspection' | 'Service' | 'Replacement'
-  description: string
-  status: 'Completed' | 'Review Needed'
+  type: string | null
+  description: string | null
+  status: string | null
   performedBy: string
   notes: string
 }
@@ -99,8 +99,8 @@ export interface MaintenanceReminder {
   id: string
   component: string
   label: string
-  dueDate: string
-  status: 'Due' | 'Upcoming'
+  dueDate: string | null
+  status: string
 }
 
 export interface User {
@@ -120,6 +120,7 @@ export interface DeviceStatus {
   wifiConnection: 'Connected' | 'Disconnected' | 'Not Configured'
   failSafeControl: 'Pending Hardware Integration' | 'Local Control Active'
   lastUpdatedAt?: string
+  isSimulated?: boolean
 }
 
 export interface NotificationPreferences {
@@ -138,13 +139,13 @@ export interface AppSettings {
   timezone: string
   dateFormat: string
   timeFormat: string
-  notifications: NotificationPreferences
+  notifications: Partial<NotificationPreferences>
 }
 
 export interface TelemetryChartPoint {
   time: string
-  before: number
-  after: number
+  before?: number
+  after?: number
 }
 
 export type ResourceStatus = 'loading' | 'success' | 'empty' | 'error' | 'stale'
@@ -165,6 +166,10 @@ export interface CreateLaboratoryValidationRecordInput {
   testRunId: string
   sampleId: string
   referenceResult?: number
+  stage?: SensorStage
+  parameter?: LaboratoryValidationRecord['parameter']
+  sensorReading?: number
+  unit?: string
 }
 
 export interface CreateMaintenanceRecordInput {

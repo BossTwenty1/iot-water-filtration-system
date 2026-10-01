@@ -1,6 +1,13 @@
-import { deviceStatusMock } from '../data/mock/systemMock'
 import type { DeviceStatus } from '../types'
-import { clone } from './mockStore'
+import { apiRequest } from './apiClient'
 
-export interface DeviceService { getDeviceStatus():Promise<DeviceStatus> }
-export const deviceService:DeviceService={getDeviceStatus:async()=>clone(deviceStatusMock)}
+interface DeviceRow { id:string; is_simulated?:boolean | null }
+export interface DeviceService { getDeviceStatus():Promise<DeviceStatus|null> }
+export const deviceService:DeviceService={
+  getDeviceStatus:async()=>{
+    const devices=await apiRequest<DeviceRow[]>('devices')
+    if(!devices.length)return null
+    const status=await apiRequest<DeviceStatus>(`devices/${encodeURIComponent(devices[0].id)}/status`)
+    return {...status,isSimulated:devices[0].is_simulated===true}
+  },
+}

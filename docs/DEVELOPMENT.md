@@ -41,8 +41,9 @@ docs/            shared documentation
 The frontend uses React, TypeScript, Vite, Tailwind CSS, React Router, Recharts,
 and Lucide React. The integrated Mosaic UI provides responsive layouts,
 sidebar/mobile navigation, and shared light/dark themes. Pages consume typed
-domain services, which currently use representative local development adapters;
-live domain-service integration with the Express REST API is pending. The
+domain services, which now use authenticated Express REST requests for domain
+reads and software-record/settings writes. Existing representative fixtures
+are not used as a runtime fallback; failed API requests show an error. The
 frontend does not connect directly to Supabase or control hardware.
 
 ```powershell
@@ -84,11 +85,11 @@ when server-side invalidation cannot be confirmed.
 
 Header and Settings use the API-provided current user. There is no public signup
 UI or implemented frontend multi-user administration. Authentication does not
-finalize roles, authorize hardware actions, or make representative telemetry
-live. Backend authorization remains authoritative.
+finalize roles, authorize hardware actions, or prove that API telemetry comes
+from live hardware. Backend authorization remains authoritative.
 
 Live login, destination restoration, authenticated Header/Settings, session
-restoration, token refresh, actual API requests, backend sign out, and protected
+restoration, token refresh, actual domain reads/writes, backend sign out, and protected
 route responsive review require an approved backend/test account. Do not bypass
 authentication or invent credentials for these checks.
 

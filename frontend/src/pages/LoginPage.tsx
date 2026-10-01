@@ -40,6 +40,6 @@ export function LoginPage(){
       <div className="field"><label htmlFor="login-password">Password</label><input id="login-password" name="password" className="control" type="password" autoComplete="current-password" required value={password} onChange={(event)=>setPassword(event.target.value)} disabled={busy}/></div>
       <button className="button-primary w-full" type="submit" disabled={busy}>{busy?'Signing in…':'Sign in'}</button>
     </form>
-    <p className="mt-5 text-xs leading-relaxed text-muted">Signing in verifies your account, not device connectivity. Dashboard readings remain representative until live telemetry is integrated.</p>
+    <p className="mt-5 text-xs leading-relaxed text-muted">Signing in verifies your account, not device connectivity. Dashboard records come from the API; their physical-device provenance is not independently verified.</p>
   </div></main></>
 }

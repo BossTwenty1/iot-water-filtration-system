@@ -45,5 +45,11 @@ export function useServiceData<T>(loader:()=>Promise<T>):ServiceData<T>{
     return()=>{active=false}
   },[loader])
 
-  return {data,error,status,reload,setData,markStale:()=>setStatus('stale')}
+  const updateData:Dispatch<SetStateAction<T|null>>=(next)=>{
+    setData(next)
+    setStatus('success')
+    setError(null)
+  }
+
+  return {data,error,status,reload,setData:updateData,markStale:()=>setStatus('stale')}
 }

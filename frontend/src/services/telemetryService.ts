@@ -1,6 +1,5 @@
-import { currentReadings,historyChartData,telemetryRecords } from '../data/mock/telemetryMock'
 import type { SensorReading,TelemetryChartPoint,TelemetryRecord } from '../types'
-import { clone } from './mockStore'
+import { apiRequest } from './apiClient'
 
 export interface TelemetryService {
   getLatestTelemetry():Promise<SensorReading[]>
@@ -9,7 +8,7 @@ export interface TelemetryService {
 }
 
 export const telemetryService:TelemetryService={
-  getLatestTelemetry:async()=>clone(currentReadings),
-  getTelemetryHistory:async()=>clone(telemetryRecords),
-  getTelemetryChart:async()=>clone(historyChartData),
+  getLatestTelemetry:()=>apiRequest<SensorReading[]>('telemetry/current'),
+  getTelemetryHistory:()=>apiRequest<TelemetryRecord[]>('telemetry'),
+  getTelemetryChart:()=>apiRequest<TelemetryChartPoint[]>('telemetry/chart?parameter=turbidity'),
 }

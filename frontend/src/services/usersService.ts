@@ -1,6 +1,5 @@
-import { usersMock } from '../data/mock/recordsMock'
 import type { User } from '../types'
-import { clone } from './mockStore'
+import { apiRequest } from './apiClient'
 
 export interface UsersService { getUsers():Promise<User[]> }
-export const usersService:UsersService={getUsers:async()=>clone(usersMock)}
+export const usersService:UsersService={getUsers:()=>apiRequest<User[]>('users')}

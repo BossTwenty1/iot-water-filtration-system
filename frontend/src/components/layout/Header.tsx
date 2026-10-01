@@ -23,7 +23,7 @@ export function Header({onMenu,mobileOpen,menuButtonRef,theme,onThemeToggle}:{on
       </div>
     </div>
     <div className="flex w-full shrink-0 items-center justify-end gap-2 md:w-auto">
-      <div className="device-chip" aria-label="Representative data only; live device connection is not confirmed" title="Representative data only · live device connection not confirmed"><span className="status-dot bg-slate-400" aria-hidden="true"/><span className="hidden sm:inline">Representative data</span><span className="sm:hidden">Sample data</span></div>
+      <div className="device-chip" aria-label="API-backed records; physical device connection is not verified" title="API records · physical device connection not verified"><span className="status-dot bg-slate-400" aria-hidden="true"/><span className="hidden sm:inline">API records</span><span className="sm:hidden">API data</span></div>
       <Link to="/alerts" className="icon-button relative" aria-label="Open system alerts" title="System alerts"><Bell size={17}/></Link>
       <ThemeToggle theme={theme} onToggle={onThemeToggle}/>
       {user&&<>

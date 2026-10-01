@@ -23,7 +23,7 @@ export function Sidebar({mobile=false,open=false,expanded,drawerRef,onClose,onTo
     <div className="sidebar-footer">
       <div className={`controller-card ${visibleExpanded?'':'items-center px-2'}`}>
         <div className="flex items-center gap-2"><span className="status-dot bg-slate-400"/><span className={`text-[10px] font-semibold uppercase tracking-[0.08em] text-muted ${visibleExpanded?'':'sr-only'}`}>Device profile</span></div>
-        <div className={`mono mt-2 text-xs font-semibold text-ink ${visibleExpanded?'':'sr-only'}`}>Sample · ESP32-WROOM-32</div>
+        <div className={`mono mt-2 text-xs font-semibold text-ink ${visibleExpanded?'':'sr-only'}`}>ESP32-WROOM-32 · planned</div>
         <div className={`mt-1 text-xs text-muted ${visibleExpanded?'':'sr-only'}`}>Connection not confirmed</div>
       </div>
       {!mobile&&<button type="button" className="sidebar-toggle" onClick={onToggle} aria-label={expanded?'Collapse navigation':'Expand navigation'} aria-expanded={expanded}>

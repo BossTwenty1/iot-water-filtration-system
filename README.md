@@ -8,14 +8,18 @@ Supabase PostgreSQL, and a React web dashboard.
 
 On `integration/frontend-auth-mosaic`, the frontend integrates the Mosaic-style
 dashboard, responsive navigation and layouts, light/dark themes, and Express API
-authentication with protected routes. Domain telemetry and research records
-still use representative local data; live domain-service integration is pending.
+authentication with protected routes. Domain services now make authenticated
+Express API requests for telemetry, alerts, test runs, calibration, laboratory
+associations, maintenance, settings, and device status. They do not fall back
+to local representative records if the API is unavailable.
 
 The repository also contains Express backend routes, Supabase migration/seed
 artifacts under `backend/supabase/`, and an ESP32 connectivity foundation.
 Their presence is not proof of deployment or a connected physical prototype.
-Real login/session and authenticated-route end-to-end verification still require
-an approved running backend and test account. The whole project is not complete.
+Real login/session and domain-request end-to-end verification still require an
+approved running backend and test account. API records may be seeded or
+simulated; they do not confirm a connected physical prototype. The whole
+project is not complete.
 
 ## Confirmed system scope
 
@@ -67,6 +71,6 @@ From `frontend/`, run `npm install`, then `npm run dev`. Configure the public
 routes require a session. See [frontend/README.md](frontend/README.md) for setup,
 theme/session behavior, and validation commands.
 
-Authentication does not connect domain telemetry to live services, confirm ESP32
-connectivity, approve final permissions, or enable remote hardware control.
-Representative records are not real experimental or laboratory results.
+Authentication and API-backed records do not confirm ESP32 connectivity,
+approve final permissions, or enable remote hardware control. Sensor readings
+are not independent laboratory proof of potability.

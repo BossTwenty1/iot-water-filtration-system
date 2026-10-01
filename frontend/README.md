@@ -23,17 +23,21 @@ for the current session.
 
 ## Data and authentication boundaries
 
-Pages and components consume typed domain services. Those services currently
-use local development adapters. Live domain-service integration with the
-implemented Express REST API is pending. The frontend does not
-connect directly to Supabase and does not control physical hardware.
+Pages and components consume typed domain services. Those services now make
+authenticated Express REST requests for telemetry, alerts, test runs,
+calibration, laboratory associations, maintenance, device status, settings,
+and users. There is no local mock fallback when the API is unavailable: the UI
+shows loading, empty, or error states. Existing mock fixtures remain in the
+repository but are not imported by active domain services. The frontend does
+not connect directly to Supabase or control physical hardware.
 
 Authentication uses the Express API (`/auth/login`, `/auth/refresh`, and
 `/auth/logout`). Dashboard routes require a signed-in session. The access token
 is kept in memory; a refresh token is kept in this tab's `sessionStorage` to
 restore the session after a reload. This is a browser-JavaScript storage
-tradeoff, not an HttpOnly-cookie session. Domain pages still use their local
-development data; signing in does not make their telemetry live.
+tradeoff, not an HttpOnly-cookie session. Signing in enables API requests; it
+does not prove that returned records came from live ESP32 hardware. Seeded or
+simulated data is not real experimental evidence.
 
 The session layer restores through refresh, schedules refresh before expiry,
 and provides Bearer-authenticated `apiRequest` calls with one refresh/retry after
@@ -41,8 +45,9 @@ a 401 response. Invalid or unavailable refresh clears the session. Sign out
 calls the backend and clears local credentials even if the request fails; in
 that case server-side invalidation is not confirmed. Header and Settings display
 the API-provided current user, not mock account identities. Multi-user
-administration and role editing are not implemented; Settings domain preferences
-remain local. Final role and hardware permissions remain unresolved.
+administration and role editing are not implemented; Settings changes now use
+the backend settings endpoint. Final role and hardware permissions remain
+unresolved. Software-record writes do not issue hardware commands.
 
 ## Local setup
 
@@ -64,6 +69,10 @@ then set `VITE_API_BASE_URL` to that API's public base URL. No secrets belong in
 frontend environment variables.
 
 The example value is `http://localhost:3000/api/v1` and includes the API prefix.
+Use `http://localhost:5173` to open the Vite app with the backend's example
+`CORS_ORIGIN`. Opening the app at `http://127.0.0.1:5173` instead requires the
+backend's local `CORS_ORIGIN` to match that exact origin; these hostnames are
+not interchangeable for browser CORS.
 Production requests should use HTTPS. Never place Supabase service-role keys,
 device credentials, or account passwords in frontend configuration.
 
@@ -72,10 +81,12 @@ to verify login at runtime. The UI does not provide public signup.
 
 `npm run build` includes TypeScript checking before the Vite build; lint uses
 Oxlint. There is no frontend test script currently configured. Build/lint do not
-prove live authentication: real login, destination restoration, authenticated
-Header/Settings rendering, reload restoration, refresh, API requests, sign out,
-and authenticated-route responsive review remain end-to-end verification items.
+prove live authentication or domain connectivity: real login, destination
+restoration, authenticated Header/Settings rendering, reload restoration,
+refresh, domain reads/writes, sign out, and protected-route responsive review
+remain end-to-end verification items. The local backend was not running when
+this code-level integration was prepared.
 
 See the [backend API reference](../backend/docs/API_REFERENCE.md) for implemented
-endpoints. Authentication is not proof of live telemetry, ESP32 connectivity,
+endpoints. Authentication is not proof of live hardware telemetry, ESP32 connectivity,
 approved authorization policy, laboratory validation, or water potability.

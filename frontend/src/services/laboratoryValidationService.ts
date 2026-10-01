@@ -1,8 +1,5 @@
-import { laboratoryValidationMock } from '../data/mock/recordsMock'
 import type { CreateLaboratoryValidationRecordInput,LaboratoryValidationRecord } from '../types'
-import { clone } from './mockStore'
-
-let records=clone(laboratoryValidationMock)
+import { apiRequest } from './apiClient'
 
 export interface LaboratoryValidationService {
   getLaboratoryValidationRecords():Promise<LaboratoryValidationRecord[]>
@@ -10,6 +7,6 @@ export interface LaboratoryValidationService {
 }
 
 export const laboratoryValidationService:LaboratoryValidationService={
-  getLaboratoryValidationRecords:async()=>clone(records),
-  createLaboratoryValidationRecord:async(input)=>{const record:LaboratoryValidationRecord={id:`VAL-2026-${String(records.length+1).padStart(3,'0')}`,date:new Date().toISOString(),...input,stage:'after',parameter:'turbidity',sensorReading:.72,unit:'NTU',status:input.referenceResult===undefined?'Pending':'Available',notes:input.referenceResult===undefined?'External laboratory/reference result pending.':'External laboratory/reference result recorded.'};records=[record,...records];return clone(record)},
+  getLaboratoryValidationRecords:()=>apiRequest<LaboratoryValidationRecord[]>('laboratory-validation'),
+  createLaboratoryValidationRecord:(input)=>apiRequest<LaboratoryValidationRecord>('laboratory-validation',{method:'POST',body:input}),
 }

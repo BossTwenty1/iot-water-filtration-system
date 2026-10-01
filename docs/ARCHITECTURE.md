@@ -100,10 +100,12 @@ This is JavaScript-readable storage, not an HttpOnly-cookie session. Header and
 Settings display the API-provided current user; the frontend route guard is not
 a substitute for server-side authentication and authorization.
 
-The authenticated request helper is implemented, but domain services still use
-representative local data. The conceptual path does not claim live telemetry
-integration or verified ESP32 connectivity. End-to-end authentication and
-authenticated-route verification require an approved running backend/test account.
+The authenticated request helper and domain-service calls to Express are now
+implemented for telemetry, alerts, test runs, calibration, laboratory
+associations, maintenance, settings, users, and device status. API responses
+can still be seeded or simulated and do not establish live telemetry or verified
+ESP32 connectivity. End-to-end authentication, domain-request, and authenticated-
+route verification require an approved running backend/test account.
 
 Authentication does not resolve final roles/permissions or enable remote control.
 The browser does not control hardware directly. Critical local ESP32 safety

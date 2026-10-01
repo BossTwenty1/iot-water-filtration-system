@@ -31,9 +31,11 @@ Hardware is currently under assembly.
 Frontend development has progressed to an integrated Mosaic-style dashboard and
 Express API authentication implementation on `integration/frontend-auth-mosaic`,
 including responsive layouts, light/dark themes, and protected routes. Domain
-telemetry and research records remain representative/local while live
-domain-service integration is pending. End-to-end authentication verification
-requires an approved running backend and test account.
+telemetry and research records are requested through the authenticated Express
+API, with no local mock-data fallback. This code-level integration is not proof
+of real ESP32 data: API records may be seeded or simulated. End-to-end login,
+domain-request, and authenticated-route verification require an approved
+running backend and test account.
 
 This software progress does not confirm physical ESP32 connectivity, laboratory
 validation, finalized permissions, or completion of the prototype. The hardware
