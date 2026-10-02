@@ -38,3 +38,4 @@ Thumbs.db
 # External team docs kept locally only, not versioned
 backend/docs/tracker/*.xlsx
 backend/docs/references/
+backend/supabase/snippets/

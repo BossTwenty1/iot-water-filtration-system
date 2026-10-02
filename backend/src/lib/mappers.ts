@@ -182,11 +182,11 @@ export function toUser(row: UserLike): User {
 
 export function toDeviceStatus(row: DeviceRow & { latestReadingAt?: string | null }): DeviceStatus {
   return {
-    deviceId: row.id,
+    deviceId: row.device_identifier ?? row.id,
     controller: row.controller_name ?? row.name ?? 'Unknown Controller',
-    connection: row.connection_state ?? 'Pending Hardware Integration',
-    wifiConnection: row.wifi_state ?? 'Not Configured',
-    failSafeControl: row.fail_safe_state ?? 'Pending Hardware Integration',
+    connection: (row.connection_state ?? 'Pending Hardware Integration') as DeviceStatus['connection'],
+    wifiConnection: (row.wifi_state ?? 'Not Configured') as DeviceStatus['wifiConnection'],
+    failSafeControl: (row.fail_safe_state ?? 'Pending Hardware Integration') as DeviceStatus['failSafeControl'],
     lastUpdatedAt: row.last_seen_at ?? row.latestReadingAt ?? undefined,
     isSimulated: row.is_simulated === true,
   }

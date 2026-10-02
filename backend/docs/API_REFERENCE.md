@@ -483,12 +483,14 @@ created record.
 (`jsonb`), same rationale as calibration's `parameters` column
 (`PENDING_DECISIONS` §12).
 
-**Percentage-error formula is a placeholder**: `|sensorReading -
-referenceResult| / referenceResult * 100`. This is the standard textbook
-definition, but the exact convention this project wants (signed vs.
-absolute, rounding, which value is authoritative) is still open per
-`PENDING_DECISIONS` §12 — treat this as "a number goes in the column," not a
-confirmed lab-validation formula.
+**Percentage-error formula confirmed in thesis methodology** (`docs/THESIS_PAPER.md` §768):
+$\text{Percentage Error} = \frac{\text{Experimental Value} - \text{Actual Value}}{\text{Actual Value}} \times 100$,
+where `Experimental Value` is the prototype sensor reading (`sensorReading`)
+and `Actual Value` is the authoritative laboratory result (`referenceResult`).
+The implementation evaluates the absolute magnitude
+`|sensorReading - referenceResult| / referenceResult * 100`. (The thesis also
+defines the Percentage Reduction formula for water treatment efficiency:
+$\frac{\text{Initial Value} - \text{Final Value}}{\text{Initial Value}} \times 100$).
 
 `status` is `"Pending"` only when both `percentage_error` is null and
 `results.referenceResult` is undefined; otherwise `"Available"`.
@@ -627,8 +629,10 @@ reset local DB.
 
 ### `GET /thresholds` / `PUT /thresholds`
 
-Content shape is deliberately opaque — `docs/PENDING_DECISIONS.md` calls
-"approved thresholds" TBD. `GET` returns whatever was last stored:
+Governed by reference standards confirmed in `docs/THESIS_PAPER.md` (§711–713,
+822–823): Philippine National Standards for Drinking Water (PNSDW), DENR Clean
+Water Act (RA 9275), and WHO Drinking Water Guidelines. `GET` returns whatever
+was stored (e.g. baseline PNSDW 2017 seeded values):
 
 ```json
 [{ "parameter": "turbidity", "stage": "after", "config": { "max": 1 } }, { "parameter": "pH", "config": { "min": 6.5, "max": 8.5 } }]

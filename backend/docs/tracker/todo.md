@@ -42,9 +42,13 @@ built.
       polls for devices gone quiet, marks them `Offline`, raises `"ESP32
       Offline"`, and auto-resolves it on the device's next reading. Both
       dedupe on `(device_id, source)`. See `docs/API_REFERENCE.md` →
-      Alerts → "What generates alerts automatically". **Still blocked**:
-      pump/UV-C/filter alert categories — no such telemetry exists in this
-      schema, and `P0-05` (control authority) remains open.
+      Alerts → "What generates alerts automatically". **Control authority update**:
+      `docs/THESIS_PAPER.md` (§427–429, 661–663, 697–703, 715–716, 786–792) confirms
+      `P0-05` (control authority): the ESP32 actively operates the booster pump
+      and UV-C sterilization unit to execute automated filtration routines when
+      unacceptable water parameters are detected. Actuators are active controlled
+      outputs, not monitor-only. Pump/UV-C/filter alert telemetry awaits hardware
+      sensing signals.
 
 ## Authorization
 
@@ -95,11 +99,11 @@ built.
       no-op again. See `docs/API_REFERENCE.md` → Settings →
       `GET /data-retention`.
 - [ ] Remote command delivery / audit table for pump/UV-C control
-      (`docs/PENDING_DECISIONS.md`) — only relevant once `P0-05` confirms
-      actuators are controllable, not monitor-only. **Deliberately not
-      touched in this round**: building command-issuing endpoints now
-      would imply actuator control is possible, which is exactly the
-      undecided question — not something to build ahead of the decision.
+      (`docs/PENDING_DECISIONS.md`) — `docs/THESIS_PAPER.md` (§427–429,
+      697–703) confirms actuators are actively controlled by the ESP32 for
+      automated filtration routines. Creating remote manual override endpoints
+      and command audit tables will follow finalization of physical relay pinouts
+      and local fail-safe safety interlocks with Edgar.
 
 ## Testing & validation (new since the round above)
 

@@ -75,6 +75,43 @@ async function ensureDevice(): Promise<DeviceRow> {
   )
 }
 
+const HARDWARE_DEVICE_IDENTIFIER = 'ESP32-DEV-001'
+
+async function ensureHardwareDevice(): Promise<DeviceRow> {
+  const existing = check<DeviceRow | null>(
+    'Load hardware device',
+    await supabaseAdmin.from('devices').select('*').eq('device_identifier', HARDWARE_DEVICE_IDENTIFIER).maybeSingle()
+  )
+  if (existing) {
+    await ensureSensors(existing.id)
+    return existing
+  }
+
+  const created = check<DeviceRow>(
+    'Create hardware device',
+    await supabaseAdmin
+      .from('devices')
+      .insert({
+        device_identifier: HARDWARE_DEVICE_IDENTIFIER,
+        name: 'ESP32 Physical Filtration Unit',
+        is_simulated: false,
+        controller_name: 'ESP32 DevKit V1',
+        connection_state: 'Pending Hardware Integration',
+        wifi_state: 'Not Configured',
+        fail_safe_state: 'Local Control Active',
+        config: {
+          microcontroller: 'ESP32 DevKit V1',
+          firmware_version: '0.1.0-dev',
+          topology: 'Dual-stage pre/post filtration with local fail-safe',
+        },
+      })
+      .select('*')
+      .single()
+  )
+  await ensureSensors(created.id)
+  return created
+}
+
 async function ensureSensors(deviceId: string): Promise<SensorRow[]> {
   const existing = check('Load sensors', await supabaseAdmin.from('sensors').select('*').eq('device_id', deviceId))
   if (existing.length >= SENSOR_DEFS.length) return existing
@@ -286,6 +323,7 @@ async function seedThresholdsAndNotifications(): Promise<void> {
       [
         { parameter: 'pH', stage: 'after', config: { min: 6.5, max: 8.5, severity: 'Warning', provisional: true } },
         { parameter: 'turbidity', stage: 'after', config: { max: 1.0, severity: 'Warning', provisional: true } },
+        { parameter: 'turbidity', stage: 'before', config: { max: 10.0, severity: 'Warning', provisional: true } },
         { parameter: 'TDS', stage: 'after', config: { max: 300, severity: 'Warning', provisional: true } },
         { parameter: 'temperature', stage: 'after', config: { min: 15.0, max: 35.0, severity: 'Information', provisional: true } },
       ],
@@ -302,6 +340,9 @@ async function main(): Promise<void> {
 
   const device = await ensureDevice()
   console.log(`✓ Device: ${device.id} (${device.device_identifier})`)
+
+  const hwDevice = await ensureHardwareDevice()
+  console.log(`✓ Hardware device: ${hwDevice.id} (${hwDevice.device_identifier})`)
 
   const sensors = await ensureSensors(device.id)
   const findSensor = sensorLookup(sensors)

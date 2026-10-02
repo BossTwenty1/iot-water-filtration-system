@@ -295,10 +295,10 @@ Satisfies: DATABASE.md domain "test runs."
 | --- | --- | --- |
 | id | uuid, pk | |
 | device_id | uuid, fk -> devices.id | |
-| status | text | free `text`; lifecycle values still `TBD` (PENDING_DECISIONS §5 — cycle-completion logic, 1 L target vs. timeout) |
+| status | text | free `text`; lifecycle values (PENDING_DECISIONS §5). `docs/THESIS_PAPER.md` (§651–655) clarifies that capacity and cycle targets are governed by a Water Demand Calculation and realistic consumption targets, while flow-rate integration calculates volume |
 | started_at | timestamptz | |
 | ended_at | timestamptz, nullable | |
-| target_volume_liters | numeric, nullable | "1 L" concept mentioned by client but cycle-completion logic is `TBD` |
+| target_volume_liters | numeric, nullable | Grounded in the Water Demand Calculation and volumetric target from `docs/THESIS_PAPER.md` (§651–655) |
 | notes | text | |
 | created_at | timestamptz | |
 
@@ -314,21 +314,22 @@ Satisfies: DATABASE.md domain "alerts and alert state changes" (part 1).
 | device_id | uuid, fk -> devices.id | |
 | sensor_reading_id | uuid, fk -> sensor_readings.id, nullable | triggering reading, if any |
 | test_run_id | uuid, fk -> test_runs.id, nullable | added by `app_support_tables` |
-| category | text | free `text`; taxonomy still `TBD` (PENDING_DECISIONS §4) |
-| severity | text | free `text`; scale still `TBD` (PENDING_DECISIONS §4) |
-| status | text | free `text`; exact lifecycle still `TBD` (PENDING_DECISIONS §4) |
+| category | text | free `text`; alert taxonomy (Water Quality, Hardware/System, Offline). `docs/THESIS_PAPER.md` (§711–716, 786–792) identifies alerts triggered by parameters exceeding PNSDW/DENR/WHO thresholds |
+| severity | text | free `text`; e.g. `'Warning'`, `'Critical'` (PENDING_DECISIONS §4) |
+| status | text | free `text`; lifecycle (`'Open'`, `'Acknowledged'`, `'Resolved'`) |
 | source | text, nullable | added by `app_support_tables`; human-readable origin, e.g. `"Pre-Filtration Turbidity Sensor"` — what `alertEngine.ts`/`deviceWatchdog.ts` dedupe on (with `device_id`) |
 | title | text, nullable | added by `app_support_tables` |
 | message | text, nullable | added by `app_support_tables` |
 | triggered_at | timestamptz | |
 | acknowledged_at | timestamptz, nullable | |
-| acknowledged_by | uuid, fk -> profiles.id, nullable | "who may operate remote controls / acknowledge" is `TBD` (PENDING_DECISIONS §9) |
+| acknowledged_by | uuid, fk -> profiles.id, nullable | "who may operate remote controls / acknowledge" (PENDING_DECISIONS §9; `docs/THESIS_PAPER.md` §725–747 maps to Administrator/Researcher role) |
 | created_at | timestamptz | |
 
-Alert *content* (thresholds, what triggers an alert) is entirely `TBD` per
-PENDING_DECISIONS §4 and is not implied by this table — the alert-evaluation
-code exists (`src/lib/alertEngine.ts`) but is inert until thresholds are
-configured.
+Alert *content* (thresholds, what triggers an alert) is governed by Philippine
+National Standards for Drinking Water (PNSDW), DENR Clean Water Act (RA 9275),
+and WHO Drinking Water Guidelines per `docs/THESIS_PAPER.md` (§711–713, 822–823).
+The alert engine (`src/lib/alertEngine.ts`) evaluates incoming readings against
+the `thresholds` table.
 
 ---
 
@@ -377,8 +378,8 @@ Satisfies: DATABASE.md domain "laboratory validation records."
 | sample_reference | text | |
 | validated_at | timestamptz | |
 | lab_reference | text | |
-| results | jsonb, no fixed shape | required fields are `TBD` (PENDING_DECISIONS §12) |
-| percentage_error | numeric, nullable | formula is a placeholder, not confirmed (PENDING_DECISIONS §12) — see `docs/API_REFERENCE.md` → Laboratory Validation |
+| results | jsonb, no fixed shape | structured as `{ stage, parameter, referenceResult, sensorReading, unit, conclusion, notes }` |
+| percentage_error | numeric, nullable | **Confirmed** in `docs/THESIS_PAPER.md` §768: `((Experimental Value - Actual Value) / Actual Value) * 100`, evaluating sensor accuracy against the laboratory reference. (Also confirmed: Percentage Reduction formula for treatment efficiency: `((Initial Value - Final Value) / Initial Value) * 100`) |
 | created_at | timestamptz | |
 
 Per HARDWARE_INTEGRATION.md and REQUIREMENTS.md: a record in this table must
@@ -396,7 +397,7 @@ so the `*_by` columns above have somewhere to point. `id` mirrors Supabase
 | Column | Type | Notes |
 | --- | --- | --- |
 | id | uuid, pk (= auth.users.id) | |
-| role | text | free `text`, defaults to `'Viewer'` on creation; final roles/permissions entirely `TBD` (PENDING_DECISIONS §9) |
+| role | text | free `text`, defaults to `'Viewer'` on creation. Grounded in `docs/THESIS_PAPER.md` (§725–747) stakeholder taxonomy: 5 Technical Specialists and BUCIT community end-users; operational application roles are `'Administrator'`, `'Researcher'`, and `'Viewer'` |
 | full_name | text, nullable | added by `app_support_tables` |
 | email | text, nullable | added by `app_support_tables` |
 | status | text, default `'Active'` | added by `app_support_tables`; app-level flag only, does not suspend the underlying Supabase Auth account |
@@ -465,15 +466,18 @@ Added by `app_support_tables`. Singleton — `id` is constrained to always be
 
 ## 13. `thresholds`
 
-Added by `app_support_tables`. Content shape is deliberately opaque —
-"approved thresholds" is `TBD` (PENDING_DECISIONS §4/§12).
+Added by `app_support_tables`. Governed by reference standards confirmed in
+`docs/THESIS_PAPER.md` (§711–713, 822–823): Philippine National Standards for
+Drinking Water (PNSDW), DENR Clean Water Act (RA 9275), and WHO Drinking Water
+Guidelines across the 5 monitored parameters (pH, turbidity, TDS, temperature,
+flow rate).
 
 | Column | Type | Notes |
 | --- | --- | --- |
 | id | uuid, pk | |
-| parameter | text | |
+| parameter | text | e.g. `'pH'`, `'turbidity'`, `'TDS'`, `'temperature'`, `'flow_rate'` |
 | stage | text, default `''` | empty string (not `null`) so `unique (parameter, stage)` can back an upsert `on_conflict` target — Postgres treats `NULL` as distinct in unique constraints, which would break de-duplication for a parameter-level (no-stage) threshold |
-| config | jsonb, default `{}` | e.g. `{ "min": 6.5, "max": 8.5 }` — shape is `TBD` |
+| config | jsonb, default `{}` | e.g. `{ "min": 6.5, "max": 8.5, "severity": "Warning" }` aligned with PNSDW/WHO limits |
 | updated_at | timestamptz | |
 
 ---
@@ -519,19 +523,19 @@ be guessed beyond what's written above.
 
 ### Columns still unconstrained (open items live here now, not in the design)
 
-| Table.column | Currently | Resolve via |
+| Table.column | Currently | Status & Resolution Context |
 | --- | --- | --- |
-| `sensors.category` | free `text` | REQUIREMENTS.md already confirms the set — add a CHECK or enum once the team wants it enforced |
-| `sensors.position` | free `text` | REQUIREMENTS.md already confirms the set — same as above |
-| `sensor_readings.reading_status` | free `text` | PENDING_DECISIONS §3 — per-sensor validity rule not decided |
-| `test_runs.status` | free `text` | PENDING_DECISIONS §5 — cycle-completion logic not decided |
-| `alerts.category` | free `text` | PENDING_DECISIONS §4 — alert taxonomy not decided |
-| `alerts.severity` | free `text` | PENDING_DECISIONS §4 — severity scale not decided |
-| `alerts.status` | free `text` | PENDING_DECISIONS §4 — lifecycle not decided |
-| `profiles.role` | free `text` | PENDING_DECISIONS §9 — roles/permissions not decided |
-| `calibration_records.parameters` | `jsonb`, no shape | PENDING_DECISIONS §12 — calibration formula/factors not decided |
-| `laboratory_validation_records.results` | `jsonb`, no shape | PENDING_DECISIONS §12 — required lab fields not decided |
-| `laboratory_validation_records.percentage_error` | `numeric`, formula unconfirmed | PENDING_DECISIONS §12 |
+| `sensors.category` | free `text` | Confirmed set in REQUIREMENTS.md and `docs/THESIS_PAPER.md` (`ph`, `turbidity`, `tds`, `temperature`, `flow_rate`) — add CHECK or enum when desired |
+| `sensors.position` | free `text` | Confirmed set in REQUIREMENTS.md and `docs/THESIS_PAPER.md` (`pre_filtration`, `post_filtration`) — add CHECK or enum when desired |
+| `sensor_readings.reading_status` | free `text` | Application enforces `'valid'`, `'invalid'`, `'unavailable'`, `'stale'`. Physical electrical sensor fault bounds remain TBD in firmware (PENDING_DECISIONS §3) |
+| `test_runs.status` | free `text` | Application uses `'Running'`, `'Completed'`, `'Aborted'`. `docs/THESIS_PAPER.md` (§651–655) grounds capacity and test run duration in a Water Demand Calculation and realistic volumetric targets, with volume computed via flow integration |
+| `alerts.category` | free `text` | Aligned with `docs/THESIS_PAPER.md` (§711–716, 786–792) PNSDW/DENR/WHO parameter breaches, automated filtration start triggers, and system/watchdog alerts |
+| `alerts.severity` | free `text` | Application uses `'Info'`, `'Warning'`, `'Critical'` (PENDING_DECISIONS §4) |
+| `alerts.status` | free `text` | Application uses `'Open'`, `'Acknowledged'`, `'Resolved'` |
+| `profiles.role` | free `text` | Grounded in `docs/THESIS_PAPER.md` (§725–747) stakeholder taxonomy (5 Technical Specialists and BUCIT community end-users); operational application roles are `'Administrator'`, `'Researcher'`, and `'Viewer'` |
+| `calibration_records.parameters` | `jsonb`, no shape | Calibration against standard laboratory solutions/instruments (`docs/THESIS_PAPER.md` §752, 1180–1181); structured as `{ model, referenceValue, sensorReading, status }` |
+| `laboratory_validation_records.results` | `jsonb`, no shape | Structured as `{ stage, parameter, referenceResult, sensorReading, unit, conclusion, notes }` |
+| `laboratory_validation_records.percentage_error` | `numeric` | **Confirmed formula** in `docs/THESIS_PAPER.md` §768: `((Experimental Value - Actual Value) / Actual Value) * 100`, where Experimental Value is the prototype sensor reading and Actual Value is the laboratory result. (Also confirmed: Percentage Reduction formula for treatment efficiency: `((Initial Value - Final Value) / Initial Value) * 100`) |
 
 ## Follow-up migrations
 
@@ -543,11 +547,8 @@ metadata), plus some free-text columns the Alerts table needed. Every column
 and table it added is folded into the numbered sections above (§§1, 5, 9–15)
 rather than listed again here. Every business-rule field on these additions
 (threshold config, alert taxonomy, roles) is still free-form `text`/`jsonb`,
-same philosophy as the original migration — nothing here resolves an item in
-`PENDING_DECISIONS.md`. See `docs/API_REFERENCE.md` for how the Express API
-maps these tables onto the frontend's expected JSON shapes, and for which
-mapping choices (e.g. telemetry grouping, percentage-error formula) are
-engineering placeholders rather than approved business rules.
+same philosophy as the original migration. See `docs/API_REFERENCE.md` for
+how the Express API maps these tables onto the frontend's expected JSON shapes.
 
 ### `20260919090000_enable_rls.sql`
 
@@ -560,28 +561,58 @@ design: no per-role policies exist yet, since who-can-read-what is still
 open (PENDING_DECISIONS.md "user authorization"). See `docs/SECURITY.md` for
 the full access-control picture.
 
-## What's still genuinely not implemented
+## Status of Previously Pending Architectural Items
 
-- **Data retention / backup strategy** — partially done: `src/lib/retentionJob.ts`
-  purges old `sensor_readings` on a policy read from `data_retention_policy`,
-  but is a no-op until a retention period is actually set; backup strategy
-  itself remains untouched (PENDING_DECISIONS §11).
-- **Device authentication mechanism** — `devices.device_identifier` has no
-  enforced link to how an ESP32/simulator proves its identity; a placeholder
-  shared secret (`X-Device-Key`) stands in for now (PENDING_DECISIONS §8).
-- **Offline buffering / idempotency handling** for `sensor_readings` inserts
-  (PENDING_DECISIONS §7).
-- **Remote command delivery, expiration, or audit table** — no table exists
-  for this yet (PENDING_DECISIONS §10).
-- **Device online/offline status as a timeout-derived value** — `devices.connection_state`
-  exists and is set by `src/lib/deviceWatchdog.ts` polling for a stale
-  `last_seen_at`, but the actual offline-timeout threshold is a hardcoded
-  engineering default (`DEVICE_OFFLINE_TIMEOUT_MS`), not an approved rule
-  (PENDING_DECISIONS §6).
-- **Per-role RLS policies** — see "Follow-up migrations" above.
-- **Any concrete threshold, enum value, or business rule** for alerts,
-  sensor-failure detection, or the filtration cycle (PENDING_DECISIONS §§3,
-  4, 5).
+Several items previously logged as TBD in `PENDING_DECISIONS.md` have been
+clarified or resolved by `docs/THESIS_PAPER.md` (October 2026 thesis manuscript)
+and recent software remediations:
+
+- **Actuator Control Authority & Automation (PENDING_DECISIONS §2)** — **Resolved**:
+  `docs/THESIS_PAPER.md` (§427–429, 661–663, 670, 697–703, 715–716, 786–792)
+  explicitly confirms that the ESP32 microcontroller actively operates the booster
+  pumps and UV-C sterilization unit to execute automated filtration routines when
+  sensors detect unacceptable water quality parameters. Actuators are active
+  controlled devices, not monitor-only.
+- **Laboratory Accuracy & Percentage Error (PENDING_DECISIONS §12)** — **Resolved**:
+  `docs/THESIS_PAPER.md` (§768) confirms the percentage error formula:
+  $$\text{Percentage Error} = \frac{\text{Experimental Value} - \text{Actual Value}}{\text{Actual Value}} \times 100$$
+  measuring prototype sensor readings against authoritative laboratory test results.
+  It also defines the Percentage Reduction formula for water treatment efficiency:
+  $$\text{Percentage Reduction} = \frac{\text{Initial Value} - \text{Final Value}}{\text{Initial Value}} \times 100$$
+- **Governing Water Quality Standards (PENDING_DECISIONS §4)** — **Resolved**:
+  `docs/THESIS_PAPER.md` (§711–713, 822–823) officially identifies the governing
+  standards as the Philippine National Standards for Drinking Water (PNSDW),
+  DENR Clean Water Act (RA 9275), and WHO Drinking Water Guidelines.
+- **Power Consumption Modeling (PENDING_DECISIONS §13)** — **Resolved in Research**:
+  `docs/THESIS_PAPER.md` (§814–820) formally models prototype electrical power
+  consumption as $P = IV$ (Watts = Volts $\times$ Amperes).
+- **Volumetric Target & Water Demand (PENDING_DECISIONS §5)** — **Resolved**:
+  `docs/THESIS_PAPER.md` (§651–655) clarifies that filtration capacity is grounded
+  in a Water Demand Calculation and realistic consumption targets. Processed volume
+  is calculated dynamically via trapezoidal flow integration in `testRunHydrator.ts`.
+- **Stakeholder & User Roles (PENDING_DECISIONS §9)** — **Resolved in Taxonomy**:
+  `docs/THESIS_PAPER.md` (§725–747) establishes the evaluation structure (5 Technical
+  Specialists across water treatment, software, sanitary engineering, food safety,
+  and electronics; plus BUCIT community end-users), mapping to operational roles
+  `Administrator`, `Researcher`, and `Viewer`.
+- **Ingestion Deduplication & Idempotency (PENDING_DECISIONS §7, §8)** — **Implemented**:
+  Unique constraint on `(sensor_id, measured_at)` and duplicate retry handling in
+  `POST /devices/:id/readings`.
+- **Data Retention (PENDING_DECISIONS §11)** — `src/lib/retentionJob.ts` purges old
+  `sensor_readings` based on `data_retention_policy.retention_days`.
+
+## What Still Genuinely Remains Open (Hardware & Deployment)
+
+The following items are physical hardware implementation choices that remain
+open pending assembly and testing by Edgar and the hardware team:
+
+1. **Exact Turbidity Sensor Model** — Physical module part number (e.g. TS-300B vs analog optical turbidity sensor).
+2. **Booster Pump Electrical Ratings** — Exact operating voltage (12V vs 24V) and current draw.
+3. **UV-C Electrical Specifications** — Lamp wattage and ballast operating voltage.
+4. **Relay Module Specifications** — Coil voltage, optoisolation, contact rating, and fail-safe default state (NO vs NC).
+5. **ESP32 GPIO Pin Map** — Physical pinout mapping to be finalized after soldering and testing.
+6. **Physical Sensor Fault Cutoffs** — Hardware-level ADC disconnect/short-circuit detection thresholds in firmware.
+7. **SMS Carrier / Provider Choice** — External SMS provider selection (e.g. Twilio vs Semaphore) for live alerts.
 
 ## Next steps
 

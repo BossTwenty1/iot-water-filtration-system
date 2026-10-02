@@ -29,6 +29,19 @@ const updateDeviceConfigSchema = z.object({
   config: z.record(z.unknown()).optional(),
 })
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+function isUuid(value: string): boolean {
+  return UUID_REGEX.test(value)
+}
+
+function findDeviceQuery(idOrIdentifier: string) {
+  const query = supabaseAdmin.from('devices').select('*')
+  return isUuid(idOrIdentifier)
+    ? query.eq('id', idOrIdentifier).maybeSingle()
+    : query.eq('device_identifier', idOrIdentifier).maybeSingle()
+}
+
 // Envelope-only: validates that a batch is well-formed enough to process at
 // all. Deliberately does NOT validate individual reading shape (category,
 // position, value) — that's the hand-rolled loop below, whose "skip a bad
@@ -43,23 +56,33 @@ const readingsEnvelopeSchema = z.object({
 })
 
 // GET /devices — list known devices (needed to discover a deviceId before
-// calling the :id-scoped routes below).
+// calling the :id-scoped routes below). Sorted with physical hardware units
+// first, followed by simulated units.
 router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const rows = orThrow<DeviceRow[]>(await supabaseAdmin.from('devices').select('*').order('created_at'), 'Failed to load devices.')
+    const rows = orThrow<DeviceRow[]>(
+      await supabaseAdmin
+        .from('devices')
+        .select('*')
+        .order('is_simulated', { ascending: true })
+        .order('created_at', { ascending: true }),
+      'Failed to load devices.'
+    )
     res.json(rows)
   } catch (err) {
     next(err)
   }
 })
 
-// GET /devices/:id — get one device.
+// GET /devices/:id — get one device (by UUID or device_identifier e.g. ESP32-DEV-001).
 router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const row = orThrow<DeviceRow | null>(
-      await supabaseAdmin.from('devices').select('*').eq('id', param(req, 'id')).maybeSingle(),
-      'Failed to load device.'
-    )
+    const id = param(req, 'id')
+    const query = supabaseAdmin.from('devices').select('*, sensors(*)')
+    const result = isUuid(id)
+      ? await query.eq('id', id).maybeSingle()
+      : await query.eq('device_identifier', id).maybeSingle()
+    const row = orThrow(result, 'Failed to load device.')
     if (!row) throw ApiError.notFound('Device was not found.')
     res.json(row)
   } catch (err) {
@@ -90,10 +113,11 @@ router.post('/', requireAuth, validateBody(registerDeviceSchema), async (req: Re
 })
 
 // GET /devices/:id/status — device status (ESP32 connection, wifi, fail-safe).
+// Accepts either UUID or device_identifier.
 router.get('/:id/status', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const device = orThrow<DeviceRow | null>(
-      await supabaseAdmin.from('devices').select('*').eq('id', param(req, 'id')).maybeSingle(),
+      await findDeviceQuery(param(req, 'id')),
       'Failed to load device status.'
     )
     if (!device) throw ApiError.notFound('Device was not found.')
@@ -125,6 +149,12 @@ router.get('/:id/status', requireAuth, async (req: Request, res: Response, next:
 router.put('/:id/config', requireAuth, validateBody(updateDeviceConfigSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { connectionState, wifiState, failSafeState, controllerName, config } = req.body
+    const existing = orThrow<DeviceRow | null>(
+      await findDeviceQuery(param(req, 'id')),
+      'Failed to load device.'
+    )
+    if (!existing) throw ApiError.notFound('Device was not found.')
+
     const patch: TablesUpdate<'devices'> = { last_seen_at: new Date().toISOString() }
     if (connectionState !== undefined) patch.connection_state = connectionState
     if (wifiState !== undefined) patch.wifi_state = wifiState
@@ -133,7 +163,7 @@ router.put('/:id/config', requireAuth, validateBody(updateDeviceConfigSchema), a
     if (config !== undefined) patch.config = config
 
     const row = orThrow<DeviceRow | null>(
-      await supabaseAdmin.from('devices').update(patch).eq('id', param(req, 'id')).select('*').maybeSingle(),
+      await supabaseAdmin.from('devices').update(patch).eq('id', existing.id).select('*').maybeSingle(),
       'Failed to update device config.'
     )
     if (!row) throw ApiError.notFound('Device was not found.')
