@@ -8,11 +8,26 @@ import request from 'supertest'
 import { errorHandler } from '../middleware/errorHandler'
 
 const { supabaseAnon } = vi.hoisted(() => ({
-  supabaseAnon: { auth: { signInWithPassword: vi.fn() } },
+  supabaseAnon: {
+    auth: {
+      signInWithPassword: vi.fn(),
+      signUp: vi.fn(),
+    },
+  },
 }))
 vi.mock('../config/supabaseClient', () => ({
   supabaseAnon,
-  supabaseAdmin: { from: vi.fn() },
+  supabaseAdmin: {
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: { id: 'test-user-id', email: 'user@example.com', full_name: 'Test', role: 'Viewer', status: 'Active' },
+          }),
+        })),
+      })),
+    })),
+  },
   createScopedClient: vi.fn(),
 }))
 
@@ -28,6 +43,7 @@ function buildApp() {
 
 beforeEach(() => {
   supabaseAnon.auth.signInWithPassword.mockReset()
+  supabaseAnon.auth.signUp.mockReset()
 })
 
 describe('POST /auth/login validation', () => {
@@ -48,5 +64,52 @@ describe('POST /auth/login validation', () => {
     const res = await request(buildApp()).post('/api/v1/auth/login').send({ email: 'user@example.com', password: 'secret' })
     expect(supabaseAnon.auth.signInWithPassword).toHaveBeenCalledWith({ email: 'user@example.com', password: 'secret' })
     expect(res.status).toBe(401) // no session -> unauthorized, proving it reached the handler past validation
+  })
+})
+
+describe('POST /auth/register validation', () => {
+  it('returns 400 when body has missing password or invalid email', async () => {
+    const res = await request(buildApp()).post('/api/v1/auth/register').send({ email: 'invalid-email' })
+    expect(res.status).toBe(400)
+    expect(res.body.error).toBe('Invalid request body.')
+    expect(supabaseAnon.auth.signUp).not.toHaveBeenCalled()
+  })
+
+  it('returns 400 when password is fewer than 6 characters', async () => {
+    const res = await request(buildApp()).post('/api/v1/auth/register').send({ email: 'user@example.com', password: '123' })
+    expect(res.status).toBe(400)
+    expect(res.body.error).toBe('Invalid request body.')
+    expect(supabaseAnon.auth.signUp).not.toHaveBeenCalled()
+  })
+
+  it('successfully registers and returns 201 with session', async () => {
+    const mockSession = {
+      access_token: 'fake-access-token',
+      refresh_token: 'fake-refresh-token',
+      expires_in: 3600,
+      user: { id: 'test-user-id', email: 'user@example.com' },
+    }
+    supabaseAnon.auth.signUp.mockResolvedValue({
+      data: { user: mockSession.user, session: mockSession },
+      error: null,
+    })
+
+    const res = await request(buildApp())
+      .post('/api/v1/auth/register')
+      .send({ email: 'user@example.com', password: 'Password123!', name: 'New User' })
+
+    expect(supabaseAnon.auth.signUp).toHaveBeenCalledWith({
+      email: 'user@example.com',
+      password: 'Password123!',
+      options: {
+        data: {
+          full_name: 'New User',
+          role: 'Viewer',
+        },
+      },
+    })
+    expect(res.status).toBe(201)
+    expect(res.body.token).toBe('fake-access-token')
+    expect(res.body.user.role).toBe('Viewer')
   })
 })

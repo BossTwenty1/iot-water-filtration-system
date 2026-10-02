@@ -26,6 +26,7 @@ The backend is fully operational and verified end-to-end against the local Supab
 | **Interactive Alert CLI Simulator** | **Done** | `npm run alert` (`backend/scripts/sendAlert.ts`) for custom and scenario testing in CLI |
 | **Automated Alert Engine** | **Done** | Provisional PNSDW baseline thresholds, sensor fault detection, offline watchdog auto-clearing |
 | **Notification Dispatch Plumbing** | **Done** | Event-driven notification dispatch layer ready for SMS/email carrier integration |
+| **User Registration & Auth** | **Done** | `POST /auth/register` with input validation, auto-session creation, secure Viewer role default |
 | **Role-Based Access Control (RBAC)**| **Done** | `Administrator`, `Researcher`, and `Viewer` roles enforced on sensitive mutation endpoints |
 | **Research & Lab Metrics** | **Done** | Volume tracking ($\int \text{flow} \, dt$), percentage error formula, test-run experiment linking |
 | **CSV Data Export** | **Done** | Telemetry, test runs, alerts, and lab validation exports |
@@ -71,7 +72,8 @@ The backend is fully operational and verified end-to-end against the local Supab
   and treatment reduction efficiency:
   $$\text{Percentage Reduction} = \frac{\text{Initial Value} - \text{Final Value}}{\text{Initial Value}} \times 100$$
 
-### 2.5 Security, RBAC & Cloud Resilience
+### 2.5 User Registration, Security & RBAC
+- **User Self-Registration**: Created public `POST /api/v1/auth/register` with Zod schema validation (email formatting, password minimum 6 chars), automatically provisioning a profile with default `Viewer` role to prevent unauthorized privilege escalation.
 - **Strict Access Control**: Secured sensitive routes (account management, threshold changes, calibration, and lab validation) behind verified role-based access checks (`Administrator` / `Researcher`).
 - **Deny-by-Default RLS**: Supabase database tables enforce Row-Level Security denying direct anon client manipulation.
 - **Fail-Safe Offline Mode**: Configured `fail_safe_state = 'Local Control Active'` reflecting ESP32 autonomous operation when disconnected from cloud infrastructure.
@@ -96,7 +98,7 @@ Recent alignment with `docs/THESIS_PAPER.md` resolved several architectural open
 
 - **Backend Type Safety**: TypeScript compiles with zero errors (`tsc --noEmit`).
 - **Backend Build**: Production build compiles cleanly (`npm run build`).
-- **Automated Tests**: 10 test suites passed, 57 unit tests passed (`npm test`).
+- **Automated Tests**: 10 test suites passed, 60 unit tests passed (`npm test`).
 - **Frontend Compatibility**: Frontend builds with 0 errors (`tsc -b && vite build`) without touching frontend code.
 - **Live Endpoint Verification**:
   - `GET /api/v1/devices`: Successfully lists `ESP32-DEV-001` first.

@@ -11,6 +11,11 @@ import type { AuthSession } from '../types/domain'
 const router = express.Router()
 
 const loginSchema = z.object({ email: z.string().min(1), password: z.string().min(1) })
+const registerSchema = z.object({
+  email: z.string().email({ message: 'Must be a valid email address.' }),
+  password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
+  name: z.string().optional(),
+})
 const refreshSchema = z.object({ refreshToken: z.string().min(1) })
 const passwordResetRequestSchema = z.object({ email: z.string().min(1) })
 const passwordResetConfirmSchema = z.object({ accessToken: z.string().min(1), newPassword: z.string().min(1) })
@@ -25,6 +30,41 @@ async function sessionResponse(session: Session): Promise<AuthSession> {
     user: toUser(profile ?? { id: session.user.id, email: session.user.email ?? null }),
   }
 }
+
+// POST /auth/register — public account registration (defaults to Viewer role).
+router.post('/register', validateBody(registerSchema), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email, password, name } = req.body
+
+    const { data, error } = await supabaseAnon.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: name ?? null,
+          role: 'Viewer',
+        },
+      },
+    })
+
+    if (error || !data.user) {
+      throw ApiError.badRequest('Could not create account.', error?.message)
+    }
+
+    if (data.session) {
+      res.status(201).json(await sessionResponse(data.session))
+      return
+    }
+
+    const { data: profile } = await supabaseAdmin.from('profiles').select('*').eq('id', data.user.id).maybeSingle()
+    res.status(201).json({
+      user: toUser(profile ?? { id: data.user.id, email: data.user.email ?? null }),
+      message: 'Registration successful.',
+    })
+  } catch (err) {
+    next(err)
+  }
+})
 
 // POST /auth/login — email/password → session token + user profile.
 router.post('/login', validateBody(loginSchema), async (req: Request, res: Response, next: NextFunction) => {

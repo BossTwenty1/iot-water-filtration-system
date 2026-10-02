@@ -47,6 +47,37 @@ that document's decision rule. `req.profile.role` is available server-side
 (`backend/src/middleware/auth.ts`) if/when the team decides on a policy —
 adding `requireRole(...)` gates then is a small change, not a rewrite.
 
+### `POST /auth/register`
+
+Public user self-registration. Role is securely restricted to default `'Viewer'`.
+
+```json
+// request
+{
+  "email": "researcher.new@example.com",
+  "password": "Password123!",
+  "name": "Alex Researcher"
+}
+```
+
+```json
+// response 201
+{
+  "token": "eyJhbGciOiJFUzI1NiIs...",
+  "refreshToken": "j6bpq6qc73xi",
+  "expiresIn": 3600,
+  "user": {
+    "id": "22bb...",
+    "name": "Alex Researcher",
+    "email": "researcher.new@example.com",
+    "role": "Viewer",
+    "status": "Active"
+  }
+}
+```
+
+`400` on validation error (invalid email format, password under 6 characters, or email already registered).
+
 ### `POST /auth/login`
 
 ```json

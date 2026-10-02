@@ -39,3 +39,5 @@ Thumbs.db
 backend/docs/tracker/*.xlsx
 backend/docs/references/
 backend/supabase/snippets/
+docs/audits/
+GEMINI.md
