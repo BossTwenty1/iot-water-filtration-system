@@ -1,6 +1,7 @@
 import { useEffect,useRef,useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useTheme } from '../../hooks/useTheme'
+import { RealtimeProvider } from '../../context/RealtimeContext'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 
@@ -32,16 +33,18 @@ export function AppLayout(){
     return()=>{window.removeEventListener('keydown',handleKey);document.body.style.overflow=previousOverflow;menuButton?.focus()}
   },[mobileOpen])
 
-  return <div className="app-shell min-h-screen bg-canvas">
-    <a className="skip-link" href="#main-content">Skip to main content</a>
-    <Sidebar expanded={sidebarExpanded} onToggle={()=>setSidebarExpanded((value)=>!value)}/>
-    {mobileOpen&&<>
-      <Sidebar mobile open expanded drawerRef={mobileDrawerRef} onClose={()=>setMobileOpen(false)}/>
-      <button type="button" className="sidebar-backdrop" aria-label="Close navigation" onClick={()=>setMobileOpen(false)}/>
-    </>}
-    <div className={`app-main ${sidebarExpanded?'lg:ml-64':'lg:ml-20'}`}>
-      <Header menuButtonRef={menuButtonRef} mobileOpen={mobileOpen} theme={theme} onMenu={()=>setMobileOpen(true)} onThemeToggle={toggleTheme}/>
-      <main id="main-content" className="app-content"><Outlet/></main>
+  return <RealtimeProvider>
+    <div className="app-shell min-h-screen bg-canvas">
+      <a className="skip-link" href="#main-content">Skip to main content</a>
+      <Sidebar expanded={sidebarExpanded} onToggle={()=>setSidebarExpanded((value)=>!value)}/>
+      {mobileOpen&&<>
+        <Sidebar mobile open expanded drawerRef={mobileDrawerRef} onClose={()=>setMobileOpen(false)}/>
+        <button type="button" className="sidebar-backdrop" aria-label="Close navigation" onClick={()=>setMobileOpen(false)}/>
+      </>}
+      <div className={`app-main ${sidebarExpanded?'lg:ml-64':'lg:ml-20'}`}>
+        <Header menuButtonRef={menuButtonRef} mobileOpen={mobileOpen} theme={theme} onMenu={()=>setMobileOpen(true)} onThemeToggle={toggleTheme}/>
+        <main id="main-content" className="app-content"><Outlet/></main>
+      </div>
     </div>
-  </div>
+  </RealtimeProvider>
 }

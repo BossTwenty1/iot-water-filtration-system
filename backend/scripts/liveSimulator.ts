@@ -8,15 +8,15 @@
 //
 // Usage: `npm run simulate` (from backend/), after `npx supabase start`
 // and with the API server running (`npm run dev`).
-// Optional: `LIVE_SIM_INTERVAL_MS=2000 npm run simulate` to change the
-// posting interval (default 5000ms). Stop with Ctrl+C.
+// Optional: `LIVE_SIM_INTERVAL_MS=1000 npm run simulate` to change the
+// posting interval (default 1000ms / 1s). Stop with Ctrl+C.
 
 import { supabaseAdmin } from '../src/config/supabaseClient'
 import env from '../src/config/env'
 import type { DeviceRow, SensorRow } from '../src/types/db'
 
 const DEVICE_IDENTIFIER = 'SIM-DEV-001'
-const INTERVAL_MS = Number(process.env.LIVE_SIM_INTERVAL_MS) || 5000
+const INTERVAL_MS = Number(process.env.LIVE_SIM_INTERVAL_MS) || 1000
 
 const SENSOR_DEFS: Array<[string, string, string]> = [
   ['ph', 'pre_filtration', 'pH'],
@@ -43,11 +43,11 @@ interface ParamState {
 }
 
 const state: Record<string, ParamState> = {
-  ph: { pre: 6.73, post: 7.02, step: 0.02, min: 6.0, max: 8.0 },
-  turbidity: { pre: 9.36, post: 0.71, step: 0.15, min: 0.1, max: 15 },
-  tds: { pre: 302, post: 180, step: 2, min: 50, max: 400 },
-  temperature: { pre: 26.5, post: 26.6, step: 0.1, min: 20, max: 32 },
-  flow_rate: { pre: 2.4, post: 2.1, step: 0.1, min: 0, max: 4 },
+  ph: { pre: 6.73, post: 7.02, step: 0.005, min: 6.0, max: 8.0 },
+  turbidity: { pre: 9.36, post: 0.71, step: 0.03, min: 0.1, max: 15 },
+  tds: { pre: 302, post: 180, step: 0.5, min: 50, max: 400 },
+  temperature: { pre: 26.5, post: 26.6, step: 0.02, min: 20, max: 32 },
+  flow_rate: { pre: 2.4, post: 2.1, step: 0.02, min: 0, max: 4 },
 }
 
 function drift(value: number, spec: ParamState): number {
@@ -112,7 +112,7 @@ function buildReadingBatch(): OutgoingReading[] {
     for (const [position, value] of [['pre_filtration', spec.pre], ['post_filtration', spec.post]] as const) {
       // Occasionally simulate a sensor reporting "no reading" rather than a
       // measured value, exercising the value:null / status:"unavailable" path.
-      const unavailable = Math.random() < 0.03
+      const unavailable = Math.random() < 0.005
       readings.push({
         category,
         position,

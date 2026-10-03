@@ -17,7 +17,8 @@
 // via PUT /thresholds, matching the existing "kept unconfigured until
 // approved" behavior (PENDING_DECISIONS.md "approved thresholds").
 import { supabaseAdmin } from '../config/supabaseClient'
-import { categoryToParameter, positionToStage } from './mappers'
+import { categoryToParameter, positionToStage, toAlert } from './mappers'
+import { realtimeBus } from './realtimeBus'
 import { dispatchNotification } from './notificationService'
 import type { ThresholdRow } from '../types/db'
 
@@ -85,8 +86,17 @@ export async function resolveActiveAlertBySource(deviceId: string, source: strin
     .maybeSingle()
   if (!alert) return
 
-  await supabaseAdmin.from('alerts').update({ status: 'Resolved' }).eq('id', alert.id)
+  const { data: updated } = await supabaseAdmin
+    .from('alerts')
+    .update({ status: 'Resolved' })
+    .eq('id', alert.id)
+    .select('*')
+    .maybeSingle()
   await supabaseAdmin.from('alert_state_changes').insert({ alert_id: alert.id, from_status: alert.status, to_status: 'Resolved', changed_by: null })
+
+  if (updated) {
+    realtimeBus.emitAlert([toAlert(updated)])
+  }
 }
 
 async function hasActiveAlert(deviceId: string, source: string): Promise<boolean> {
@@ -116,7 +126,7 @@ export interface RaiseAlertInput {
 // alert outside the per-reading evaluation loop above.
 export async function raiseAlertIfNotActive(input: RaiseAlertInput): Promise<void> {
   if (await hasActiveAlert(input.deviceId, input.source)) return
-  await supabaseAdmin.from('alerts').insert({
+  const { data: newRow } = await supabaseAdmin.from('alerts').insert({
     device_id: input.deviceId,
     test_run_id: input.testRunId,
     sensor_reading_id: input.sensorReadingId,
@@ -126,7 +136,11 @@ export async function raiseAlertIfNotActive(input: RaiseAlertInput): Promise<voi
     message: input.message,
     severity: input.severity,
     status: 'Active',
-  })
+  }).select('*').maybeSingle()
+
+  if (newRow) {
+    realtimeBus.emitAlert([toAlert(newRow)])
+  }
   // Notification dispatch (src/lib/notificationService.ts) — only on a
   // newly-raised alert, not on the dedupe path above, so an already-Active
   // alert doesn't re-notify on every reading.

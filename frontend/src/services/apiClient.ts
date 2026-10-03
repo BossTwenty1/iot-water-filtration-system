@@ -111,6 +111,10 @@ async function accessToken():Promise<string>{
   return refreshSession()
 }
 
+export async function getAccessToken():Promise<string>{
+  return accessToken()
+}
+
 export function restoreSession():Promise<void>{
   if(restorePromise)return restorePromise
   restorePromise=(async()=>{

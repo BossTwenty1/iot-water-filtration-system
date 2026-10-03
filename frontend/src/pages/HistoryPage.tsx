@@ -1,26 +1,172 @@
-import { Download,Info } from 'lucide-react'
+import { Download, Info } from 'lucide-react'
 import { useState } from 'react'
 import { PageHeader } from '../components/common/PageHeader'
 import { ResourceState } from '../components/common/ResourceState'
-import { SectionCard,SummaryCard } from '../components/common/Cards'
+import { SectionCard, SummaryCard } from '../components/common/Cards'
 import { StatusBadge } from '../components/common/StatusBadge'
 import { TelemetryChart } from '../components/telemetry/TelemetryChart'
 import { useServiceData } from '../hooks/useServiceData'
+import { useRealtimeEvent } from '../hooks/useRealtime'
 import { telemetryService } from '../services'
+import type { TelemetryRecord } from '../types'
 import { downloadCsv } from '../utils/csv'
-import { formatDateTime,formatOptionalNumber } from '../utils/formatters'
+import { formatDateTime, formatOptionalNumber } from '../utils/formatters'
 
 export function HistoryPage() {
-  const resource=useServiceData(telemetryService.getTelemetryHistory)
-  const [selectedId,setSelectedId]=useState<string|null>(null)
-  const records=resource.data??[]
-  const selected=records.find((record)=>record.id===selectedId)??records[0]
-  const beforeValues=records.map((row)=>row.before.turbidity).filter((value):value is number=>typeof value==='number'); const afterValues=records.map((row)=>row.after.turbidity).filter((value):value is number=>typeof value==='number'); const average=(values:number[])=>values.length?(values.reduce((sum,value)=>sum+value,0)/values.length).toFixed(2):'—'; const range=(values:number[])=>values.length?`${Math.min(...values).toFixed(2)} – ${Math.max(...values).toFixed(2)}`:'—'; const stats={before:average(beforeValues),after:average(afterValues)}
-  const exportRows=()=>downloadCsv('telemetry.csv',records.map((row)=>({timestamp:row.timestamp,test_run_id:row.testRunId,before_ph:row.before.pH,after_ph:row.after.pH,before_turbidity_ntu:row.before.turbidity,after_turbidity_ntu:row.after.turbidity,before_tds_ppm:row.before.TDS,after_tds_ppm:row.after.TDS})))
-  if(resource.status!=='success'||!selected)return <div className="page-grid"><PageHeader title="Telemetry History" description="Review API-backed sensor records; device provenance and live connection are not verified" badge="API records"/><ResourceState status={resource.status} error={resource.error} loadingLabel="Loading telemetry history…" emptyLabel="No telemetry records available."/></div>
-  return <div className="page-grid"><PageHeader title="Telemetry History" description="Review API-backed sensor records; device provenance and live connection are not verified" badge="API records" actions={<button type="button" className="button-primary" onClick={exportRows}><Download size={16}/>Export CSV</button>}/>
-  <div className="summary-grid"><SummaryCard label="Before filtration average" value={`${stats.before} NTU`} detail="Mean across loaded records"/><SummaryCard label="After filtration average" value={`${stats.after} NTU`} detail="Descriptive comparison only" tone="good"/><SummaryCard label="Before minimum / maximum" value={range(beforeValues)} detail="Recorded range, NTU"/><SummaryCard label="After minimum / maximum" value={range(afterValues)} detail="Recorded range, NTU" tone="good"/></div>
-  <div className="notice"><Info size={17}/><span>Laboratory validation is tracked separately from sensor telemetry.</span></div>
-  <SectionCard title="Recorded Sensor Trends" description="Before vs after API series" action={<span className="eyebrow text-hydro">Turbidity</span>}><TelemetryChart/></SectionCard>
-  <div className="detail-grid"><SectionCard title="Telemetry records" description={`${records.length} loaded records`}><div className="table-wrap"><table className="data-table"><thead><tr><th>Timestamp</th><th>Test Run</th><th>Pre / Post pH</th><th>Pre / Post Turbidity</th><th>Pre / Post TDS</th><th>Action</th></tr></thead><tbody>{records.map((record)=><tr key={record.id} data-selected={selected.id===record.id}><td className="mono">{record.timestamp.slice(11,19)}</td><td className="mono">{record.testRunId??'—'}</td><td className="mono">{formatOptionalNumber(record.before.pH)} / <span className="text-hydro">{formatOptionalNumber(record.after.pH)}</span></td><td className="mono">{formatOptionalNumber(record.before.turbidity)} / <span className="text-hydro">{formatOptionalNumber(record.after.turbidity)}</span></td><td className="mono">{record.before.TDS} / <span className="text-hydro">{record.after.TDS}</span></td><td><button className="button-quiet" type="button" onClick={()=>setSelectedId(record.id)}>Inspect</button></td></tr>)}</tbody></table></div></SectionCard><SectionCard title="Record Inspector" action={<span className="eyebrow rounded bg-blue-100 px-2 py-1 text-hydro">{formatDateTime(selected.timestamp)}</span>}><div className="space-y-3"><div className="subpanel p-3"><div className="eyebrow text-muted">Test Run / Device</div><div className="mono mt-1 text-xs">{selected.testRunId??'No linked run'} · {selected.deviceId}</div><div className="mt-2"><StatusBadge>API record</StatusBadge></div></div>{(['before','after'] as const).map((sensorStage)=><div className="subpanel p-3" key={sensorStage}><h4 className="text-sm font-semibold text-hydro">{sensorStage==='before'?'Before Filtration':'After Filtration'}</h4><div className="mt-3 grid grid-cols-2 gap-3 text-xs"><div><span className="text-muted">pH</span><div className="mono text-base">{formatOptionalNumber(selected[sensorStage].pH)}</div></div><div><span className="text-muted">Turbidity</span><div className="mono text-base">{formatOptionalNumber(selected[sensorStage].turbidity)} NTU</div></div><div><span className="text-muted">TDS</span><div className="mono text-base">{formatOptionalNumber(selected[sensorStage].TDS,0)} ppm</div></div><div><span className="text-muted">Flow</span><div className="mono text-base">{formatOptionalNumber(selected[sensorStage].flowRate,1)} L/min</div></div></div></div>)}<div className="text-xs text-muted">Recorded {formatDateTime(selected.timestamp)}</div><div className="notice">Laboratory association must be checked in the validation records.</div></div></SectionCard></div></div>
+  const resource = useServiceData(telemetryService.getTelemetryHistory)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+
+  // React to incoming live telemetry without page reload
+  useRealtimeEvent<TelemetryRecord[]>('telemetry', (incoming) => {
+    if (!incoming.length) return
+    resource.setData((prev) => {
+      const existing = prev ? [...prev] : []
+      const existingIds = new Set(existing.map((r) => r.id))
+      const toAdd = incoming.filter((r) => !existingIds.has(r.id))
+      return [...toAdd, ...existing]
+    })
+  })
+
+  const records = resource.data ?? []
+  const selected = records.find((record) => record.id === selectedId) ?? records[0]
+  const beforeValues = records.map((row) => row.before?.turbidity).filter((value): value is number => typeof value === 'number')
+  const afterValues = records.map((row) => row.after?.turbidity).filter((value): value is number => typeof value === 'number')
+  const average = (values: number[]) => (values.length ? (values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(2) : '—')
+  const range = (values: number[]) => (values.length ? `${Math.min(...values).toFixed(2)} – ${Math.max(...values).toFixed(2)}` : '—')
+  const stats = { before: average(beforeValues), after: average(afterValues) }
+
+  const exportRows = () =>
+    downloadCsv(
+      'telemetry.csv',
+      records.map((row) => ({
+        timestamp: row.timestamp,
+        test_run_id: row.testRunId,
+        before_ph: row.before?.pH,
+        after_ph: row.after?.pH,
+        before_turbidity_ntu: row.before?.turbidity,
+        after_turbidity_ntu: row.after?.turbidity,
+        before_tds_ppm: row.before?.TDS,
+        after_tds_ppm: row.after?.TDS,
+      }))
+    )
+
+  if (resource.status !== 'success' || !selected) {
+    return (
+      <div className="page-grid">
+        <PageHeader
+          title="Telemetry History"
+          description="Review API-backed sensor records; device provenance and live connection are not verified"
+          badge="Live stream active"
+        />
+        <ResourceState status={resource.status} error={resource.error} loadingLabel="Loading telemetry history…" emptyLabel="No telemetry records available." />
+      </div>
+    )
+  }
+
+  return (
+    <div className="page-grid">
+      <PageHeader
+        title="Telemetry History"
+        description="Historical and streaming sensor telemetry archive with statistical summaries."
+        badge="Live stream active"
+        actions={
+          <button type="button" className="button-primary" onClick={exportRows}>
+            <Download size={16} />
+            Export CSV
+          </button>
+        }
+      />
+      <div className="summary-grid">
+        <SummaryCard label="Before filtration average" value={`${stats.before} NTU`} detail="Mean across recorded records" />
+        <SummaryCard label="After filtration average" value={`${stats.after} NTU`} detail="Descriptive comparison only" tone="good" />
+        <SummaryCard label="Before minimum / maximum" value={range(beforeValues)} detail="Recorded range, NTU" />
+        <SummaryCard label="After minimum / maximum" value={range(afterValues)} detail="Recorded range, NTU" tone="good" />
+      </div>
+      <div className="notice">
+        <Info size={17} />
+        <span>Laboratory validation is tracked separately from sensor telemetry.</span>
+      </div>
+      <SectionCard title="Recorded Sensor Trends" description="Before vs after continuous series" action={<span className="eyebrow text-hydro">Turbidity</span>}>
+        <TelemetryChart />
+      </SectionCard>
+      <div className="detail-grid">
+        <SectionCard title="Telemetry records" description={`${records.length} loaded records`}>
+          <div className="table-wrap">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Test Run</th>
+                  <th>Pre / Post pH</th>
+                  <th>Pre / Post Turbidity</th>
+                  <th>Pre / Post TDS</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {records.map((record) => (
+                  <tr key={record.id} data-selected={selected.id === record.id}>
+                    <td className="mono">{record.timestamp.slice(11, 19)}</td>
+                    <td className="mono">{record.testRunId ?? '—'}</td>
+                    <td className="mono">
+                      {formatOptionalNumber(record.before?.pH)} / <span className="text-hydro">{formatOptionalNumber(record.after?.pH)}</span>
+                    </td>
+                    <td className="mono">
+                      {formatOptionalNumber(record.before?.turbidity)} / <span className="text-hydro">{formatOptionalNumber(record.after?.turbidity)}</span>
+                    </td>
+                    <td className="mono">
+                      {record.before?.TDS} / <span className="text-hydro">{record.after?.TDS}</span>
+                    </td>
+                    <td>
+                      <button className="button-quiet" type="button" onClick={() => setSelectedId(record.id)}>
+                        Inspect
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </SectionCard>
+        <SectionCard title="Record Inspector" action={<span className="eyebrow rounded bg-blue-100 px-2 py-1 text-hydro">{formatDateTime(selected.timestamp)}</span>}>
+          <div className="space-y-3">
+            <div className="subpanel p-3">
+              <div className="eyebrow text-muted">Test Run / Device</div>
+              <div className="mono mt-1 text-xs">
+                {selected.testRunId ?? 'No linked run'} · {selected.deviceId}
+              </div>
+              <div className="mt-2">
+                <StatusBadge tone="Good">Recorded stream</StatusBadge>
+              </div>
+            </div>
+            {(['before', 'after'] as const).map((sensorStage) => (
+              <div className="subpanel p-3" key={sensorStage}>
+                <h4 className="text-sm font-semibold text-hydro">{sensorStage === 'before' ? 'Before Filtration' : 'After Filtration'}</h4>
+                <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="text-muted">pH</span>
+                    <div className="mono text-base">{formatOptionalNumber(selected[sensorStage]?.pH)}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted">Turbidity</span>
+                    <div className="mono text-base">{formatOptionalNumber(selected[sensorStage]?.turbidity)} NTU</div>
+                  </div>
+                  <div>
+                    <span className="text-muted">TDS</span>
+                    <div className="mono text-base">{formatOptionalNumber(selected[sensorStage]?.TDS, 0)} ppm</div>
+                  </div>
+                  <div>
+                    <span className="text-muted">Flow</span>
+                    <div className="mono text-base">{formatOptionalNumber(selected[sensorStage]?.flowRate, 1)} L/min</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div className="text-xs text-muted">Recorded {formatDateTime(selected.timestamp)}</div>
+            <div className="notice">Laboratory association must be checked in the validation records.</div>
+          </div>
+        </SectionCard>
+      </div>
+    </div>
+  )
 }

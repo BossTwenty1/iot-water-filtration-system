@@ -7,6 +7,7 @@ import { orThrow, parsePagination, applyDateRange, type DateRangeQuery, type Pag
 import { pollAndStream } from '../lib/sse'
 import env from '../config/env'
 import { toAlert } from '../lib/mappers'
+import { realtimeBus } from '../lib/realtimeBus'
 import type { AlertRow } from '../types/db'
 import type { SystemAlert } from '../types/domain'
 
@@ -48,6 +49,9 @@ async function transitionAlert(id: string, toStatus: 'Acknowledged' | 'Resolved'
     to_status: toStatus,
     changed_by: changedBy,
   })
+
+  const domainAlert = toAlert(updated)
+  realtimeBus.emitAlert([domainAlert])
 
   return updated
 }

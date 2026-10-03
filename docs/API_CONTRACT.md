@@ -205,3 +205,33 @@ the ESP32 microcontroller or the live simulator.
 - **`401 Unauthorized`**: Missing or invalid `X-Device-Key`.
 - **`404 Not Found`**: Device `:id` is not registered.
 
+---
+
+## 7. Real-Time Streaming (`GET /realtime/stream`)
+
+The backend exposes a single multiplexed Server-Sent Events (SSE) stream for continuous UI updates without client-side page refreshes.
+
+- **Route**: `GET /api/v1/realtime/stream`
+- **Authentication**: Requires valid user JWT session via `Authorization: Bearer <token>` or query parameter `?token=<jwt>` (enabling browser native `EventSource`).
+- **Content-Type**: `text/event-stream`
+- **Keep-Alive**: Unnamed comment `: heartbeat\n\n` emitted every 15 seconds.
+
+### Multiplexed Event Types
+
+1. **`event: telemetry`**
+   - Emitted when new sensor telemetry is ingested from physical or simulated devices.
+   - Payload: Array of `TelemetryRecord` objects (containing pivoted `before` and `after` stages for `pH`, `turbidity`, `TDS`, `flowRate`, and `temperature`).
+
+2. **`event: alert`**
+   - Emitted when an alert is triggered, acknowledged, or resolved.
+   - Payload: Array of `SystemAlert` objects.
+
+3. **`event: device`**
+   - Emitted when device connectivity changes (`Online`, `Offline`, `lastUpdatedAt`).
+   - Payload: `DeviceStatus` object.
+
+4. **`event: test_run`**
+   - Emitted when experimental test run parameters, status, or accumulated volume ($L$) update.
+   - Payload: Hydrated `TestRun` object.
+
+

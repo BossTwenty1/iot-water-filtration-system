@@ -10,6 +10,8 @@
 import { supabaseAdmin } from '../config/supabaseClient'
 import env from '../config/env'
 import { raiseAlertIfNotActive, resolveActiveAlertBySource } from './alertEngine'
+import { toDeviceStatus } from './mappers'
+import { realtimeBus } from './realtimeBus'
 import type { DeviceRow } from '../types/db'
 
 const OFFLINE_ALERT_TITLE = 'ESP32 Offline'
@@ -28,7 +30,17 @@ async function checkDevices(): Promise<void> {
     .lt('last_seen_at', cutoff)
 
   for (const device of staleDevices ?? []) {
-    await supabaseAdmin.from('devices').update({ connection_state: 'Offline' }).eq('id', device.id)
+    const { data: updatedDev } = await supabaseAdmin
+      .from('devices')
+      .update({ connection_state: 'Offline' })
+      .eq('id', device.id)
+      .select('*')
+      .maybeSingle()
+
+    if (updatedDev) {
+      realtimeBus.emitDevice(toDeviceStatus(updatedDev as DeviceRow))
+    }
+
     await raiseAlertIfNotActive({
       deviceId: device.id,
       testRunId: null,

@@ -5,6 +5,7 @@ import { ApiError } from '../lib/apiError'
 import { param } from '../lib/params'
 import { orThrow, parsePagination, type PaginationQuery } from '../lib/queryHelpers'
 import { hydrateTestRun } from '../lib/testRunHydrator'
+import { realtimeBus } from '../lib/realtimeBus'
 import type { TestRunRow } from '../types/db'
 
 const router = express.Router()
@@ -72,7 +73,9 @@ router.post('/', requireAuth, requireRole('Administrator', 'Researcher'), async 
       'Failed to create test run.'
     )
     if (!row) throw ApiError.badRequest('Failed to create test run.')
-    res.status(201).json(await hydrateTestRun(row))
+    const hydrated = await hydrateTestRun(row)
+    realtimeBus.emitTestRun(hydrated)
+    res.status(201).json(hydrated)
   } catch (err) {
     next(err)
   }
@@ -91,7 +94,9 @@ router.patch('/:id/complete', requireAuth, requireRole('Administrator', 'Researc
       'Failed to complete test run.'
     )
     if (!row) throw ApiError.notFound('Test run was not found.')
-    res.json(await hydrateTestRun(row))
+    const hydrated = await hydrateTestRun(row)
+    realtimeBus.emitTestRun(hydrated)
+    res.json(hydrated)
   } catch (err) {
     next(err)
   }
@@ -108,7 +113,9 @@ router.patch('/:id/notes', requireAuth, requireRole('Administrator', 'Researcher
       'Failed to update test run notes.'
     )
     if (!row) throw ApiError.notFound('Test run was not found.')
-    res.json(await hydrateTestRun(row))
+    const hydrated = await hydrateTestRun(row)
+    realtimeBus.emitTestRun(hydrated)
+    res.json(hydrated)
   } catch (err) {
     next(err)
   }

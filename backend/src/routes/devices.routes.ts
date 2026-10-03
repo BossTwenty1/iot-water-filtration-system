@@ -6,11 +6,14 @@ import { requireDeviceKey } from '../middleware/deviceAuth'
 import { ApiError } from '../lib/apiError'
 import { param } from '../lib/params'
 import { orThrow } from '../lib/queryHelpers'
-import { toDeviceStatus, VALID_CATEGORIES, VALID_POSITIONS } from '../lib/mappers'
+import { toDeviceStatus, categoryToParameter, positionToStage, VALID_CATEGORIES, VALID_POSITIONS } from '../lib/mappers'
+import { realtimeBus } from '../lib/realtimeBus'
+import { hydrateTestRun } from '../lib/testRunHydrator'
 import { evaluateReadingsForAlerts, type EvaluableReading } from '../lib/alertEngine'
 import { resolveOfflineAlertIfActive } from '../lib/deviceWatchdog'
 import { validateBody } from '../lib/validate'
-import type { DeviceRow, SensorReadingRow, SensorRow, TablesInsert, TablesUpdate } from '../types/db'
+import type { DeviceRow, SensorReadingRow, SensorRow, TablesInsert, TablesUpdate, TestRunRow } from '../types/db'
+import type { SensorParameter, TelemetryRecord } from '../types/domain'
 
 const router = express.Router()
 
@@ -301,6 +304,53 @@ async function handleReadingsIngestion(req: Request, res: Response, next: NextFu
         .update({ last_seen_at: new Date().toISOString(), connection_state: 'Online' })
         .eq('id', deviceId)
 
+      // Emit real-time telemetry to connected frontend clients
+      const beforeTelemetry: Partial<Record<SensorParameter, number>> = {}
+      const afterTelemetry: Partial<Record<SensorParameter, number>> = {}
+      for (let i = 0; i < rows.length; i++) {
+        const param = categoryToParameter(rowMeta[i]?.category)
+        const stage = positionToStage(rowMeta[i]?.position)
+        const val = rows[i]?.value
+        if (typeof val === 'number') {
+          if (stage === 'before') beforeTelemetry[param] = val
+          if (stage === 'after') afterTelemetry[param] = val
+        }
+      }
+      const telemetryRecord: TelemetryRecord = {
+        id: `${deviceId}|${testRunId ?? ''}|${measuredAt}`,
+        timestamp: measuredAt,
+        testRunId: testRunId ?? null,
+        deviceId,
+        before: beforeTelemetry,
+        after: afterTelemetry,
+      }
+      realtimeBus.emitTelemetry([telemetryRecord])
+
+      // Query and broadcast updated device status
+      void (async () => {
+        try {
+          const { data: updatedDev } = await supabaseAdmin.from('devices').select('*').eq('id', deviceId).maybeSingle()
+          if (updatedDev) realtimeBus.emitDevice(toDeviceStatus(updatedDev as DeviceRow))
+        } catch {
+          // Fire-and-forget
+        }
+      })()
+
+      // If tied to an active test run, hydrate and emit updated run (volume accumulation)
+      if (testRunId) {
+        void (async () => {
+          try {
+            const { data: runRow } = await supabaseAdmin.from('test_runs').select('*').eq('id', testRunId).maybeSingle()
+            if (runRow) {
+              const hydrated = await hydrateTestRun(runRow as TestRunRow)
+              realtimeBus.emitTestRun(hydrated)
+            }
+          } catch {
+            // Fire-and-forget
+          }
+        })()
+      }
+
       // Fire-and-forget: alert generation/resolution should never fail or
       // slow down the device's ingestion response.
       const evaluable: EvaluableReading[] = inserted.map((insertedRow, i) => ({
@@ -322,6 +372,14 @@ async function handleReadingsIngestion(req: Request, res: Response, next: NextFu
         .from('devices')
         .update({ last_seen_at: new Date().toISOString(), connection_state: 'Online' })
         .eq('id', deviceId)
+      void (async () => {
+        try {
+          const { data: updatedDev } = await supabaseAdmin.from('devices').select('*').eq('id', deviceId).maybeSingle()
+          if (updatedDev) realtimeBus.emitDevice(toDeviceStatus(updatedDev as DeviceRow))
+        } catch {
+          // Fire-and-forget
+        }
+      })()
     }
 
     const isDuplicateRetry =

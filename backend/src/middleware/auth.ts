@@ -6,8 +6,14 @@ import type { ProfileRow } from '../types/db'
 function extractToken(req: Request): string | null {
   const header = req.headers.authorization ?? ''
   const [scheme, token] = header.split(' ')
-  if (scheme !== 'Bearer' || !token) return null
-  return token
+  if (scheme === 'Bearer' && token) return token
+
+  // Enable standard EventSource query param authentication for SSE streams
+  if (typeof req.query?.token === 'string' && req.query.token.trim()) {
+    return req.query.token.trim()
+  }
+
+  return null
 }
 
 declare global {

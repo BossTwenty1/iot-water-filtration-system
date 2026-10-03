@@ -196,7 +196,7 @@ Configuration:
 
 | Env var                 | Default | Effect                                   |
 | ------------------------ | ------- | ----------------------------------------- |
-| `LIVE_SIM_INTERVAL_MS`   | `5000`  | Milliseconds between reading batches.     |
+| `LIVE_SIM_INTERVAL_MS`   | `1000`  | Milliseconds between reading batches.     |
 | `DEVICE_INGEST_KEY`      | —       | Read from `backend/.env`; must match the API server's value. |
 | `BACKEND_PORT`           | `3000`  | Read from `backend/.env`; where it POSTs. |
 
