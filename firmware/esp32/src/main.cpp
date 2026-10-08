@@ -14,11 +14,13 @@
 #include <Arduino.h>
 #include <WiFi.h>
 
+#include "analog_sensor.h"
 #include "api_client.h"
 #include "boot_diagnostics.h"
 #include "config.h"
-#include "ph_sensor.h"
+#include "flow_sensor.h"
 #include "secrets_select.h"
+#include "temperature_sensor.h"
 #include "time_sync.h"
 #include "wifi_manager.h"
 
@@ -27,24 +29,63 @@ namespace {
 WifiManager gWifi;
 TimeSync gTimeSync;
 ApiClient gApi;
-PhSensor gPhPre;
-PhSensor gPhPost;
+AnalogSensor gPhPre;
+AnalogSensor gPhPost;
+AnalogSensor gTurbidity;
+AnalogSensor gTds;
+FlowSensor gFlow;
+TemperatureSensor gTemperature;
 
 uint32_t gLastStatusLogMs = 0;
 
-// Appends "<label>=<mv>mV/<counts>" plus pH only when the probe is calibrated.
-// Prints nothing while the pin is unassigned (pin map TBD), so the status line
-// stays quiet rather than implying a sensor that is not wired.
-void logPh(const char* label, const PhSensor& sensor) {
+// Appends "<label>=<mv>mV/<counts>" plus the converted value only when the
+// channel is calibrated. Prints nothing while the pin is unassigned (pin map
+// TBD), so the status line stays quiet rather than implying a sensor that is
+// not wired.
+void logAnalog(const AnalogSensor& sensor) {
   if (!sensor.isEnabled()) return;
-  PhSensor::Reading reading;
+  AnalogSensor::Reading reading;
   if (!sensor.read(reading)) return;
-  Serial.printf(" %s=%lumV/%u", label, static_cast<unsigned long>(reading.milliVolts),
+  Serial.printf(" %s=%lumV/%u", sensor.label(),
+                static_cast<unsigned long>(reading.sourceMilliVolts),
                 static_cast<unsigned>(reading.rawCounts));
-  if (reading.phValid) {
-    Serial.printf("/pH%.2f", reading.ph);
+  // '?' marks an uncalibrated channel: the voltage is real, the unit is not
+  // known yet. See AnalogSensor's header for why no curve is assumed.
+  if (reading.valueValid) {
+    Serial.printf("/%.2f", reading.value);
   } else {
-    Serial.print("/pH?");  // Uncalibrated — see PhSensor docs.
+    Serial.print("/?");
+  }
+}
+
+void logFlow() {
+  if (!gFlow.isEnabled()) return;
+  FlowSensor::Reading reading;
+  if (!gFlow.read(reading, millis())) return;
+  Serial.printf(" flow=%.2fHz/%lup", reading.hertz,
+                static_cast<unsigned long>(reading.totalPulses));
+  if (reading.flowValid) {
+    Serial.printf("/%.2fLpm", reading.litresPerMinute);
+  } else {
+    Serial.print("/?Lpm");
+  }
+}
+
+void logTemperature() {
+  if (!gTemperature.isEnabled()) return;
+  const uint8_t count = gTemperature.deviceCount();
+  if (count == 0) {
+    Serial.print(" temp=none");
+    return;
+  }
+  gTemperature.update();
+  for (uint8_t i = 0; i < count; ++i) {
+    float celsius = 0.0f;
+    if (gTemperature.readCelsius(i, celsius)) {
+      Serial.printf(" temp%u=%.2fC", static_cast<unsigned>(i), celsius);
+    } else {
+      Serial.printf(" temp%u=fault", static_cast<unsigned>(i));
+    }
   }
 }
 
@@ -59,8 +100,12 @@ void logStatus() {
   }
   Serial.printf(" utc=%s heap=%lu", haveTime ? now : "unsynced",
                 static_cast<unsigned long>(ESP.getFreeHeap()));
-  logPh("ph_pre", gPhPre);
-  logPh("ph_post", gPhPost);
+  logAnalog(gPhPre);
+  logAnalog(gPhPost);
+  logAnalog(gTurbidity);
+  logAnalog(gTds);
+  logFlow();
+  logTemperature();
   Serial.println();
 }
 
@@ -68,14 +113,14 @@ void logStatus() {
 // Runs on the real target (no host toolchain in this project) and prints one
 // line, so a broken fit is visible at boot instead of surfacing as a quietly
 // wrong pH during calibration.
-void phSelfCheck() {
+void calibrationSelfCheck() {
   // Representative buffer pair: pH 6.86 and 4.01 at two measured voltages.
-  const PhSensor::Calibration fit = PhSensor::fitTwoPoint(1500, 6.86f, 1800, 4.01f);
-  const float back6 = PhSensor::applyCalibration(fit, 1500);
-  const float back4 = PhSensor::applyCalibration(fit, 1800);
+  const AnalogSensor::Calibration fit = AnalogSensor::fitTwoPoint(1500, 6.86f, 1800, 4.01f);
+  const float back6 = AnalogSensor::applyCalibration(fit, 1500);
+  const float back4 = AnalogSensor::applyCalibration(fit, 1800);
   const bool recovers = fit.calibrated && fabsf(back6 - 6.86f) < 0.01f && fabsf(back4 - 4.01f) < 0.01f;
   // Two points at the same voltage define no slope and must be rejected.
-  const bool rejectsDegenerate = !PhSensor::fitTwoPoint(1500, 6.86f, 1500, 4.01f).calibrated;
+  const bool rejectsDegenerate = !AnalogSensor::fitTwoPoint(1500, 6.86f, 1500, 4.01f).calibrated;
 
   Serial.printf("[ph] self-check %s (recover=%s degenerate-rejected=%s)\n",
                 (recovers && rejectsDegenerate) ? "PASS" : "FAIL", recovers ? "ok" : "BAD",
@@ -163,9 +208,22 @@ void setup() {
   // Both default to -1 (unassigned) while the pin map is TBD, which leaves
   // them disabled. Assign config::kPhPin* once the hardware team confirms
   // which ADC1 GPIOs the boards land on.
-  gPhPre.begin(config::kPhPinPreFiltration);
-  gPhPost.begin(config::kPhPinPostFiltration);
-  phSelfCheck();
+  gPhPre.begin(config::kPhPinPreFiltration, "ph_pre", config::kPhDividerRatio);
+  gPhPost.begin(config::kPhPinPostFiltration, "ph_post", config::kPhDividerRatio);
+  gTurbidity.begin(config::kTurbidityPin, "turbidity", config::kDividerRatio10kTo15k);
+  gTds.begin(config::kTdsPin, "tds");
+  gFlow.begin(config::kFlowPin, config::kFlowPulsesPerLitre);
+  gTemperature.begin(config::kTemperaturePin);
+  Serial.printf("[temp] OneWire devices=%u parasite=%s\n",
+                static_cast<unsigned>(gTemperature.deviceCount()),
+                gTemperature.isParasitePowered() ? "YES (VCC likely unconnected)" : "no");
+  for (uint8_t i = 0; i < gTemperature.deviceCount(); ++i) {
+    char address[TemperatureSensor::kAddressBufferSize];
+    if (gTemperature.formatAddress(i, address, sizeof(address))) {
+      Serial.printf("[temp]   device %u rom=%s\n", static_cast<unsigned>(i), address);
+    }
+  }
+  calibrationSelfCheck();
   if (!gPhPre.isEnabled() && !gPhPost.isEnabled()) {
     Serial.println(F("[ph] no pin assigned - pH sampling disabled (PENDING_DECISIONS sec. 1)"));
   }

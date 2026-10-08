@@ -70,7 +70,7 @@ void print(bool secretsArePlaceholders, bool wifiCredentialsPresent,
   Serial.printf("gpio           : ph_pre=%s ph_post=%s - rest TBD (PENDING_DECISIONS sec. 1)\n",
                 config::kPhPinPreFiltration >= 0 ? String(config::kPhPinPreFiltration).c_str() : "unassigned",
                 config::kPhPinPostFiltration >= 0 ? String(config::kPhPinPostFiltration).c_str() : "unassigned");
-  Serial.println(F("sensors        : pH driver present (uncalibrated); TDS/turbidity/temp/flow not implemented"));
+  Serial.println(F("sensors        : ph/turbidity/tds/flow/temp drivers present; analog channels uncalibrated"));
   Serial.println(F("actuators      : not implemented - TBD (PENDING_DECISIONS sec. 2)"));
   Serial.println(F("================================================================"));
 }
