@@ -55,6 +55,29 @@ constexpr uint16_t kHttpResponseTimeoutMs = 5000;
 // Upper bound for base URL + prefix + path, including the terminator.
 constexpr size_t kMaxUrlLength = 256;
 
+// --- Sensors -----------------------------------------------------------------
+// GPIO assignments are TBD (docs/PENDING_DECISIONS.md §1). -1 means
+// "unassigned": PhSensor stays disabled and never samples, so the firmware
+// runs on hardware without claiming a pin the hardware team has not confirmed.
+//
+// Constraint for whoever assigns these: a pH board must land on ADC1
+// (GPIO 32-39). ADC2 is unusable while Wi-Fi is active on the ESP32, which
+// this firmware needs, so an ADC2 pin would read garbage once Wi-Fi comes up.
+// GPIO34 is from the team's point-to-point wiring diagram (pH module PO/AOUT
+// -> D34). ADC1 and input-only, so it is electrically suitable. Treat as
+// provisional until physically verified against the harness — the diagram is
+// AI-generated and PENDING_DECISIONS §1 is still formally open.
+constexpr int kPhPinPreFiltration = 34;
+
+// TODO(TBD): the wiring diagram shows only ONE pH module, but the system is
+// specified with separate pre- and post-filtration sensor groups (AGENTS.md)
+// and P5-02 calls for a PH-4502C pair. No pin exists for the second probe yet.
+constexpr int kPhPinPostFiltration = -1;
+
+// Samples averaged per reading, to suppress ADC noise.
+// Provisional default — tune during integration testing.
+constexpr uint8_t kPhSampleCount = 16;
+
 // --- Diagnostics -------------------------------------------------------------
 // Interval of the periodic serial status line (diagnostics only; unrelated to
 // the TBD sensor-sampling and telemetry intervals).

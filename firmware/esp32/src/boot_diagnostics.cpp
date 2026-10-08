@@ -65,8 +65,12 @@ void print(bool secretsArePlaceholders, bool wifiCredentialsPresent,
   Serial.printf("wifi creds     : %s\n", wifiCredentialsPresent ? "present" : "NOT SET (Wi-Fi disabled)");
   Serial.printf("backend api    : %s\n",
                 apiConfigured ? "configured" : "NOT CONFIGURED (https base URL / root CA missing)");
-  Serial.println(F("gpio           : none assigned - pin map TBD (PENDING_DECISIONS sec. 1)"));
-  Serial.println(F("sensors        : not implemented - TBD (PENDING_DECISIONS sec. 1, 3)"));
+  // Derived from config so these lines cannot drift out of date as pins are
+  // assigned — they previously claimed "none assigned" after GPIO34 was set.
+  Serial.printf("gpio           : ph_pre=%s ph_post=%s - rest TBD (PENDING_DECISIONS sec. 1)\n",
+                config::kPhPinPreFiltration >= 0 ? String(config::kPhPinPreFiltration).c_str() : "unassigned",
+                config::kPhPinPostFiltration >= 0 ? String(config::kPhPinPostFiltration).c_str() : "unassigned");
+  Serial.println(F("sensors        : pH driver present (uncalibrated); TDS/turbidity/temp/flow not implemented"));
   Serial.println(F("actuators      : not implemented - TBD (PENDING_DECISIONS sec. 2)"));
   Serial.println(F("================================================================"));
 }
