@@ -84,7 +84,7 @@ void logTemperature() {
     if (gTemperature.readCelsius(i, celsius)) {
       Serial.printf(" temp%u=%.2fC", static_cast<unsigned>(i), celsius);
     } else {
-      Serial.printf(" temp%u=fault", static_cast<unsigned>(i));
+      Serial.printf(" temp%u=fault(raw=%.2f)", static_cast<unsigned>(i), gTemperature.lastRawCelsius(i));
     }
   }
 }
@@ -136,6 +136,16 @@ void calibrationSelfCheck() {
 //
 // Prints only while no pH pin is assigned, so it self-silences once the pin map
 // (docs/PENDING_DECISIONS.md §1) is settled.
+// A pin already owned by a driver must not be surveyed: analogRead() re-muxes
+// it to the ADC, which silently tears down whatever the driver configured.
+// Surveying GPIO26 did exactly that to the OneWire bus — the DS18B20 answered
+// before the survey ran and never again after.
+bool isPinClaimed(int pin) {
+  return pin == config::kPhPinPreFiltration || pin == config::kPhPinPostFiltration ||
+         pin == config::kTurbidityPin || pin == config::kTdsPin || pin == config::kFlowPin ||
+         pin == config::kTemperaturePin;
+}
+
 void surveyAdc1() {
   // ADC1 channels. GPIO 37/38 are not bonded out on most ESP32-WROOM-32
   // modules; they are surveyed anyway and simply read as unconnected there.
@@ -150,6 +160,10 @@ void surveyAdc1() {
 
   Serial.println(F("[adc1] survey - mean mV / raw / spread (steady mid-range => likely wired)"));
   for (const int pin : kAdc1Pins) {
+    if (isPinClaimed(pin)) {
+      Serial.printf("[adc1]   GPIO%-2d  (claimed by a driver - not probed)\n", pin);
+      continue;
+    }
     analogSetPinAttenuation(pin, ADC_11db);
     uint32_t total = 0;
     uint32_t rawTotal = 0;
@@ -173,6 +187,10 @@ void surveyAdc1() {
 
   Serial.println(F("[adc2] survey - readable only while Wi-Fi is off; anything here must move to ADC1"));
   for (const int pin : kAdc2Pins) {
+    if (isPinClaimed(pin)) {
+      Serial.printf("[adc2]   GPIO%-2d  (claimed by a driver - not probed)\n", pin);
+      continue;
+    }
     analogSetPinAttenuation(pin, ADC_11db);
     uint32_t total = 0;
     uint32_t rawTotal = 0;
@@ -222,6 +240,23 @@ void setup() {
     if (gTemperature.formatAddress(i, address, sizeof(address))) {
       Serial.printf("[temp]   device %u rom=%s\n", static_cast<unsigned>(i), address);
     }
+    // Force a conversion first, then dump the raw scratchpad. Reading it cold
+    // would always show the power-on default and prove nothing.
+    gTemperature.update();
+    uint8_t scratchpad[9] = {};
+    if (!gTemperature.readScratchpad(i, scratchpad, sizeof(scratchpad))) {
+      Serial.println(F("[temp]   scratchpad read FAILED (CRC) - bus or probe fault"));
+      continue;
+    }
+    Serial.print(F("[temp]   scratchpad="));
+    for (uint8_t b = 0; b < 9; ++b) Serial.printf("%02X ", scratchpad[b]);
+    const int16_t rawTemp = static_cast<int16_t>((scratchpad[1] << 8) | scratchpad[0]);
+    Serial.printf("| tempReg=0x%04X (%.2fC)", static_cast<unsigned>(rawTemp & 0xFFFF),
+                  static_cast<float>(rawTemp) / 16.0f);
+    if (rawTemp == 0x0550) {
+      Serial.print(F(" <- power-on default, no conversion completed"));
+    }
+    Serial.println();
   }
   calibrationSelfCheck();
   if (!gPhPre.isEnabled() && !gPhPost.isEnabled()) {

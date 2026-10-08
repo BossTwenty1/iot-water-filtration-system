@@ -37,8 +37,19 @@ class TemperatureSensor {
   // of range or the device reported a disconnect.
   bool readCelsius(uint8_t index, float& out) const;
 
+  // Last value as returned by the library, sentinel included — for diagnosis.
+  float lastRawCelsius(uint8_t index) const { return index < deviceCount_ ? celsius_[index] : 0.0f; }
+
   // Writes the device's ROM address as hex. Buffer must be kAddressBufferSize.
   bool formatAddress(uint8_t index, char* buffer, size_t bufferSize) const;
+
+  // Raw 9-byte scratchpad for one device, for bring-up diagnosis. Returns
+  // false if the index is out of range or the read fails its CRC. The contents
+  // separate causes a temperature value alone cannot: all 0xFF means nothing
+  // drove the bus, 0x0550 in the temperature register is the DS18B20's
+  // power-on default and means no conversion ever completed, and a CRC failure
+  // on otherwise-plausible bytes points at signal integrity.
+  bool readScratchpad(uint8_t index, uint8_t* out, size_t outSize) const;
 
   // True when devices are drawing power from the data line instead of VCC.
   // Parasite mode needs a strong pull-up during conversion; a probe that
@@ -48,6 +59,8 @@ class TemperatureSensor {
 
  private:
   static constexpr uint8_t kMaxDevices = 4;
+  // Scratchpad read attempts per sample before declaring a fault.
+  static constexpr uint8_t kReadAttempts = 3;
 
   int pin_ = -1;
   uint8_t deviceCount_ = 0;

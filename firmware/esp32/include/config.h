@@ -94,6 +94,11 @@ constexpr float kPhDividerRatio = 1.0f;
 // Provisional default — tune during integration testing.
 constexpr uint8_t kAnalogSampleCount = 16;
 
+// Worst-case DS18B20 conversion time at 12-bit resolution, from the part
+// datasheet. Waited out explicitly because the library's bus-polling
+// completion check proved unreliable on this harness.
+constexpr uint32_t kDs18b20ConversionMs = 750;
+
 // TODO(TBD): pulses per litre for the flow sensor. The wiring diagram labels
 // the part YF-S201 while tracker task P5-05 names a ZJ-S201C; those have
 // different K-factors. 0 leaves volumetric flow unreported and only raw pulse
