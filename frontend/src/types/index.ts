@@ -12,7 +12,7 @@ export type DeviceConnectionState = 'Online' | 'Offline' | 'Pending Hardware Int
 export type AlertSeverity = 'Information' | 'Warning' | 'Critical'
 export type AlertStatus = 'Active' | 'Acknowledged' | 'Resolved'
 export type RecordStatus = 'Pending' | 'Available'
-export type UserRole = 'Administrator' | 'Researcher' | 'Viewer'
+export type UserRole = 'Super Administrator' | 'Administrator' | 'Researcher' | 'Viewer'
 
 export interface SensorReading {
   parameter: SensorParameter

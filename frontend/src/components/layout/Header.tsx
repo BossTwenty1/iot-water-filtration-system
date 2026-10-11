@@ -6,7 +6,7 @@ import { signOut } from '../../services/apiClient'
 import type { ThemeMode } from '../../hooks/useTheme'
 import { ThemeToggle } from '../common/ThemeToggle'
 
-const pageNames:Record<string,string>={dashboard:'Dashboard',history:'Telemetry History',alerts:'System Alerts','test-runs':'Test Runs',calibration:'Sensor Calibration','laboratory-validation':'Laboratory Validation',maintenance:'Maintenance',settings:'Settings'}
+const pageNames:Record<string,string>={dashboard:'Dashboard',history:'Telemetry History',alerts:'System Alerts','test-runs':'Test Runs',calibration:'Sensor Calibration','laboratory-validation':'Laboratory Validation',maintenance:'Maintenance',settings:'Settings',users:'Users & Access'}
 
 export function Header({onMenu,mobileOpen,menuButtonRef,theme,onThemeToggle}:{onMenu:()=>void;mobileOpen:boolean;menuButtonRef:RefObject<HTMLButtonElement|null>;theme:ThemeMode;onThemeToggle:()=>void}){
   const auth=useAuth()

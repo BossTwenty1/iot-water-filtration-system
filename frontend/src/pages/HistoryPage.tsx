@@ -1,4 +1,5 @@
 import { Download,Info } from 'lucide-react'
+import { usePermission } from '../hooks/usePermission'
 import { useState } from 'react'
 import { PageHeader } from '../components/common/PageHeader'
 import { ResourceState } from '../components/common/ResourceState'
@@ -11,14 +12,15 @@ import { downloadCsv } from '../utils/csv'
 import { formatDateTime,formatOptionalNumber } from '../utils/formatters'
 
 export function HistoryPage() {
+  const canExport=usePermission('research.export')
   const resource=useServiceData(telemetryService.getTelemetryHistory)
   const [selectedId,setSelectedId]=useState<string|null>(null)
   const records=resource.data??[]
   const selected=records.find((record)=>record.id===selectedId)??records[0]
   const beforeValues=records.map((row)=>row.before.turbidity).filter((value):value is number=>typeof value==='number'); const afterValues=records.map((row)=>row.after.turbidity).filter((value):value is number=>typeof value==='number'); const average=(values:number[])=>values.length?(values.reduce((sum,value)=>sum+value,0)/values.length).toFixed(2):'—'; const range=(values:number[])=>values.length?`${Math.min(...values).toFixed(2)} – ${Math.max(...values).toFixed(2)}`:'—'; const stats={before:average(beforeValues),after:average(afterValues)}
-  const exportRows=()=>downloadCsv('telemetry.csv',records.map((row)=>({timestamp:row.timestamp,test_run_id:row.testRunId,before_ph:row.before.pH,after_ph:row.after.pH,before_turbidity_ntu:row.before.turbidity,after_turbidity_ntu:row.after.turbidity,before_tds_ppm:row.before.TDS,after_tds_ppm:row.after.TDS})))
+  const exportRows=()=>{if(!canExport)return;downloadCsv('telemetry.csv',records.map((row)=>({timestamp:row.timestamp,test_run_id:row.testRunId,before_ph:row.before.pH,after_ph:row.after.pH,before_turbidity_ntu:row.before.turbidity,after_turbidity_ntu:row.after.turbidity,before_tds_ppm:row.before.TDS,after_tds_ppm:row.after.TDS})))}
   if(resource.status!=='success'||!selected)return <div className="page-grid"><PageHeader title="Telemetry History" description="Review API-backed sensor records; device provenance and live connection are not verified" badge="API records"/><ResourceState status={resource.status} error={resource.error} loadingLabel="Loading telemetry history…" emptyLabel="No telemetry records available."/></div>
-  return <div className="page-grid"><PageHeader title="Telemetry History" description="Review API-backed sensor records; device provenance and live connection are not verified" badge="API records" actions={<button type="button" className="button-primary" onClick={exportRows}><Download size={16}/>Export CSV</button>}/>
+  return <div className="page-grid"><PageHeader title="Telemetry History" description="Review API-backed sensor records; device provenance and live connection are not verified" badge="API records" actions={<button type="button" className="button-primary" disabled={!canExport} onClick={exportRows}><Download size={16}/>Export CSV</button>}/>
   <div className="summary-grid"><SummaryCard label="Before filtration average" value={`${stats.before} NTU`} detail="Mean across loaded records"/><SummaryCard label="After filtration average" value={`${stats.after} NTU`} detail="Descriptive comparison only" tone="good"/><SummaryCard label="Before minimum / maximum" value={range(beforeValues)} detail="Recorded range, NTU"/><SummaryCard label="After minimum / maximum" value={range(afterValues)} detail="Recorded range, NTU" tone="good"/></div>
   <div className="notice"><Info size={17}/><span>Laboratory validation is tracked separately from sensor telemetry.</span></div>
   <SectionCard title="Recorded Sensor Trends" description="Before vs after API series" action={<span className="eyebrow text-hydro">Turbidity</span>}><TelemetryChart/></SectionCard>

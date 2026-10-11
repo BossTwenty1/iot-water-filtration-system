@@ -3,8 +3,36 @@
 This document defines the shared communication contract between the ESP32,
 simulator, backend, frontend, and database-facing services.
 
-The API is not yet implemented. Routes and payloads documented here are the
-planned contract and may be refined through an approved architecture decision.
+This document includes the original planned device contract. Implemented
+software authorization is defined in [RBAC](RBAC.md); hardware commands remain
+unapproved.
+
+## Implemented account-management contract
+
+Existing `/api/v1/auth/login` (`email`, `password`) and `/auth/refresh`
+(`refreshToken`) return `{ token, refreshToken, expiresIn, user }`.
+`user` includes `id`, `name`, `email`, `role`, `status`. Inactive/missing/invalid
+profiles receive 401; unauthorized actions receive 403. `/auth/me` remains
+available to every active role. Current database roles are checked per request.
+
+- `GET /api/v1/users?limit=25&offset=0&search=&role=&status=`: permitted profile
+  array; search is a case-insensitive email substring. Status Active/Inactive.
+  Limit 1–100, offset 0–1000000. Administrators see Researcher/Viewer accounts;
+  Super Administrators see all. `GET /users/:id` returns permitted details.
+- `POST /api/v1/users`: `{ name, email, password, role }`, 201 user. Password
+  12–128 characters; role Administrator/Researcher/Viewer, subject to caller role.
+- `PATCH /api/v1/users/:id/role`: `{ role }`; `PATCH .../status`:
+  `{ status: 'Active' | 'Inactive' }`; 200 user.
+- `DELETE /api/v1/users/:id`: 204 after Auth confirms deletion. Failure may
+  leave a blocked deletion-pending account; 503 explains retry.
+- `GET /api/v1/users/audit?limit=25&offset=0`: Super Administrator only, array
+  with `id`, `actor_id`, `target_id`, `action`, `old_role`, `new_role`,
+  `old_status`, `new_status`, `reason`, `created_at`.
+
+Managed user responses also include `deletionPending`. No password/token appears
+in directory/audit records. Ordinary APIs cannot promote Super Administrators or
+modify the caller. Domain payloads remain unchanged; denials on previously
+unrestricted writes are intentional.
 
 ---
 

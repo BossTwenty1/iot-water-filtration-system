@@ -1,4 +1,4 @@
-import { useCallback,useEffect,useState,type Dispatch,type SetStateAction } from 'react'
+import { useCallback,useEffect,useRef,useState,type Dispatch,type SetStateAction } from 'react'
 import type { ResourceStatus } from '../types'
 
 export interface ServiceData<T> {
@@ -13,39 +13,40 @@ export interface ServiceData<T> {
 const isEmptyValue=(value:unknown)=>Array.isArray(value)&&value.length===0
 
 export function useServiceData<T>(loader:()=>Promise<T>):ServiceData<T>{
+  const requestRef=useRef({version:0,active:true})
   const [data,setData]=useState<T|null>(null)
   const [error,setError]=useState<string|null>(null)
   const [status,setStatus]=useState<ResourceStatus>('loading')
 
   const reload=useCallback(async()=>{
+    const requests=requestRef.current
+    const version=++requests.version
+    if(!requests.active)return
     setStatus('loading')
     setError(null)
     try{
       const result=await loader()
+      if(!requests.active||version!==requests.version)return
       setData(result)
       setStatus(isEmptyValue(result)?'empty':'success')
     }catch(cause){
+      if(!requests.active||version!==requests.version)return
       setError(cause instanceof Error?cause.message:'Unable to load data.')
       setStatus('error')
     }
   },[loader])
 
   useEffect(()=>{
-    let active=true
-    void loader().then((result)=>{
-      if(!active)return
-      setData(result)
-      setError(null)
-      setStatus(isEmptyValue(result)?'empty':'success')
-    }).catch((cause:unknown)=>{
-      if(!active)return
-      setError(cause instanceof Error?cause.message:'Unable to load data.')
-      setStatus('error')
-    })
-    return()=>{active=false}
-  },[loader])
+    const requests=requestRef.current
+    requests.active=true
+    // Reset loading when the external API query changes (e.g. user filters).
+    // eslint-disable-next-line react/set-state-in-effect
+    void reload()
+    return()=>{requests.active=false;requests.version++}
+  },[reload])
 
   const updateData:Dispatch<SetStateAction<T|null>>=(next)=>{
+    requestRef.current.version++
     setData(next)
     setStatus('success')
     setError(null)

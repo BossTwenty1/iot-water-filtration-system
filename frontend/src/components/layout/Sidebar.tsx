@@ -1,9 +1,12 @@
 import { Bell,ChartNoAxesCombined,ChevronLeft,FlaskConical,Gauge,History,PanelLeftOpen,Settings,SlidersHorizontal,Wrench,X } from 'lucide-react'
+import { UsersRound } from 'lucide-react'
+import { usePermission } from '../../hooks/usePermission'
 import type { RefObject } from 'react'
 import { SidebarNavItem } from './SidebarNavItem'
 const navigation=[{to:'/dashboard',label:'Dashboard',icon:Gauge},{to:'/history',label:'History',icon:History},{to:'/alerts',label:'Alerts',icon:Bell},{to:'/test-runs',label:'Test Runs',icon:FlaskConical},{to:'/calibration',label:'Calibration',icon:SlidersHorizontal},{to:'/laboratory-validation',label:'Laboratory Validation',icon:ChartNoAxesCombined},{to:'/maintenance',label:'Maintenance',icon:Wrench},{to:'/settings',label:'Settings',icon:Settings}]
 
 export function Sidebar({mobile=false,open=false,expanded,drawerRef,onClose,onToggle}:{mobile?:boolean;open?:boolean;expanded:boolean;drawerRef?:RefObject<HTMLElement|null>;onClose?:()=>void;onToggle?:()=>void}){
+  const canManageUsers=usePermission('users.manage')
   const visibleExpanded=mobile||expanded
   return <aside ref={drawerRef} id={mobile?'mobile-navigation':undefined} role={mobile?'dialog':undefined} aria-modal={mobile?true:undefined} className={`${mobile?`mobile-sidebar ${open?'translate-x-0':'-translate-x-full'}`:`desktop-sidebar ${expanded?'w-64':'w-20'}`} sidebar`} aria-label="Primary navigation">
     <div className="sidebar-brand">
@@ -18,7 +21,7 @@ export function Sidebar({mobile=false,open=false,expanded,drawerRef,onClose,onTo
     </div>
     <div className={`sidebar-section-label ${visibleExpanded?'':'lg:justify-center'}`}><span className={visibleExpanded?'':'sr-only'}>Monitoring workspace</span>{!visibleExpanded&&<span aria-hidden="true">•••</span>}</div>
     <nav className="flex-1 space-y-1 overflow-x-hidden overflow-y-auto px-3" aria-label="Application pages">
-      {navigation.map((item)=><SidebarNavItem key={item.to} {...item} expanded={visibleExpanded} onNavigate={onClose}/>) }
+      {[...navigation,...(canManageUsers?[{to:'/users',label:'Users & Access',icon:UsersRound}]:[])].map((item)=><SidebarNavItem key={item.to} {...item} expanded={visibleExpanded} onNavigate={onClose}/>) }
     </nav>
     <div className="sidebar-footer">
       <div className={`controller-card ${visibleExpanded?'':'items-center px-2'}`}>

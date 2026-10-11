@@ -1,4 +1,5 @@
 import type { User } from '../types'
+import { userRoles } from '../utils/permissions'
 
 const configuredBaseUrl=import.meta.env.VITE_API_BASE_URL?.trim()
 const refreshStorageKey='iot-water-filtration.refresh-token'
@@ -51,7 +52,7 @@ function clearSession(notice?:string){
 }
 
 function acceptSession(value:AuthSession){
-  if(!value||typeof value.token!=='string'||!value.token||typeof value.refreshToken!=='string'||!value.refreshToken||!Number.isFinite(value.expiresIn)||value.expiresIn<=0||!value.user||typeof value.user.id!=='string'){
+  if(!value||typeof value.token!=='string'||!value.token||typeof value.refreshToken!=='string'||!value.refreshToken||!Number.isFinite(value.expiresIn)||value.expiresIn<=0||!value.user||typeof value.user.id!=='string'||value.user.status!=='Active'||!userRoles.includes(value.user.role)){
     throw new ApiClientError('The server returned an invalid session.')
   }
   sessionRevision++
@@ -140,6 +141,16 @@ export async function apiRequest<T>(path:string,options:ApiRequestOptions={}):Pr
   const token=await accessToken()
   try{return await send<T>(path,options,token)}
   catch(cause){
+    if(cause instanceof ApiClientError&&cause.status===403){
+      try{
+        const user=await send<User>('auth/me',{},token)
+        if(session?.token===token&&user.status==='Active'&&userRoles.includes(user.role)){
+          session.user=user
+          publish({status:'authenticated',user})
+        }
+      }catch(error){if(session?.token===token&&error instanceof ApiClientError&&error.status===401)clearSession('This account is unavailable. Please sign in again.')}
+      throw cause
+    }
     if(!(cause instanceof ApiClientError)||cause.status!==401)throw cause
     try{
       const nextToken=session?.token&&session.token!==token?session.token:await refreshSession()
