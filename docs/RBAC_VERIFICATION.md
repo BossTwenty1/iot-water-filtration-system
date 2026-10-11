@@ -12,7 +12,7 @@ See [RBAC policy and bootstrap](RBAC.md), [API contract](API_CONTRACT.md) and
 [database migration notes](DATABASE.md). The migration must be reviewed and
 applied in a separately approved environment before this feature backend is used.
 
-## Checks and evidence
+## Initial implementation checks and evidence (before Phase 2)
 
 | Check | Result |
 | --- | --- |
@@ -94,9 +94,12 @@ Stop it with Ctrl+C; rebuild normally before using a different approved API targ
 The application's shipping services still use actual authenticated API records.
 
 Database fixtures require an empty, migrated, disposable **local** Supabase
-database and `psql`. Set `RBAC_LOCAL_TEST_DATABASE_URL` privately to its loopback
-connection, then run `npx ts-node scripts/testRbacDatabase.ts` from `backend`.
-The runner never falls back to hosted credentials; fixtures roll back.
+database and `psql`, either on the host or inside a positively identified disposable
+container. Set `RBAC_LOCAL_TEST_DATABASE_URL` privately to its loopback connection,
+then run `npx ts-node scripts/testRbacDatabase.ts` from `backend`. Docker mode also
+requires `RBAC_LOCAL_TEST_CONTAINER`, a `supabase_db_safe-rbac-*` project with the
+`safe.rbac.disposable=true` label and an exclusively loopback-published DB port
+matching the URL. The runner never falls back to hosted credentials; fixtures roll back.
 Do not run migration or bootstrap commands against hosted accounts without
 separate explicit approval.
 
@@ -123,7 +126,86 @@ separate explicit approval.
 - Software device registration is permitted; opaque device safety/config updates,
   hardware control, thresholds and final scientific approval remain withheld.
 
-## Exact changed-file inventory
+## Phase 2: real local PostgreSQL verification — 2026-10-11
+
+Docker Desktop 29.7.2 and the existing Supabase CLI 2.117.0 were used; Windows
+PostgreSQL tools were not installed. A fresh project,
+`safe-rbac-20261011-92a0f5c0`, ran PostgreSQL 17.6 with a new dedicated volume.
+The existing GraveNav stack and its volumes were not modified. The disposable
+project's API and DB ports were explicitly bound to `127.0.0.1:55431` and
+`127.0.0.1:55432`. Seeds were disabled, and zero users/profiles/audits were
+confirmed before fixtures. No existing development database was reset.
+
+All four checked-in migrations applied in order, including
+`20261011090000_user_management_rbac.sql`; no migration defect was found in these
+checks. The original rollback fixture and its focused constraint/permission
+additions passed on PostgreSQL. Independent post-fixture counts were zero for
+`auth.users`, `public.profiles` and `public.account_audit`.
+
+| Real local check | Result |
+| --- | --- |
+| Viewer/Inactive defaults despite forged role metadata; initial/idempotent Super Administrator designation | Passed |
+| Invalid/null role and invalid status writes; rejected invalid management inputs | Passed |
+| Administrator lower-role limits, self/higher-privilege denials, pending-deletion protections | Passed |
+| Last active Super Administrator deactivation, demotion and Auth cascade deletion | Passed |
+| Actual anon/authenticated privileged RPC calls, profile writes and audit reads | Rejected as required |
+| Actual service-role direct audit insertion | Rejected as required |
+| Two concurrent sessions: deactivate, demote, Auth-cascade delete, direct profile delete | All four passed; first committed, competing last-administrator removal rejected, one active survivor |
+| Audit persistence after committed operations, read from separate connections | Passed |
+| Real local Auth API public signup | Rejected with signup disabled |
+| Real local Auth API synthetic account creation with forged role metadata | Viewer/Inactive; no escalation |
+| Real local Auth API ordinary deletion and profile cascade | Passed; committed deletion audit persisted |
+| Real local Auth API last-active-Super-Administrator deletion | Rejected; Auth user and active profile retained |
+
+The race verifier waits for the first session's protection lock before starting
+the competing session. These are four controlled default READ COMMITTED races,
+not exhaustive stress testing or proof for every transaction isolation level.
+`scripts/testRbacConcurrency.ts` reuses the existing runner's guarded psql
+transport and existing Supabase client; it is not a new test framework. It commits
+only synthetic `@example.test` fixtures into an initially empty disposable project.
+Unlike `rbac.sql`, it intentionally requires destruction of that test project's
+volume after verification. `--auth-only` can resume its API checks on the same
+disposable project containing only synthetic fixtures.
+
+From `backend`, after separately establishing a fresh empty disposable stack and
+matching its labeled containers/ports (the identifiers below are examples):
+
+```powershell
+$env:RBAC_LOCAL_TEST_DATABASE_URL='postgresql://postgres@127.0.0.1:55432/postgres'
+$env:RBAC_LOCAL_TEST_CONTAINER='supabase_db_safe-rbac-example'
+$env:RBAC_LOCAL_TEST_API_URL='http://127.0.0.1:55431'
+npx ts-node scripts/testRbacDatabase.ts
+npx ts-node scripts/testRbacConcurrency.ts
+```
+
+Use a separate temporary Supabase project ID, fresh storage and explicit loopback
+bindings; never substitute an existing project. The CLI's network default did not
+override explicit wildcard bindings on this run, so published bindings were
+checked and corrected on only the fresh test containers. Credentials/runtime files
+were kept out of source and logs. The local Auth signing secret was used only in
+memory for local test tokens; backend/hosted environment configuration was not read.
+
+Two testing issues were corrected: the runner now supports the existing container
+client and displays SQL errors; an added probe that attempted an unsupported
+`session_replication_role` change was replaced with normal guarded invalid writes.
+The checked-in **local-only** config now disables general and email signup to
+match the administrator-managed policy. Hosted Auth settings were not inspected
+or changed. No earlier frontend/backend audits or mocked suites were rerun.
+
+The runner also correctly refused a non-loopback URL, the unrelated GraveNav
+container and a mismatched local published port before running SQL. Before teardown,
+only two synthetic Auth users, one profile, 22 committed audit rows and one active
+Super Administrator remained; every other public application table was empty.
+The disposable project's containers and database volume were then destroyed, with
+no matching containers or DB volume left. The original GraveNav DB retained its
+same container ID and remained running. No real-account data was deleted.
+
+Hosted migration, real client accounts, production Auth settings, SMTP/invites,
+password recovery/rotation, provider logout revocation, live application session
+behavior and alternate-isolation/stress coverage remain **Not Confirmed**.
+No commit, push, merge, deployment or PR update is authorized by Phase 2.
+
+## Initial implementation changed-file inventory
 
 45 intended implementation, test and directly affected documentation files:
 
