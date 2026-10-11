@@ -4,10 +4,10 @@ import request from 'supertest'
 import { errorHandler } from '../middleware/errorHandler'
 import { roles } from '../lib/permissions'
 
-const mock = vi.hoisted(() => ({ getUser:vi.fn(), signIn:vi.fn(), refresh:vi.fn(), from:vi.fn(), rpc:vi.fn(), create:vi.fn(), delete:vi.fn() }))
+const mock = vi.hoisted(() => ({ getUser:vi.fn(), signIn:vi.fn(), refresh:vi.fn(), signOut:vi.fn(), from:vi.fn(), rpc:vi.fn(), create:vi.fn(), delete:vi.fn() }))
 vi.mock('../config/supabaseClient', () => ({
   supabaseAnon: { auth: { getUser:mock.getUser, signInWithPassword:mock.signIn, refreshSession:mock.refresh } },
-  supabaseAdmin: { from:mock.from, rpc:mock.rpc, auth:{admin:{createUser:mock.create,deleteUser:mock.delete}} },
+  supabaseAdmin: { from:mock.from, rpc:mock.rpc, auth:{admin:{createUser:mock.create,deleteUser:mock.delete,signOut:mock.signOut}} },
   createScopedClient: vi.fn(),
 }))
 import routes from './index'
@@ -53,6 +53,22 @@ beforeEach(()=>{
   mock.signIn.mockResolvedValue({data:{session},error:null});mock.refresh.mockResolvedValue({data:{session},error:null})
   mock.from.mockImplementation(builder);mock.rpc.mockResolvedValue({data:target,error:null})
   mock.create.mockResolvedValue({data:{user:{id:targetId}},error:null});mock.delete.mockResolvedValue({error:null})
+  mock.signOut.mockResolvedValue({data:null,error:null})
+})
+
+describe('explicit caller session revocation',()=>{
+  it('revokes only the verified current session',async()=>{
+    expect((await call('POST','/api/v1/auth/logout')).status).toBe(204)
+    expect(mock.signOut).toHaveBeenCalledWith('synthetic-token','local')
+  })
+  it('does not report success when Auth revocation fails',async()=>{
+    mock.signOut.mockResolvedValue({data:null,error:{message:'unavailable'}})
+    expect((await call('POST','/api/v1/auth/logout')).status).toBe(503)
+  })
+  it('never revokes an unauthenticated session',async()=>{
+    expect((await request(app()).post('/api/v1/auth/logout')).status).toBe(401)
+    expect(mock.signOut).not.toHaveBeenCalled()
+  })
 })
 
 describe('current trusted profile and sessions',()=>{

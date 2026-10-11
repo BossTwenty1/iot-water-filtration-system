@@ -122,7 +122,8 @@ separate explicit approval.
   first-login password rotation. These are production rollout gates.
 - Access tokens remain in memory and refresh tokens in per-tab sessionStorage,
   consistent with existing auth. They remain JavaScript-readable; HttpOnly-cookie
-  migration is outside this feature. Provider logout revocation is not live-verified.
+  migration is outside this feature. Provider logout revocation is verified against
+  local Auth in Phase 3 below; hosted behavior remains Not Confirmed.
 - Software device registration is permitted; opaque device safety/config updates,
   hardware control, thresholds and final scientific approval remain withheld.
 
@@ -260,3 +261,90 @@ frontend/tests/rbac-preview.test.mjs
 Build outputs and dependency junctions are ignored and uncommitted. The original
 checkout's `.pnpm-store/` remains untouched/untracked and is not part of this
 feature. No environment file or credentials were added to the feature worktree.
+
+## Phase 3: real local full-stack verification — 2026-10-11
+
+The actual React/Vite frontend and exported Express application ran against a
+new disposable Supabase project, `safe-rbac-e2e-20261011-bc099fb4`. All four
+existing migrations applied in order. Auth users, profiles and account audits
+were empty before fixture provisioning. Supabase API/DB and both applications
+were restricted to IPv4 loopback; no reset, hosted connection or shared-project
+change was performed. Existing tools/dependencies were reused. The unrelated
+GraveNav containers and original localhost application were preserved.
+
+The existing bootstrap CLI verified a synthetic confirmed Auth identity with
+`--dry-run`, then provisioned the initial Super Administrator with `--apply`
+and an explicit user-approved local testing reason. Administrator, Researcher
+and Viewer fixtures were created through the protected Express account API.
+Generated passwords and local API keys stayed in private temporary runtime
+configuration outside the repository; no credentials are included here.
+
+| Actual local behavior | Result |
+| --- | --- |
+| Four-role login, trusted profile and real refresh | Passed |
+| Four-role logout and rejected logged-out refresh tokens | Passed |
+| Logout scope isolation: another session still refreshes | Passed |
+| Already-issued caller token immediately after local logout | Rejected with 401 |
+| Administrator lower-role directory, higher-role read/write denial | Passed |
+| Researcher/Viewer account directory, mutation and audit denial | Passed |
+| Anonymous/invalid bearer requests | Rejected with 401 |
+| Deactivation blocks existing access, refresh and new login | Passed |
+| React redirects a deactivated session and shows inactive-login feedback | Passed |
+| React Super Administrator create, role/status changes and deletion | Passed |
+| React Administrator restricted role options and Researcher creation | Passed |
+| Actual Administrator deletion of a Researcher | Passed |
+| Researcher/Viewer management navigation and route protection | Passed |
+| React reload restoration and timed refresh | Passed |
+| Changed role reflected in current profile, reauthentication and React refresh | Passed |
+| Real directory/audit rows and success/duplicate-account error feedback | Passed |
+| Public email signup with email login enabled | Rejected: 422, signup_disabled |
+
+The focused real HTTP workflow passed all 46 checks after corrections. Browser
+flows used real Auth/database operations, not intercepts or synthetic API
+responses. With a test-only 60-second access lifetime, the browser rotated its
+refresh token after about 30 seconds and updated management navigation after
+the trusted role changed; reload also restored the updated permissions.
+
+Two disposable accounts were deleted through the normal APIs. Auth/profile
+queries showed zero remaining records for their synthetic email. The committed
+audit API and PostgreSQL queries agreed on 45 persisted rows, including two
+`deletion_requested` and two `delete` records. Deleted target IDs and expected
+manager actor IDs remained present. The four main role fixtures were restored
+to their intended roles and Active status.
+
+### Verified defects and minimal fixes
+
+- The previous local `[auth.email].enable_signup = false` configuration made the
+  CLI disable the entire email provider, breaking existing-account login with
+  `email_provider_disabled`. Enable the email provider while keeping
+  `[auth].enable_signup = false`; real public signup remained blocked. This
+  corrects the Phase 2 configuration statement above, not hosted Auth settings.
+- The request-scoped Supabase client has no stored Auth session; calling its
+  `auth.signOut()` returned without revoking the refresh token. Express now calls
+  `supabaseAdmin.auth.admin.signOut(verifiedCallerToken, 'local')` and checks its
+  returned error. Local logout now invalidates the caller's session without
+  revoking another session. Three new focused regression tests cover caller
+  scope, failure reporting and unauthenticated rejection.
+
+Backend `npm run typecheck` passed. Only the three newly added logout tests were
+run (`vitest run src/routes/rbac.test.ts -t "explicit caller session revocation"`);
+all three passed, with the existing 50 cases skipped. No previous mocked suites,
+PostgreSQL regression suite, frontend build/audit or broad UI audit was repeated.
+
+### Local runtime and remaining rollout gates
+
+- Frontend: `http://127.0.0.1:5175/users`
+- Express API: `http://127.0.0.1:3002/api/v1`
+- Supabase API/DB: loopback ports 55431/55432
+
+The local account-testing runtime imports the actual Express app without
+starting the unrelated device watchdog or retention jobs in `backend/index.ts`.
+No source startup contract or hardware control was changed. The private runtime
+and disposable fixtures are intentionally left available for local inspection.
+
+Hosted migration/configuration, real client accounts, production session behavior,
+SMTP/invitations, first-login password rotation and deployment remain
+**Not Confirmed** and require separate approval/verification. PostgreSQL
+concurrency/regression results remain the previously completed Phase 2 evidence,
+not reruns in this phase. No commit, push, merge, deployment or PR mutation was
+performed. Draft PR #6 remains open; these fixes are uncommitted for review.

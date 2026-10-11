@@ -15,6 +15,12 @@ Existing `/api/v1/auth/login` (`email`, `password`) and `/auth/refresh`
 profiles receive 401; unauthorized actions receive 403. `/auth/me` remains
 available to every active role. Current database roles are checked per request.
 
+`POST /api/v1/auth/logout` requires the caller's bearer token. Express explicitly
+revokes that verified Auth session using the local sign-out scope (other sessions
+are unchanged). Success returns 204; an Auth revocation failure returns 503 rather
+than falsely reporting success. The frontend still clears its local session on
+failure and warns that server invalidation could not be confirmed.
+
 - `GET /api/v1/users?limit=25&offset=0&search=&role=&status=`: permitted profile
   array; search is a case-insensitive email substring. Status Active/Inactive.
   Limit 1–100, offset 0–1000000. Administrators see Researcher/Viewer accounts;

@@ -1,7 +1,7 @@
 import express, { type Request, type Response, type NextFunction } from 'express'
 import type { Session } from '@supabase/supabase-js'
 import { z } from 'zod'
-import { supabaseAnon, createScopedClient } from '../config/supabaseClient'
+import { supabaseAnon, supabaseAdmin, createScopedClient } from '../config/supabaseClient'
 import { activeProfile, requireAuth, verifySession } from '../middleware/auth'
 import { ApiError } from '../lib/apiError'
 import { toUser } from '../lib/mappers'
@@ -43,7 +43,10 @@ router.post('/login', validateBody(loginSchema), async (req: Request, res: Respo
 // POST /auth/logout — invalidate the caller's current session.
 router.post('/logout', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await createScopedClient(req.authToken as string).auth.signOut()
+    // The request-scoped client has no stored Auth session. Revoke the verified
+    // caller's session explicitly; never invalidate another user's sessions.
+    const { error } = await supabaseAdmin.auth.admin.signOut(req.authToken as string, 'local')
+    if (error) throw ApiError.serviceUnavailable('Session revocation failed. Please try again.')
     res.status(204).send()
   } catch (err) {
     next(err)
