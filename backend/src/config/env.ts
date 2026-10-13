@@ -14,6 +14,7 @@ export interface Env {
   corsOrigin: string
   ssePollIntervalMs: number
   deviceIngestKey: string
+  backgroundJobsEnabled: boolean
   deviceWatchdogIntervalMs: number
   deviceOfflineTimeoutMs: number
   retentionJobIntervalMs: number
@@ -30,6 +31,7 @@ const env: Env = {
   // src/middleware/deviceAuth.ts. Not a resolution of the real device-auth
   // decision (docs/PENDING_DECISIONS.md).
   deviceIngestKey: required('DEVICE_INGEST_KEY'),
+  backgroundJobsEnabled: process.env.BACKGROUND_JOBS_ENABLED === 'true',
   // How often src/lib/deviceWatchdog.ts checks for devices that have gone
   // quiet, and how long since last_seen_at counts as "offline". Both are
   // implementation-detail timings (like ssePollIntervalMs above), not the

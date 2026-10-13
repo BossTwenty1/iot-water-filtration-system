@@ -149,8 +149,10 @@ seed, simulation, and bootstrap commands out of build/start/pre-deploy commands.
 Optional timing settings retain their existing defaults:
 `SSE_POLL_INTERVAL_MS=3000`, `DEVICE_WATCHDOG_INTERVAL_MS=10000`,
 `DEVICE_OFFLINE_TIMEOUT_MS=30000`, and `RETENTION_JOB_INTERVAL_MS=86400000`.
-Starting the backend starts the device watchdog and immediately checks retention;
-the latter can delete old readings if a retention policy is configured. Review
+Background jobs are disabled by default. Only `BACKGROUND_JOBS_ENABLED=true`
+starts the device watchdog and immediately checks retention; keep it disabled
+for the Render development demo. Retention can delete old readings if a policy
+is configured. Review
 these existing data-writing jobs before authorizing hosted startup. Do not start
 a second API instance against the same database without coordinating the jobs.
 
