@@ -20,7 +20,7 @@ export interface Env {
 }
 
 const env: Env = {
-  port: Number(process.env.BACKEND_PORT) || 3000,
+  port: Number(process.env.PORT) || Number(process.env.BACKEND_PORT) || 3000,
   supabaseUrl: required('SUPABASE_URL'),
   supabaseAnonKey: required('SUPABASE_ANON_KEY'),
   supabaseServiceRoleKey: required('SUPABASE_SERVICE_ROLE_KEY'),
