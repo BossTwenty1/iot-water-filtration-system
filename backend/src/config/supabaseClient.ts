@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import WebSocket from 'ws'
 import env from './env'
 import type { Database } from '../types/database.types'
+import type { RbacDatabase } from '../types/rbacDatabase'
 
 // supabase-js always spins up a Realtime client, which needs a global
 // WebSocket constructor. This backend never subscribes to Realtime channels,
@@ -16,7 +17,7 @@ const realtimeOptions: Record<string, unknown> = { transport: WebSocket }
 // exist yet (see backend/docs/SCHEMA_TBD_LOG.md), so this is currently
 // equivalent in access to the anon client, but it's the correct client to use
 // once RLS lands — trusted server code should not depend on anon policies.
-export const supabaseAdmin = createClient<Database>(env.supabaseUrl, env.supabaseServiceRoleKey, {
+export const supabaseAdmin = createClient<RbacDatabase>(env.supabaseUrl, env.supabaseServiceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false },
   realtime: realtimeOptions,
 })

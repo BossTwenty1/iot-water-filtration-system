@@ -2,7 +2,7 @@ import express, { type Request, type Response, type NextFunction } from 'express
 import type { Session } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { supabaseAnon, supabaseAdmin, createScopedClient } from '../config/supabaseClient'
-import { requireAuth } from '../middleware/auth'
+import { activeProfile, requireAuth, verifySession } from '../middleware/auth'
 import { ApiError } from '../lib/apiError'
 import { toUser } from '../lib/mappers'
 import { validateBody } from '../lib/validate'
@@ -16,13 +16,13 @@ const passwordResetRequestSchema = z.object({ email: z.string().min(1) })
 const passwordResetConfirmSchema = z.object({ accessToken: z.string().min(1), newPassword: z.string().min(1) })
 
 async function sessionResponse(session: Session): Promise<AuthSession> {
-  const { data: profile } = await supabaseAdmin.from('profiles').select('*').eq('id', session.user.id).maybeSingle()
+  const profile = await activeProfile(session.user.id)
 
   return {
     token: session.access_token,
     refreshToken: session.refresh_token,
     expiresIn: session.expires_in,
-    user: toUser(profile ?? { id: session.user.id, email: session.user.email ?? null }),
+    user: toUser(profile),
   }
 }
 
@@ -43,7 +43,10 @@ router.post('/login', validateBody(loginSchema), async (req: Request, res: Respo
 // POST /auth/logout — invalidate the caller's current session.
 router.post('/logout', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await createScopedClient(req.authToken as string).auth.signOut()
+    // The request-scoped client has no stored Auth session. Revoke the verified
+    // caller's session explicitly; never invalidate another user's sessions.
+    const { error } = await supabaseAdmin.auth.admin.signOut(req.authToken as string, 'local')
+    if (error) throw ApiError.serviceUnavailable('Session revocation failed. Please try again.')
     res.status(204).send()
   } catch (err) {
     next(err)
@@ -87,6 +90,8 @@ router.post('/password-reset/request', validateBody(passwordResetRequestSchema),
 router.post('/password-reset/confirm', validateBody(passwordResetConfirmSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { accessToken, newPassword } = req.body
+
+    await verifySession(accessToken)
 
     const { error } = await createScopedClient(accessToken).auth.updateUser({ password: newPassword })
     if (error) throw ApiError.badRequest('Could not update password.', error.message)

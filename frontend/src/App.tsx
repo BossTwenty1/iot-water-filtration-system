@@ -12,6 +12,7 @@ const TestRunsPage=lazy(()=>import('./pages/TestRunsPage').then((module)=>({defa
 const CalibrationPage=lazy(()=>import('./pages/CalibrationPage').then((module)=>({default:module.CalibrationPage})))
 const LaboratoryValidationPage=lazy(()=>import('./pages/LaboratoryValidationPage').then((module)=>({default:module.LaboratoryValidationPage})))
 const MaintenancePage=lazy(()=>import('./pages/MaintenancePage').then((module)=>({default:module.MaintenancePage})))
+const UsersPage=lazy(()=>import('./pages/UsersPage').then((module)=>({default:module.UsersPage})))
 const SettingsPage=lazy(()=>import('./pages/SettingsPage').then((module)=>({default:module.SettingsPage})))
 
 function PageLoading() { return <div className="panel p-6 text-sm text-muted" role="status">Loading research console…</div> }
@@ -26,5 +27,5 @@ function RequireAuth(){
 
 export default function App() {
   useEffect(()=>{void restoreSession()},[])
-  return <Suspense fallback={<PageLoading/>}><Routes><Route path="login" element={<LoginPage/>}/><Route element={<RequireAuth/>}><Route element={<AppLayout/>}><Route index element={<Navigate to="/dashboard" replace/>}/><Route path="dashboard" element={<DashboardPage/>}/><Route path="history" element={<HistoryPage/>}/><Route path="alerts" element={<AlertsPage/>}/><Route path="test-runs" element={<TestRunsPage/>}/><Route path="calibration" element={<CalibrationPage/>}/><Route path="laboratory-validation" element={<LaboratoryValidationPage/>}/><Route path="maintenance" element={<MaintenancePage/>}/><Route path="settings" element={<SettingsPage/>}/><Route path="*" element={<Navigate to="/dashboard" replace/>}/></Route></Route></Routes></Suspense>
+  return <Suspense fallback={<PageLoading/>}><Routes><Route path="login" element={<LoginPage/>}/><Route element={<RequireAuth/>}><Route element={<AppLayout/>}><Route index element={<Navigate to="/dashboard" replace/>}/><Route path="dashboard" element={<DashboardPage/>}/><Route path="history" element={<HistoryPage/>}/><Route path="alerts" element={<AlertsPage/>}/><Route path="test-runs" element={<TestRunsPage/>}/><Route path="calibration" element={<CalibrationPage/>}/><Route path="laboratory-validation" element={<LaboratoryValidationPage/>}/><Route path="maintenance" element={<MaintenancePage/>}/><Route path="settings" element={<SettingsPage/>}/><Route path="users" element={<UsersPage/>}/><Route path="*" element={<Navigate to="/dashboard" replace/>}/></Route></Route></Routes></Suspense>
 }
