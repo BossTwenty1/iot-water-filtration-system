@@ -70,6 +70,19 @@ checking; lint uses Oxlint. No frontend test script is currently configured.
 
 ### Authentication and route behavior
 
+The login page probes the public `/api/v1/health` endpoint before enabling Sign in.
+It shows a free-hosting wake-up notice, retries failed probes every five seconds,
+and stops after 90 seconds. Users can enter credentials during startup or retry
+the connection afterward without losing their inputs. Only health GETs are
+retried; authentication requests and existing session/RBAC behavior are unchanged.
+Cancellation clears the request and timers when the page is left. This is a
+frontend usability improvement, not a keep-alive service or a cold-start removal.
+
+History record inspection follows the existing 1050px stacked-layout breakpoint:
+Inspect selects the row, scrolls to the inspector below the sticky header, and
+moves focus into the inspector region. Back to records returns to the triggering
+button. Desktop selection stays in place; reduced-motion scrolling is immediate.
+
 `/login` is outside the protected shell. Dashboard, History, Alerts, Test Runs,
 Calibration, Laboratory Validation, Maintenance, and Settings require a session.
 The route guard waits for session restoration, then redirects unauthenticated

@@ -126,6 +126,11 @@ export async function signIn(email:string,password:string):Promise<void>{
   acceptSession(result)
 }
 
+export async function checkBackendHealth(signal:AbortSignal):Promise<void>{
+  const result=await send<{status?:string}>('health',{signal,cache:'no-store'})
+  if(result?.status!=='ok')throw new ApiClientError('The API is not ready.')
+}
+
 export async function signOut():Promise<void>{
   // Clear local credentials even when the server is unavailable.
   try{

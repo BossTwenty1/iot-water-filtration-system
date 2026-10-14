@@ -35,6 +35,31 @@ test('authenticated requests attach the access bearer, never the refresh token',
   assert.equal(requests[0].options.headers.get('Authorization'), null)
 }))
 
+test('health probe is public, uncached and cancellable without changing the session', () => check(async api => {
+  globalThis.fetch = async () => response(session())
+  await api.signIn('fixture@example.test', 'synthetic-test-input')
+  const controller = new AbortController()
+  globalThis.fetch = async (url, options) => {
+    assert.ok(url.endsWith('/health'))
+    assert.equal(options.method ?? 'GET', 'GET')
+    assert.equal(options.headers.get('Authorization'), null)
+    assert.equal(options.body, undefined)
+    assert.equal(options.credentials, 'omit')
+    assert.equal(options.cache, 'no-store')
+    assert.equal(options.signal, controller.signal)
+    return response({ status: 'ok' })
+  }
+  await api.checkBackendHealth(controller.signal)
+  assert.equal(api.getAuthState().status, 'authenticated')
+}))
+
+test('health probe requires the actual healthy response, not just HTTP 200', () => check(async api => {
+  for (const value of [null, {}, { status: 'starting' }]) {
+    globalThis.fetch = async () => response(value)
+    await assert.rejects(api.checkBackendHealth(new AbortController().signal), /not ready/)
+  }
+}))
+
 test('403 rechecks the trusted profile and removes stale privileged UI role', () => check(async api => {
   globalThis.fetch = async url => response(url.endsWith('/auth/login') ? session() : url.endsWith('/auth/me') ? activeUser('Viewer') : { error: 'Forbidden' }, url.endsWith('/users') ? 403 : 200)
   await api.signIn('fixture@example.test', 'synthetic-test-input')

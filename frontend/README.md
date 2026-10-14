@@ -15,6 +15,20 @@ supports focus containment, Escape dismissal, and focus restoration.
 visitors are redirected to login with the requested destination retained;
 successful sign-in returns to an accepted local destination or `/dashboard`.
 
+Before sign-in, the login page wakes the API through the public `/health` route.
+It allows credential entry while showing a server-starting notice, but blocks
+submission until the API returns `{ "status": "ok" }`. Failed health checks retry
+after five seconds, with one overall 90-second deadline (including slow requests).
+An unavailable server shows a separate connection error and **Retry connection**;
+retry preserves the entered fields and never resubmits credentials automatically.
+Leaving the page cancels the probe and timers. This accommodates free-hosting
+cold starts; it does not prevent server sleep or guarantee continuous availability.
+
+On History's stacked layout (1050px and below), **Inspect** brings the selected
+Record Inspector into view and moves focus there. **Back to records** returns
+to the same Inspect button; reduced-motion preferences use immediate scrolling.
+The desktop side-by-side inspector, API data, exports, and permissions are unchanged.
+
 Login and application pages share light/dark themes. An explicit choice is
 persisted in `localStorage`; without a valid saved choice, the UI follows the
 operating-system preference and its changes, falling back to light if unavailable.
