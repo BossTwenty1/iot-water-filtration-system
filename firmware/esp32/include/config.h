@@ -42,10 +42,14 @@ constexpr char kNtpServerSecondary[] = "time.nist.gov";
 // still TBD (docs/PENDING_DECISIONS.md §8).
 constexpr char kApiBasePath[] = "/api/v1";
 
-// TODO(TBD): the telemetry ingestion route is not defined in
-// docs/API_CONTRACT.md. Leave empty until the contract names it;
-// ApiClient::postTelemetry() refuses to send while this is empty.
-constexpr char kApiTelemetryPath[] = "";
+// :id is the confirmed devices.id UUID, never a guessed device identifier.
+constexpr char kApiTelemetryPath[] = "/devices/%s/readings";
+
+// Edgar verified this OneWire bus on his PR #5 harness; not a final pin map.
+constexpr int kTemperaturePin = 26;
+constexpr uint32_t kDs18b20ConversionMs = 750;
+// First-test cadence only; final recording/transmission policy remains TBD.
+constexpr uint32_t kTemperatureTestIntervalMs = 30000;
 
 // Provisional default — tune during integration testing.
 constexpr uint32_t kHttpConnectTimeoutMs = 5000;

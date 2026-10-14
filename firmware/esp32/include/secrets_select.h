@@ -12,3 +12,22 @@
 #include "secrets.example.h"
 #define SECRETS_ARE_PLACEHOLDERS 1
 #endif
+
+#ifndef DEVICE_KEY
+#define DEVICE_KEY ""
+#endif
+#ifndef TEMPERATURE_TELEMETRY_ENABLED
+#define TEMPERATURE_TELEMETRY_ENABLED 0
+#endif
+#ifndef DEVICE_ID
+#define DEVICE_ID ""
+#endif
+#ifndef DEVICE_MAC
+#define DEVICE_MAC ""
+#endif
+#ifndef TEMPERATURE_PROBE_ROM
+#define TEMPERATURE_PROBE_ROM ""
+#endif
+#ifndef TEMPERATURE_POSITION
+#define TEMPERATURE_POSITION ""
+#endif

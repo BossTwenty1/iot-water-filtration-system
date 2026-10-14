@@ -187,3 +187,12 @@ page before the defense and allow it to warm up. Free hosting is suitable for
 the capstone demo, not an always-on telemetry collector or durable scheduler.
 Monthly free instance hours are shared across the workspace's Free web services;
 existing services also consume that allowance. No Render database is needed.
+
+## Temperature-only ESP32 preparation
+
+The isolated `codex/esp32-temperature-integration` branch starts from deployed
+`feature/user-management-rbac` at `99e43bc`. It selects only Edgar's PR #5 DS18B20
+work plus a gated adapter to the existing readings endpoint; other branches are
+not merged. Setup and focused build/mock-test commands are in the
+[firmware README](../firmware/esp32/README.md). Transmission defaults to disabled.
+Real ingestion, flashing, deployment and registry changes require a later task.

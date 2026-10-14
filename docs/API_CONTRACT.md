@@ -148,3 +148,28 @@ database design:
 
 Final field names, identifiers, units, and validation rules remain subject to
 implementation approval.
+
+## 6. Existing device ingestion used by the temperature test
+
+`POST /api/v1/devices/:id/readings` uses the existing `devices.id` UUID and
+`X-Device-Key`, matching backend `DEVICE_INGEST_KEY`. The deployed software branch
+requires this UUID, not a device identifier or the telemetry branch's `/telemetry`
+alias. Provisioning/per-device security remains TBD; this is the existing shared
+key mechanism, not a new security architecture.
+
+Body: `{ measuredAt, testRunId?, readings: [{ category, position, value, status? }] }`.
+`measuredAt` is UTC ISO 8601; `testRunId`, if provided, must exist. The temperature
+integration omits it until experiment context is confirmed. A reading uses category
+`temperature`, position `pre_filtration` or `post_filtration`, and Celsius from the
+registered sensor's unit. A matching sensor row must already exist for the device.
+
+An invalid temperature is `value: null, status: "fault"`; valid is numeric with
+`status: "valid"`. Other uncalibrated/faulty channels and absent hardware are omitted,
+not invented. The existing route preserves free-text status and nullable values.
+Source identity comes from the verified device registry (`is_simulated: false` for
+real hardware); firmware must not reuse a simulated device record.
+
+Response: `{ deviceId, inserted, skipped }`, HTTP 201 for inserted readings, 400 if
+none were accepted, 401 for an invalid/missing key, 404 for an unknown device UUID.
+The first temperature-only test expects `inserted: 1` and `skipped: []`.
+See [firmware preparation](../firmware/esp32/README.md) for transmission gates.

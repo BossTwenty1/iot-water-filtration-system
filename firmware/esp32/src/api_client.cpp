@@ -16,9 +16,10 @@ bool isNullOrEmpty(const char* s) { return s == nullptr || s[0] == '\0'; }
 
 }  // namespace
 
-void ApiClient::begin(const char* baseUrl, const char* rootCaPem) {
+void ApiClient::begin(const char* baseUrl, const char* rootCaPem, const char* deviceKey) {
   baseUrl_ = baseUrl;
   rootCaPem_ = rootCaPem;
+  deviceKey_ = deviceKey;
   configured_ = false;
 
   if (isNullOrEmpty(baseUrl_)) {
@@ -33,6 +34,11 @@ void ApiClient::begin(const char* baseUrl, const char* rootCaPem) {
     // Never fall back to WiFiClientSecure::setInsecure(): an unverified TLS
     // connection would accept any server, including an impostor.
     Serial.println(F("[api] no root CA configured - backend API disabled"));
+    return;
+  }
+
+  if (isNullOrEmpty(deviceKey_) || strpbrk(deviceKey_, "\r\n") != nullptr) {
+    Serial.println(F("[api] missing/invalid device key - backend API disabled"));
     return;
   }
 
@@ -64,6 +70,7 @@ ApiClient::Result ApiClient::postJson(const char* path, const char* jsonBody,
 
   WiFiClientSecure tlsClient;
   tlsClient.setCACert(rootCaPem_);
+  tlsClient.setHandshakeTimeout((config::kHttpConnectTimeoutMs + 999) / 1000);
 
   HTTPClient http;
   http.setConnectTimeout(config::kHttpConnectTimeoutMs);
@@ -76,8 +83,7 @@ ApiClient::Result ApiClient::postJson(const char* path, const char* jsonBody,
     return {Status::kInvalidRequest, 0};
   }
   http.addHeader("Content-Type", "application/json");
-  // TODO(TBD): device authentication header — mechanism and credential
-  // provisioning are undecided (docs/PENDING_DECISIONS.md §8).
+  http.addHeader("X-Device-Key", deviceKey_);
 
   // HTTPClient::POST takes a non-const buffer (Arduino-ESP32 2.x API) but only
   // writes it to the socket, so casting away const is safe here.
@@ -97,12 +103,15 @@ ApiClient::Result ApiClient::postJson(const char* path, const char* jsonBody,
   return {Status::kHttpError, code};
 }
 
-ApiClient::Result ApiClient::postTelemetry(const char* jsonBody, bool wifiConnected) {
-  if (isNullOrEmpty(config::kApiTelemetryPath)) {
-    // TODO(TBD): telemetry route not yet defined in docs/API_CONTRACT.md.
-    return {Status::kRouteUndefined, 0};
+ApiClient::Result ApiClient::postTelemetry(const char* deviceId, const char* jsonBody,
+                                           bool wifiConnected) {
+  if (isNullOrEmpty(deviceId)) return {Status::kRouteUndefined, 0};
+  char path[64];
+  const int length = snprintf(path, sizeof(path), config::kApiTelemetryPath, deviceId);
+  if (length < 0 || static_cast<size_t>(length) >= sizeof(path)) {
+    return {Status::kInvalidRequest, 0};
   }
-  return postJson(config::kApiTelemetryPath, jsonBody, wifiConnected);
+  return postJson(path, jsonBody, wifiConnected);
 }
 
 const char* ApiClient::statusName(Status status) {

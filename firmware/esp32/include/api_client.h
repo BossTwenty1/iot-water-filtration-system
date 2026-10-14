@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-// HTTPS client skeleton for the backend REST API (docs/API_CONTRACT.md).
+// HTTPS client for the backend REST API (docs/API_CONTRACT.md).
 //
 // Structure only: it can POST a caller-supplied JSON string over verified TLS.
 // It does not build payloads, schedule transmissions, retry, or buffer —
@@ -18,8 +18,8 @@ class ApiClient {
     kOk,             // Server answered with 2xx.
     kHttpError,      // Server answered with a non-2xx status (see httpCode).
     kTransportError, // TLS/connection/timeout failure (httpCode < 0).
-    kNotConfigured,  // Missing https base URL or root CA; nothing was sent.
-    kRouteUndefined, // Endpoint path is TBD; nothing was sent.
+    kNotConfigured,  // Missing https base URL, root CA or device key; nothing was sent.
+    kRouteUndefined, // Missing device ID; nothing was sent.
     kWifiDown,       // Wi-Fi not connected; nothing was sent.
     kInvalidRequest, // Null body or URL too long; nothing was sent.
   };
@@ -29,22 +29,22 @@ class ApiClient {
     int httpCode;  // HTTP status, a negative HTTPClient error, or 0 if not sent.
   };
 
-  // baseUrl/rootCaPem must outlive this object (string literals from secrets.h).
+  // baseUrl/rootCaPem/deviceKey must outlive this object (string literals from secrets.h).
   // baseUrl must start with "https://"; rootCaPem must be a non-empty PEM.
-  void begin(const char* baseUrl, const char* rootCaPem);
+  void begin(const char* baseUrl, const char* rootCaPem, const char* deviceKey);
   bool isConfigured() const { return configured_; }
 
   // POSTs `jsonBody` to baseUrl + config::kApiBasePath + `path`.
   Result postJson(const char* path, const char* jsonBody, bool wifiConnected);
 
-  // POSTs to the telemetry route. Returns kRouteUndefined while
-  // config::kApiTelemetryPath is empty (TBD).
-  Result postTelemetry(const char* jsonBody, bool wifiConnected);
+  // POSTs to the deployed UUID-scoped /readings route.
+  Result postTelemetry(const char* deviceId, const char* jsonBody, bool wifiConnected);
 
   static const char* statusName(Status status);
 
  private:
   const char* baseUrl_ = nullptr;
   const char* rootCaPem_ = nullptr;
+  const char* deviceKey_ = nullptr;
   bool configured_ = false;
 };

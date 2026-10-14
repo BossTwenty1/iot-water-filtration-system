@@ -26,6 +26,14 @@
 // TODO(TBD): backend hosting/CA not yet confirmed.
 #define API_ROOT_CA_PEM ""
 
-// TODO(TBD): device authentication mechanism and credential provisioning
-// (docs/PENDING_DECISIONS.md §8). Add a device credential here once decided.
-// Never place database/service-role credentials in firmware.
+// Shared X-Device-Key credential, matching backend DEVICE_INGEST_KEY.
+// Never use a database/service-role credential here.
+#define DEVICE_KEY ""
+
+// Explicit opt-in after the team confirms the existing real-device record,
+// its matching temperature sensor row and the probe's actual filtration stage.
+#define TEMPERATURE_TELEMETRY_ENABLED 0
+#define DEVICE_ID ""              // Existing devices.id UUID (not the MAC).
+#define DEVICE_MAC ""             // Confirmed board MAC, XX:XX:XX:XX:XX:XX.
+#define TEMPERATURE_PROBE_ROM ""  // Confirmed OneWire ROM, 16 uppercase hex digits.
+#define TEMPERATURE_POSITION ""   // pre_filtration or post_filtration; never infer.

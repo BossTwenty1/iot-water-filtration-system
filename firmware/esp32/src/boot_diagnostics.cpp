@@ -64,9 +64,9 @@ void print(bool secretsArePlaceholders, bool wifiCredentialsPresent,
                                        : "loaded from include/secrets.h");
   Serial.printf("wifi creds     : %s\n", wifiCredentialsPresent ? "present" : "NOT SET (Wi-Fi disabled)");
   Serial.printf("backend api    : %s\n",
-                apiConfigured ? "configured" : "NOT CONFIGURED (https base URL / root CA missing)");
-  Serial.println(F("gpio           : none assigned - pin map TBD (PENDING_DECISIONS sec. 1)"));
-  Serial.println(F("sensors        : not implemented - TBD (PENDING_DECISIONS sec. 1, 3)"));
+                apiConfigured ? "configured" : "NOT CONFIGURED (https base URL / root CA / key missing)");
+  Serial.printf("gpio           : OneWire=%d (Edgar's verified test harness; final map TBD)\n", config::kTemperaturePin);
+  Serial.println(F("sensors        : DS18B20 only; other channels not transmitted"));
   Serial.println(F("actuators      : not implemented - TBD (PENDING_DECISIONS sec. 2)"));
   Serial.println(F("================================================================"));
 }

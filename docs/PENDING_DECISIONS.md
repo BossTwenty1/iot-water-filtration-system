@@ -248,3 +248,20 @@ neutral placeholders and must not imply a final:
 - timing value,
 - research result,
 - safety conclusion.
+
+## Temperature integration test boundary
+
+The first temperature path reuses the existing deployed UUID-scoped `/readings`
+route and shared `X-Device-Key` mechanism; final provisioning/security remain TBD.
+Edgar reports GPIO26/DS18B20 working on the PR #5 harness. This evidence does not
+resolve the final GPIO map, filtration-stage assignment or second sensor group.
+
+Still required before transmission: existing real-device UUID and MAC match,
+probe ROM and physical filtration stage, matching temperature sensor registry row,
+private device key, approved HTTPS origin/verified CA and explicit local opt-in.
+No registry writes or hardware test have been performed by this preparation.
+
+750 ms is the DS18B20 conversion guard. The 30-second send interval is a provisional
+first-test setting, not resolution of final sampling/persistence/retry policy.
+Faults remain null; exactly 85 C is conservatively withheld in this test, and
+parasite power is unsupported. No research water-quality thresholds are added.
