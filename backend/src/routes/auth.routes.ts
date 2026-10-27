@@ -1,8 +1,8 @@
 import express, { type Request, type Response, type NextFunction } from 'express'
 import type { Session } from '@supabase/supabase-js'
 import { z } from 'zod'
-import { supabaseAnon, supabaseAdmin, createScopedClient } from '../config/supabaseClient'
-import { requireAuth } from '../middleware/auth'
+import { supabaseAnon, supabaseAdmin, createScopedClient, createPasswordChangeClient } from '../config/supabaseClient'
+import { requireAuth, requireBearerAuth } from '../middleware/auth'
 import { ApiError } from '../lib/apiError'
 import { toUser } from '../lib/mappers'
 import { validateBody } from '../lib/validate'
@@ -19,6 +19,10 @@ const registerSchema = z.object({
 const refreshSchema = z.object({ refreshToken: z.string().min(1) })
 const passwordResetRequestSchema = z.object({ email: z.string().min(1) })
 const passwordResetConfirmSchema = z.object({ accessToken: z.string().min(1), newPassword: z.string().min(1) })
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
+})
 
 async function sessionResponse(session: Session): Promise<AuthSession> {
   const { data: profile } = await supabaseAdmin.from('profiles').select('*').eq('id', session.user.id).maybeSingle()
@@ -93,6 +97,31 @@ router.post('/logout', requireAuth, async (req: Request, res: Response, next: Ne
 // GET /auth/me — current user profile.
 router.get('/me', requireAuth, (req: Request, res: Response) => {
   res.json(toUser(req.profile as NonNullable<Request['profile']>))
+})
+
+// POST /auth/change-password — change the caller's password after verifying the current one.
+router.post('/change-password', requireBearerAuth, validateBody(changePasswordSchema), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { currentPassword, newPassword } = req.body
+    const email = req.authUser?.email
+    if (!email) throw ApiError.badRequest('This account does not have an email address.')
+
+    const client = createPasswordChangeClient()
+    const { data, error: signInError } = await client.auth.signInWithPassword({ email, password: currentPassword })
+    if (signInError || !data.session || data.user?.id !== req.authUser?.id) {
+      throw ApiError.unauthorized('Current password is incorrect.')
+    }
+
+    const { error } = await client.auth.updateUser({
+      password: newPassword,
+      current_password: currentPassword,
+    })
+    if (error) throw ApiError.badRequest('Could not update password.', error.message)
+
+    res.status(204).send()
+  } catch (err) {
+    next(err)
+  }
 })
 
 // POST /auth/refresh — refresh access token.

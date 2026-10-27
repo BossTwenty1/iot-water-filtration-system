@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express'
 import { supabaseAnon, supabaseAdmin } from '../config/supabaseClient'
 import { ApiError } from '../lib/apiError'
 import type { ProfileRow } from '../types/db'
+import type { User } from '@supabase/supabase-js'
 
 function extractToken(req: Request): string | null {
   const header = req.headers.authorization ?? ''
@@ -21,6 +22,7 @@ declare global {
   namespace Express {
     interface Request {
       authToken?: string
+      authUser?: User
       profile?: Pick<ProfileRow, 'id'> & Partial<ProfileRow>
     }
   }
@@ -44,11 +46,22 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     const { data: profile } = await supabaseAdmin.from('profiles').select('*').eq('id', data.user.id).maybeSingle()
 
     req.authToken = token
+    req.authUser = data.user
     req.profile = profile ?? { id: data.user.id, email: data.user.email ?? null, role: 'Viewer', status: 'Active' }
     next()
   } catch (err) {
     next(err)
   }
+}
+
+// Password changes must not accept a token in the URL, which can be logged or
+// retained in browser history. Other routes still support query tokens for SSE.
+export function requireBearerAuth(req: Request, res: Response, next: NextFunction): Promise<void> | void {
+  if (!req.headers.authorization?.startsWith('Bearer ')) {
+    next(ApiError.unauthorized('Missing bearer token.'))
+    return
+  }
+  return requireAuth(req, res, next)
 }
 
 // Gates a route to specific `profiles.role` values. This is deliberately

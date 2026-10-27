@@ -107,6 +107,17 @@ success.
 Requires `Authorization`. Returns the `User` shape above (this is what
 replaces the Header's hardcoded `"Administrator"`).
 
+### `POST /auth/change-password`
+
+Requires `Authorization: Bearer <token>` for the account changing its password.
+Body: `{ "currentPassword": "...", "newPassword": "..." }`. The new password
+must contain at least 6 characters. Supabase verifies the current password in
+an isolated session, which must belong to the bearer token's account, then
+updates that account; success returns `204`. Missing or invalid bearer tokens,
+incorrect current passwords, and account mismatches return `401`; an invalid
+body or password update rejected by Supabase returns `400`. This route does not
+send a reset email.
+
 ### `POST /auth/refresh`
 
 ```json

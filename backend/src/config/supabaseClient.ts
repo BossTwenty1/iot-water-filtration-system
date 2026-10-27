@@ -38,3 +38,12 @@ export function createScopedClient(accessToken: string) {
     realtime: realtimeOptions,
   })
 }
+
+// Separate Auth session per request so password verification cannot overwrite
+// the shared anon client's session or race with another request.
+export function createPasswordChangeClient() {
+  return createClient<Database>(env.supabaseUrl, env.supabaseAnonKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+    realtime: realtimeOptions,
+  })
+}
