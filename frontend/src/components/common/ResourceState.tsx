@@ -4,6 +4,6 @@ export function ResourceState({status,error,loadingLabel='Loading records…',em
   if(status==='loading')return <div className="panel p-4 text-sm text-muted" role="status">{loadingLabel}</div>
   if(status==='empty')return <div className="panel p-4 text-sm text-muted">{emptyLabel}</div>
   if(status==='error')return <div className="panel p-4 text-sm text-danger" role="alert">{error||'Unable to load records.'}</div>
-  if(status==='stale')return <div className="text-xs text-warn" role="status">Latest saved readings shown. Device updates are currently unavailable.</div>
+  if(status==='stale')return <div className="text-xs text-warn" role="status">Showing the last saved readings. New device readings are not available now.</div>
   return null
 }

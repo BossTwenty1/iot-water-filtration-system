@@ -7,6 +7,7 @@ import { ApiError } from '../lib/apiError'
 import { param } from '../lib/params'
 import { orThrow } from '../lib/queryHelpers'
 import { toUser } from '../lib/mappers'
+import { displayId } from '../lib/displayIds'
 import { validateBody } from '../lib/validate'
 import type { ProfileRow } from '../types/db'
 
@@ -60,7 +61,10 @@ router.get('/audit', requireAuth, async (req, res, next) => {
   try {
     const { limit, offset } = userPagination(req)
     const rows = orThrow(await supabaseAdmin.from('account_audit').select('*').order('created_at', { ascending: false }).order('id').range(offset, offset + limit - 1), 'Failed to load account audit history.')
-    res.json(rows)
+    const ids = [...new Set(rows.flatMap(row => [row.actor_id, row.target_id]).filter((id): id is string => Boolean(id)))]
+    const profiles: ProfileRow[] = ids.length ? orThrow(await supabaseAdmin.from('profiles').select('*').in('id', ids), 'Failed to load account numbers.') : []
+    const numbers = new Map(profiles.map(profile => [profile.id, displayId('User', profile.display_number)]))
+    res.json(rows.map(row => ({ ...row, actorDisplayId: row.actor_id ? numbers.get(row.actor_id) : undefined, targetDisplayId: numbers.get(row.target_id) })))
   } catch (error) { next(error) }
 })
 

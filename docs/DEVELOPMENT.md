@@ -68,6 +68,29 @@ The example API base is `http://localhost:3000/api/v1`; include the API prefix.
 Use HTTPS for production API requests. The build command includes TypeScript
 checking; lint uses Oxlint. No frontend test script is currently configured.
 
+### Local frontend/backend connection
+
+The backend's `CORS_ORIGIN` accepts comma-separated exact origins. Configuring
+`http://localhost:5173` or `http://127.0.0.1:5173` allows both Vite loopback
+addresses. Other ports and unrelated origins remain disallowed. A production-only
+configuration does not implicitly allow loopback. CORS is not authentication;
+protected routes still require a verified bearer token.
+
+For an API running locally on port 3000, put only
+`VITE_API_BASE_URL=http://localhost:3000/api/v1` in ignored `frontend/.env.local`
+and restart Vite. Backend credentials belong only in ignored `backend/.env`,
+entered privately, never in frontend configuration or source control.
+The existing API startup also runs a device watchdog and retention purge job;
+use only an explicitly approved test database and review its retention policy
+before starting it. No seed, reset, migration or purge command is required for
+frontend configuration.
+
+Supabase project/database ownership is separate from application authentication.
+Login requires an existing Supabase Auth account with its account password;
+application role comes from `profiles.role` (`Administrator`, `Researcher`, or
+`Viewer`), not database ownership. An email/account update reported by a teammate
+is not live login verification. Test using the exact email they configured.
+
 ### Authentication and route behavior
 
 The login page probes the public `/api/v1/health` endpoint before enabling Sign in.
@@ -187,3 +210,11 @@ page before the defense and allow it to warm up. Free hosting is suitable for
 the capstone demo, not an always-on telemetry collector or durable scheduler.
 Monthly free instance hours are shared across the workspace's Free web services;
 existing services also consume that allowance. No Render database is needed.
+
+## Client revisions and password recovery
+
+Readable IDs, simple English, detail modals, Manila date/time formatting, and
+editable system names are supported. Lab and sensor-check pages are temporarily
+unavailable. Existing Super Administrator permissions and Users & Access stay
+enabled. Public `/forgot-password` and `/reset-password` pages use the existing
+API recovery routes; see [password recovery setup](PASSWORD_RECOVERY.md).

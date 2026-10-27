@@ -2,18 +2,19 @@ import express, { type Request, type Response, type NextFunction } from 'express
 import type { Session } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { supabaseAnon, supabaseAdmin, createScopedClient } from '../config/supabaseClient'
-import { activeProfile, requireAuth, verifySession } from '../middleware/auth'
+import { activeProfile, requireAuth } from '../middleware/auth'
 import { ApiError } from '../lib/apiError'
 import { toUser } from '../lib/mappers'
 import { validateBody } from '../lib/validate'
 import type { AuthSession } from '../types/domain'
+import env from '../config/env'
 
 const router = express.Router()
 
 const loginSchema = z.object({ email: z.string().min(1), password: z.string().min(1) })
 const refreshSchema = z.object({ refreshToken: z.string().min(1) })
-const passwordResetRequestSchema = z.object({ email: z.string().min(1) })
-const passwordResetConfirmSchema = z.object({ accessToken: z.string().min(1), newPassword: z.string().min(1) })
+const passwordResetRequestSchema = z.object({ email: z.string().trim().email() })
+const passwordResetConfirmSchema = z.object({ accessToken: z.string().trim().min(1), newPassword: z.string().min(6) })
 
 async function sessionResponse(session: Session): Promise<AuthSession> {
   const profile = await activeProfile(session.user.id)
@@ -73,12 +74,14 @@ router.post('/refresh', validateBody(refreshSchema), async (req: Request, res: R
 })
 
 // POST /auth/password-reset/request — send a reset-password email.
-// Optional flow; SMTP/mail provider is not part of this project's approved
-// scope, so this depends on whatever Supabase Auth email config is active.
+// The redirect is server configuration, never a URL supplied by the caller.
+// Supabase returns the same result for registered and unknown addresses.
 router.post('/password-reset/request', validateBody(passwordResetRequestSchema), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email } = req.body
-    await supabaseAnon.auth.resetPasswordForEmail(email)
+    const { error } = await supabaseAnon.auth.resetPasswordForEmail(email, { redirectTo: env.passwordResetRedirectUrl })
+    if (error?.status === 429) throw new ApiError(429, 'Please wait before requesting another reset link.')
+    if (error) throw ApiError.serviceUnavailable('We could not send a reset email. Please try again later.')
     res.status(204).send()
   } catch (err) {
     next(err)
@@ -91,10 +94,28 @@ router.post('/password-reset/confirm', validateBody(passwordResetConfirmSchema),
   try {
     const { accessToken, newPassword } = req.body
 
-    await verifySession(accessToken)
+    const client = createScopedClient(accessToken)
+    const { data, error: tokenError } = await client.auth.getUser(accessToken)
+    if (tokenError && (!tokenError.status || tokenError.status >= 500)) throw ApiError.serviceUnavailable('We could not check your reset link. Please try again.')
+    if (tokenError || !data.user) throw ApiError.unauthorized('This reset link has expired or is not valid. Please request a new link.')
+    await activeProfile(data.user.id)
 
-    const { error } = await createScopedClient(accessToken).auth.updateUser({ password: newPassword })
-    if (error) throw ApiError.badRequest('Could not update password.', error.message)
+    // auth.updateUser requires a stored SDK session. This flow holds only the
+    // recovery access token, so call the same Auth endpoint with that token.
+    const response = await fetch(`${env.supabaseUrl}/auth/v1/user`, {
+      method: 'PUT',
+      headers: { apikey: env.supabaseAnonKey, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: newPassword }),
+    })
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({})) as { code?: string }
+      if (response.status === 429) throw new ApiError(429, 'Please wait before trying again.')
+      if (response.status >= 500) throw ApiError.serviceUnavailable('Could not update your password. Please try again.')
+      if (response.status === 401 || response.status === 403) throw ApiError.unauthorized('This reset link has expired or is not valid. Please request a new link.')
+      if (error.code === 'weak_password') throw ApiError.badRequest('Choose a stronger password and try again.')
+      if (error.code === 'same_password') throw ApiError.badRequest('Choose a different password from your old one.')
+      throw ApiError.badRequest('Could not update your password. Please try again or request a new reset link.')
+    }
 
     res.status(204).send()
   } catch (err) {

@@ -1,5 +1,6 @@
 import { useCallback,useEffect,useRef,useState,type Dispatch,type SetStateAction } from 'react'
 import type { ResourceStatus } from '../types'
+import { invalidateApiCache } from '../services/apiClient'
 
 export interface ServiceData<T> {
   data:T|null
@@ -18,7 +19,8 @@ export function useServiceData<T>(loader:()=>Promise<T>):ServiceData<T>{
   const [error,setError]=useState<string|null>(null)
   const [status,setStatus]=useState<ResourceStatus>('loading')
 
-  const reload=useCallback(async()=>{
+  const reload=useCallback(async(force=true)=>{
+    if(force)invalidateApiCache()
     const requests=requestRef.current
     const version=++requests.version
     if(!requests.active)return
@@ -41,7 +43,7 @@ export function useServiceData<T>(loader:()=>Promise<T>):ServiceData<T>{
     requests.active=true
     // Reset loading when the external API query changes (e.g. user filters).
     // eslint-disable-next-line react/set-state-in-effect
-    void reload()
+    void reload(false)
     return()=>{requests.active=false;requests.version++}
   },[reload])
 

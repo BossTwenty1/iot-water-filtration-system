@@ -84,7 +84,7 @@ test('inactive refresh after 401 removes the stored session and does not retry t
 test('unknown roles and inactive login envelopes are never accepted', () => check(async api => {
   for (const user of [{ ...activeUser('Viewer'), status: 'Inactive' }, activeUser('Owner')]) {
     globalThis.fetch = async () => response({ ...session(), user })
-    await assert.rejects(api.signIn('fixture@example.test', 'synthetic-test-input'), /invalid session/)
+    await assert.rejects(api.signIn('fixture@example.test', 'synthetic-test-input'), /Could not confirm your sign-in/)
     assert.notEqual(api.getAuthState().status, 'authenticated')
   }
 }))
@@ -95,7 +95,7 @@ test('logout clears local credentials even when server invalidation is unavailab
   globalThis.fetch = async () => { throw Error('Synthetic offline API') }
   await api.signOut()
   assert.equal(api.getAuthState().status, 'unauthenticated')
-  assert.match(api.getAuthState().notice, /Signed out locally/)
+  assert.match(api.getAuthState().notice, /Signed out on this browser/)
   assert.equal(storage.size, 0)
 }))
 
@@ -118,4 +118,36 @@ test('an old 403 profile check cannot sign out a newer login', () => check(async
   await rejected
   assert.equal(api.getAuthState().status, 'authenticated')
   assert.equal(api.getAuthState().user.role, 'Researcher')
+}))
+
+test('repeated navigation reads share one request and expire after ten seconds', () => check(async api => {
+  let reads=0
+  globalThis.fetch=async url=>url.endsWith('/auth/login')?response(session()):(reads++,response([{ id:'saved-reading' }]))
+  await api.signIn('fixture@example.test','synthetic-test-input')
+  await Promise.all([api.apiRequest('telemetry'),api.apiRequest('telemetry'),api.apiRequest('telemetry')])
+  await api.apiRequest('telemetry')
+  assert.equal(reads,1)
+  const now=Date.now
+  try{Date.now=()=>now()+10_001;await api.apiRequest('telemetry');assert.equal(reads,2)}finally{Date.now=now}
+}))
+
+test('writes and explicit reload invalidate reads; user management is always fresh', () => check(async api => {
+  const requests=[]
+  globalThis.fetch=async (url,options)=>{requests.push({url,method:options.method??'GET'});return response(url.endsWith('/auth/login')?session():[])}
+  await api.signIn('fixture@example.test','synthetic-test-input')
+  await api.apiRequest('alerts');await api.apiRequest('alerts',{method:'PATCH',body:{status:'Resolved'}});await api.apiRequest('alerts')
+  assert.equal(requests.filter(r=>r.url.endsWith('/alerts')&&r.method==='GET').length,2)
+  api.invalidateApiCache();await api.apiRequest('alerts')
+  assert.equal(requests.filter(r=>r.url.endsWith('/alerts')&&r.method==='GET').length,3)
+  await api.apiRequest('users');await api.apiRequest('users')
+  assert.equal(requests.filter(r=>r.url.endsWith('/users')).length,2)
+}))
+
+test('a different account cannot reuse the previous account data', () => check(async api => {
+  let reads=0
+  globalThis.fetch=async url=>url.endsWith('/auth/login')?response(session()):(reads++,response([]))
+  await api.signIn('fixture@example.test','synthetic-test-input');await api.apiRequest('alerts')
+  await api.signOut();await api.signIn('fixture@example.test','synthetic-test-input');await api.apiRequest('alerts')
+  // Includes the logout request and a fresh alert read after signing in again.
+  assert.equal(reads,3)
 }))

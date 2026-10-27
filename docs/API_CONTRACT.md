@@ -42,6 +42,44 @@ unrestricted writes are intentional.
 
 ---
 
+## Password recovery (October 27, 2026)
+
+Super Administrator audit responses also include optional `actorDisplayId`
+and `targetDisplayId` labels for existing accounts. Original audit UUIDs stay
+unchanged. Deleted or unavailable account numbers show `Not available` in
+the UI; the system does not invent a number for a deleted account.
+
+The existing public `POST /auth/password-reset/request` and
+`POST /auth/password-reset/confirm` routes now serve the frontend recovery
+pages. Their bodies remain `{ email }` and `{ accessToken, newPassword }`.
+The server sets the email redirect using `PASSWORD_RESET_REDIRECT_URL`;
+clients cannot choose a redirect. Confirmation verifies and uses the email
+link's user token, with no administrative password update. See
+[API reference](../backend/docs/API_REFERENCE.md) and
+[email setup and verification](PASSWORD_RECOVERY.md).
+
+## Readable record IDs (approved October 27, 2026)
+
+UUIDs in `id`, `deviceId`, `testRunId`, route parameters, and device messages
+remain unchanged. Responses also include `displayId` for devices, tests,
+alerts, sensor checks, lab records, maintenance records/reminders, and users.
+Examples: `Test 0001`, `Device 0001`, `Alert 0001`, `Maintenance 0001`.
+
+Related test IDs in alerts, lab records, and grouped telemetry have a
+`testRunDisplayId`. Grouped telemetry also has `deviceDisplayId`. These labels
+come from each referenced record's permanent database number, so the same
+test/device uses the same label across pages and after filtering or refresh.
+Labels are display values, not accepted replacements for UUID request keys.
+
+The fields are optional for compatibility with older API responses. Missing
+labels must show `Not assigned` rather than a fabricated number or UUID.
+Null relationships remain null. External sample references and research text
+are preserved as supplied. CSVs keep their existing UUID fields and append
+readable-number columns for users.
+
+
+---
+
 ## 1. API Principles
 
 The backend shall act as the normal communication boundary between:

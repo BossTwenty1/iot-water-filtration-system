@@ -1,14 +1,12 @@
 import { useEffect,useState,type FormEvent } from 'react'
-import { Navigate,useLocation,useNavigate } from 'react-router-dom'
+import { Link,Navigate,useLocation,useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { signIn } from '../services/apiClient'
 import { waitForBackend } from '../services/backendReadiness'
-import { useTheme } from '../hooks/useTheme'
-import { ThemeToggle } from '../components/common/ThemeToggle'
+import { AuthPage } from '../components/common/AuthPage'
 
 export function LoginPage(){
   const auth=useAuth()
-  const {theme,toggleTheme}=useTheme()
   const location=useLocation()
   const navigate=useNavigate()
   const [email,setEmail]=useState('')
@@ -34,7 +32,7 @@ export function LoginPage(){
     return()=>controller.abort()
   },[auth.status,checkAttempt])
 
-  if(auth.status==='loading')return <div className="panel mx-auto mt-24 max-w-md p-6" role="status">Restoring session…</div>
+  if(auth.status==='loading')return <div className="panel mx-auto mt-24 max-w-md p-6" role="status">Checking your sign-in…</div>
   if(auth.status==='authenticated')return <Navigate to={destination} replace/>
 
   const submit=async(event:FormEvent<HTMLFormElement>)=>{
@@ -47,10 +45,7 @@ export function LoginPage(){
     finally{setBusy(false)}
   }
 
-  return <><a className="skip-link" href="#main-content">Skip to sign in</a><main id="main-content" className="flex min-h-screen items-center justify-center bg-canvas px-4 py-10"><div className="panel w-full max-w-md p-6 sm:p-8">
-    <div className="flex items-center justify-between gap-3"><div className="flex min-w-0 items-center gap-3"><span className="brand-mark" aria-hidden="true"><img src="/safe-logo.png" alt="" width="1254" height="1254"/></span><div><div className="text-sm font-semibold text-ink">S.A.F.E</div><div className="text-xs text-muted">Research console</div></div></div><ThemeToggle theme={theme} onToggle={toggleTheme}/></div>
-    <h1 className="mt-3 text-2xl font-semibold">Sign in</h1>
-    <p className="mt-2 text-sm text-muted">Use your project account to access the dashboard.</p>
+  return <AuthPage title="Sign in" description="Use your project account to access the dashboard.">
     {backend==='checking'&&<div id="backend-status" className="notice mt-5" role="status">Starting the server. This may take about a minute on our free hosting. You can enter your details while you wait.</div>}
     {backend==='unavailable'&&<div id="backend-status" className="notice mt-5 flex-col" role="alert"><p>{backendError}</p><button className="button-secondary" type="button" onClick={()=>{setBackend('checking');setBackendError(null);setError(null);setCheckAttempt((value)=>value+1)}}>Retry connection</button></div>}
     {auth.notice&&<div className="notice mt-5" role="status">{auth.notice}</div>}
@@ -60,6 +55,7 @@ export function LoginPage(){
       <div className="field"><label htmlFor="login-password">Password</label><input id="login-password" name="password" className="control" type="password" autoComplete="current-password" required value={password} onChange={(event)=>setPassword(event.target.value)} disabled={busy}/></div>
       <button className="button-primary w-full" type="submit" disabled={busy||backend!=='ready'} aria-describedby={backend!=='ready'?'backend-status':undefined}>{busy?'Signing in…':backend==='checking'?'Starting server…':'Sign in'}</button>
     </form>
-    <p className="mt-5 text-xs leading-relaxed text-muted">Signing in verifies your account, not device connectivity. Dashboard records come from the API; their physical-device provenance is not independently verified.</p>
-  </div></main></>
+    <Link className="button-quiet mt-3 w-full" to="/forgot-password">Forgot password?</Link>
+    <p className="mt-5 text-xs leading-relaxed text-muted">Signing in checks your account. It does not confirm that the device is connected or that the saved readings came from the actual device.</p>
+  </AuthPage>
 }

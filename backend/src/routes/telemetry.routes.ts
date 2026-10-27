@@ -15,7 +15,7 @@ const router = express.Router()
 // `!inner` so `.eq('sensor.category', ...)` filters actually restrict the
 // parent rows (PostgREST only applies embedded-resource filters as a real
 // join condition when the embed is an inner join).
-const READING_SELECT = '*, sensor:sensors!inner(category,position,unit)'
+const READING_SELECT = '*, sensor:sensors!inner(category,position,unit), test_run:test_runs(display_number), device:devices(display_number)'
 
 interface TelemetryListQuery extends PaginationQuery, DateRangeQuery {
   testRunId?: string

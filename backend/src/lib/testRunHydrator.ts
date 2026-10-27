@@ -7,9 +7,11 @@ export function formatDuration(startedAt: string, endedAt?: string | null): stri
   const start = new Date(startedAt).getTime()
   const end = new Date(endedAt ?? Date.now()).getTime()
   const totalSeconds = Math.max(0, Math.round((end - start) / 1000))
-  const minutes = Math.floor(totalSeconds / 60)
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor(totalSeconds / 60) % 60
   const seconds = totalSeconds % 60
-  return `${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`
+  const remainder = `${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`
+  return hours > 0 ? `${hours}h ${remainder}` : remainder
 }
 
 // Adds the fields TestRun needs that aren't columns on test_runs itself

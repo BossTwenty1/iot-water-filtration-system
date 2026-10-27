@@ -3,7 +3,7 @@ import { apiRequest } from './apiClient'
 
 export type ManagedUser = User & { deletionPending?:boolean }
 export interface UserFilters { search?:string;role?:string;status?:string;offset?:number }
-export interface AccountAudit { id:string;actor_id:string|null;target_id:string;action:string;old_role:string|null;new_role:string|null;old_status:string|null;new_status:string|null;reason:string|null;created_at:string }
+export interface AccountAudit { id:string;actor_id:string|null;target_id:string;actorDisplayId?:string;targetDisplayId?:string;action:string;old_role:string|null;new_role:string|null;old_status:string|null;new_status:string|null;reason:string|null;created_at:string }
 export const usersService={
   getUsers:(filters:UserFilters={})=>{
     const query=new URLSearchParams({limit:'25',offset:String(filters.offset??0)})
