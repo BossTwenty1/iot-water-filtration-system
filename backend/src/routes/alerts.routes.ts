@@ -7,10 +7,11 @@ import { orThrow, parsePagination, applyDateRange, type DateRangeQuery, type Pag
 import { pollAndStream } from '../lib/sse'
 import env from '../config/env'
 import { toAlert } from '../lib/mappers'
-import type { AlertRow } from '../types/db'
+import type { AlertRow, TablesUpdate } from '../types/db'
 import type { SystemAlert } from '../types/domain'
 
 const router = express.Router()
+const ALERT_SELECT = '*, test_run:test_runs(display_number)'
 
 interface AlertListQuery extends PaginationQuery, DateRangeQuery {
   severity?: string
@@ -27,17 +28,17 @@ function applyAlertFilters(builder: any, query: AlertListQuery) {
 }
 
 async function transitionAlert(id: string, toStatus: 'Acknowledged' | 'Resolved', changedBy: string): Promise<AlertRow> {
-  const { data: current } = await supabaseAdmin.from('alerts').select('*').eq('id', id).maybeSingle()
+  const { data: current } = await supabaseAdmin.from('alerts').select(ALERT_SELECT).eq('id', id).returns<AlertRow[]>().maybeSingle()
   if (!current) throw ApiError.notFound('Alert was not found.')
 
-  const patch: Partial<AlertRow> = { status: toStatus }
+  const patch: TablesUpdate<'alerts'> = { status: toStatus }
   if (toStatus === 'Acknowledged') {
     patch.acknowledged_at = new Date().toISOString()
     patch.acknowledged_by = changedBy
   }
 
   const updated = orThrow<AlertRow | null>(
-    await supabaseAdmin.from('alerts').update(patch).eq('id', id).select('*').single(),
+    await supabaseAdmin.from('alerts').update(patch).eq('id', id).select(ALERT_SELECT).returns<AlertRow[]>().single(),
     'Failed to update alert.'
   )
   if (!updated) throw ApiError.notFound('Alert was not found.')
@@ -57,11 +58,11 @@ router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunct
   try {
     const query = req.query as AlertListQuery
     const { limit, offset } = parsePagination(query)
-    let builder = supabaseAdmin.from('alerts').select('*')
+    let builder = supabaseAdmin.from('alerts').select(ALERT_SELECT)
     builder = applyAlertFilters(builder, query)
     builder = builder.order('triggered_at', { ascending: false }).range(offset, offset + limit - 1)
 
-    const rows = orThrow(await builder, 'Failed to load alerts.')
+    const rows = orThrow(await builder.returns<AlertRow[]>(), 'Failed to load alerts.')
     res.json(rows.map(toAlert))
   } catch (err) {
     next(err)
@@ -78,7 +79,7 @@ router.get('/stream', requireAuth, (req: Request, res: Response) => {
     intervalMs: env.ssePollIntervalMs,
     fetchLatest: async (since) =>
       orThrow(
-        await supabaseAdmin.from('alerts').select('*').gt('triggered_at', since).order('triggered_at', { ascending: true }),
+        await supabaseAdmin.from('alerts').select(ALERT_SELECT).gt('triggered_at', since).order('triggered_at', { ascending: true }).returns<AlertRow[]>(),
         'Failed to poll alerts.'
       ),
     transform: (rows) => rows.map(toAlert),
@@ -88,7 +89,7 @@ router.get('/stream', requireAuth, (req: Request, res: Response) => {
 // GET /alerts/:id — detail.
 router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const row = orThrow(await supabaseAdmin.from('alerts').select('*').eq('id', param(req, 'id')).maybeSingle(), 'Failed to load alert.')
+    const row = orThrow<AlertRow | null>(await supabaseAdmin.from('alerts').select(ALERT_SELECT).eq('id', param(req, 'id')).returns<AlertRow[]>().maybeSingle(), 'Failed to load alert.')
     if (!row) throw ApiError.notFound('Alert was not found.')
     res.json(toAlert(row))
   } catch (err) {

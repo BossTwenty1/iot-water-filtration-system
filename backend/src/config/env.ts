@@ -12,24 +12,28 @@ export interface Env {
   supabaseAnonKey: string
   supabaseServiceRoleKey: string
   corsOrigin: string
+  passwordResetRedirectUrl: string
   ssePollIntervalMs: number
   deviceIngestKey: string
+  backgroundJobsEnabled: boolean
   deviceWatchdogIntervalMs: number
   deviceOfflineTimeoutMs: number
   retentionJobIntervalMs: number
 }
 
 const env: Env = {
-  port: Number(process.env.BACKEND_PORT) || 3000,
+  port: Number(process.env.PORT) || Number(process.env.BACKEND_PORT) || 3000,
   supabaseUrl: required('SUPABASE_URL'),
   supabaseAnonKey: required('SUPABASE_ANON_KEY'),
   supabaseServiceRoleKey: required('SUPABASE_SERVICE_ROLE_KEY'),
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  passwordResetRedirectUrl: process.env.PASSWORD_RESET_REDIRECT_URL || `${(process.env.CORS_ORIGIN || 'http://localhost:5173').split(',')[0]!.trim().replace(/\/+$/, '')}/reset-password`,
   ssePollIntervalMs: Number(process.env.SSE_POLL_INTERVAL_MS) || 3000,
   // Shared-secret placeholder for device ingestion auth — see
   // src/middleware/deviceAuth.ts. Not a resolution of the real device-auth
   // decision (docs/PENDING_DECISIONS.md).
   deviceIngestKey: required('DEVICE_INGEST_KEY'),
+  backgroundJobsEnabled: process.env.BACKGROUND_JOBS_ENABLED === 'true',
   // How often src/lib/deviceWatchdog.ts checks for devices that have gone
   // quiet, and how long since last_seen_at counts as "offline". Both are
   // implementation-detail timings (like ssePollIntervalMs above), not the

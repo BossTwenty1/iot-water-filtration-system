@@ -12,7 +12,7 @@ export type DeviceConnectionState = 'Online' | 'Offline' | 'Pending Hardware Int
 export type AlertSeverity = 'Information' | 'Warning' | 'Critical'
 export type AlertStatus = 'Active' | 'Acknowledged' | 'Resolved'
 export type RecordStatus = 'Pending' | 'Available'
-export type UserRole = 'Administrator' | 'Researcher' | 'Viewer'
+export type UserRole = 'Super Administrator' | 'Administrator' | 'Researcher' | 'Viewer'
 
 export interface SensorReading {
   parameter: SensorParameter
@@ -24,6 +24,8 @@ export interface SensorReading {
 }
 
 export interface TelemetryRecord {
+  deviceDisplayId?: string
+  testRunDisplayId?: string
   id: string
   timestamp: string
   testRunId: string | null
@@ -33,6 +35,7 @@ export interface TelemetryRecord {
 }
 
 export interface TestRun {
+  displayId?: string
   id: string
   startedAt: string
   endedAt?: string
@@ -46,6 +49,8 @@ export interface TestRun {
 }
 
 export interface SystemAlert {
+  testRunDisplayId?: string
+  displayId?: string
   id: string
   timestamp: string
   severity: AlertSeverity
@@ -57,6 +62,7 @@ export interface SystemAlert {
 }
 
 export interface CalibrationRecord {
+  displayId?: string
   id: string
   date: string
   parameter: Exclude<SensorParameter, 'totalVolume'>
@@ -70,6 +76,8 @@ export interface CalibrationRecord {
 }
 
 export interface LaboratoryValidationRecord {
+  testRunDisplayId?: string
+  displayId?: string
   id: string
   date: string
   testRunId: string | null
@@ -85,6 +93,7 @@ export interface LaboratoryValidationRecord {
 }
 
 export interface MaintenanceRecord {
+  displayId?: string
   id: string
   date: string
   component: string
@@ -96,6 +105,7 @@ export interface MaintenanceRecord {
 }
 
 export interface MaintenanceReminder {
+  displayId?: string
   id: string
   component: string
   label: string
@@ -104,6 +114,7 @@ export interface MaintenanceReminder {
 }
 
 export interface User {
+  displayId?: string
   id: string
   name: string
   email: string
@@ -114,6 +125,7 @@ export interface User {
 export type UserRecord = User
 
 export interface DeviceStatus {
+  displayId?: string
   deviceId: string
   controller: string
   connection: DeviceConnectionState

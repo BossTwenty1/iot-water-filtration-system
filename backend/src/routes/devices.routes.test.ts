@@ -39,9 +39,9 @@ function chainable(result: unknown) {
 beforeEach(() => {
   supabaseAnon.auth.getUser.mockReset()
   supabaseAdmin.from.mockReset()
-  // requireAuth: valid session + a Viewer profile, for every request in this file.
+  // Registration requires an active Administrator; ingestion still uses its device key.
   supabaseAnon.auth.getUser.mockResolvedValue({ data: { user: { id: 'user-1', email: 'user@example.com' } }, error: null })
-  supabaseAdmin.from.mockImplementation(() => chainable({ data: { id: 'user-1', role: 'Viewer' }, error: null }))
+  supabaseAdmin.from.mockImplementation(() => chainable({ data: { id: 'user-1', role: 'Administrator', status: 'Active' }, error: null }))
 })
 
 describe('POST /devices validation', () => {

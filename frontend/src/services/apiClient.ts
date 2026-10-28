@@ -1,4 +1,5 @@
 import type { User } from '../types'
+import { userRoles } from '../utils/permissions'
 
 const configuredBaseUrl=import.meta.env.VITE_API_BASE_URL?.trim()
 const refreshStorageKey='iot-water-filtration.refresh-token'
@@ -27,6 +28,12 @@ let refreshPromise:Promise<string>|null=null
 let refreshTimer:ReturnType<typeof setTimeout>|null=null
 let sessionRevision=0
 const listeners=new Set<()=>void>()
+// Brief, memory-only reuse removes repeat reads during navigation. Account
+// management stays uncached; sign-out, role changes and writes clear all reads.
+const readCache=new Map<string,{expiresAt:number;value:unknown}>()
+const pendingReads=new Map<string,Promise<unknown>>()
+let readRevision=0
+export function invalidateApiCache(){readRevision++;readCache.clear();pendingReads.clear()}
 
 export function subscribeAuth(listener:()=>void){listeners.add(listener);return()=>{listeners.delete(listener)}}
 export function getAuthState(){return authState}
@@ -42,6 +49,7 @@ function persistRefreshToken(token:string|null){
 }
 
 function clearSession(notice?:string){
+  invalidateApiCache()
   sessionRevision++
   if(refreshTimer)clearTimeout(refreshTimer)
   refreshTimer=null
@@ -51,9 +59,10 @@ function clearSession(notice?:string){
 }
 
 function acceptSession(value:AuthSession){
-  if(!value||typeof value.token!=='string'||!value.token||typeof value.refreshToken!=='string'||!value.refreshToken||!Number.isFinite(value.expiresIn)||value.expiresIn<=0||!value.user||typeof value.user.id!=='string'){
-    throw new ApiClientError('The server returned an invalid session.')
+  if(!value||typeof value.token!=='string'||!value.token||typeof value.refreshToken!=='string'||!value.refreshToken||!Number.isFinite(value.expiresIn)||value.expiresIn<=0||!value.user||typeof value.user.id!=='string'||value.user.status!=='Active'||!userRoles.includes(value.user.role)){
+    throw new ApiClientError('Could not confirm your sign-in. Please sign in again.')
   }
+  if(session?.user.id!==value.user.id||session?.user.role!==value.user.role)invalidateApiCache()
   sessionRevision++
   session={...value,expiresAt:Date.now()+value.expiresIn*1000}
   if(refreshTimer)clearTimeout(refreshTimer)
@@ -63,7 +72,7 @@ function acceptSession(value:AuthSession){
 }
 
 async function send<T>(path:string,options:ApiRequestOptions={},token?:string):Promise<T>{
-  if(!apiBaseUrl)throw new ApiClientError('VITE_API_BASE_URL is not configured.')
+  if(!apiBaseUrl)throw new ApiClientError('The server connection is not set up. Ask the project team for help.')
   const headers=new Headers(options.headers)
   headers.set('Accept','application/json')
   if(options.body!==undefined)headers.set('Content-Type','application/json')
@@ -75,7 +84,7 @@ async function send<T>(path:string,options:ApiRequestOptions={},token?:string):P
     })
     if(!response.ok){
       const payload:unknown=await response.json().catch(()=>null)
-      const message=payload&&typeof payload==='object'&&'error' in payload&&typeof payload.error==='string'?payload.error:`API request failed with status ${response.status}.`
+      const message=payload&&typeof payload==='object'&&'error' in payload&&typeof payload.error==='string'?payload.error:`The server could not complete the request (code ${response.status}). Please try again.`
       throw new ApiClientError(message,response.status)
     }
     if(response.status===204)return undefined as T
@@ -83,23 +92,23 @@ async function send<T>(path:string,options:ApiRequestOptions={},token?:string):P
   }catch(cause){
     if(cause instanceof ApiClientError)throw cause
     if(cause instanceof DOMException&&cause.name==='AbortError')throw cause
-    throw new ApiClientError('Could not reach the API. Please try again.')
+    throw new ApiClientError('Could not connect to the server. Please try again.')
   }
 }
 
 async function refreshSession():Promise<string>{
   if(refreshPromise)return refreshPromise
   const refreshToken=session?.refreshToken??storedRefreshToken()
-  if(!refreshToken){clearSession();throw new ApiClientError('Sign in required.',401)}
+  if(!refreshToken){clearSession();throw new ApiClientError('Please sign in to continue.',401)}
   const revision=sessionRevision
   refreshPromise=(async()=>{
     try{
       const next=await send<AuthSession>('auth/refresh',{method:'POST',body:{refreshToken}})
-      if(revision!==sessionRevision)throw new ApiClientError('Session changed.',401)
+      if(revision!==sessionRevision)throw new ApiClientError('Your sign-in has changed. Please sign in again.',401)
       acceptSession(next)
       return next.token
     }catch(cause){
-      if(revision===sessionRevision)clearSession(cause instanceof ApiClientError&&cause.status===401?'Your session expired. Please sign in again.':'Session could not be restored. Please sign in again.')
+      if(revision===sessionRevision)clearSession(cause instanceof ApiClientError&&cause.status===401?'Your sign-in has expired. Please sign in again.':'We could not restore your sign-in. Please sign in again.')
       throw cause
     }finally{refreshPromise=null}
   })()
@@ -125,6 +134,20 @@ export async function signIn(email:string,password:string):Promise<void>{
   acceptSession(result)
 }
 
+export function requestPasswordReset(email:string):Promise<void>{
+  return send<void>('auth/password-reset/request',{method:'POST',body:{email:email.trim()}})
+}
+
+export async function confirmPasswordReset(accessToken:string,newPassword:string):Promise<void>{
+  await send<void>('auth/password-reset/confirm',{method:'POST',body:{accessToken,newPassword}})
+  clearSession('Password changed. Please sign in with your new password.')
+}
+
+export async function checkBackendHealth(signal:AbortSignal):Promise<void>{
+  const result=await send<{status?:string}>('health',{signal,cache:'no-store'})
+  if(result?.status!=='ok')throw new ApiClientError('The API is not ready.')
+}
+
 export async function signOut():Promise<void>{
   // Clear local credentials even when the server is unavailable.
   try{
@@ -132,21 +155,56 @@ export async function signOut():Promise<void>{
     await send<void>('auth/logout',{method:'POST'},token)
     clearSession()
   }catch{
-    clearSession('Signed out locally. Server session invalidation could not be confirmed.')
+    clearSession('Signed out on this browser. We could not confirm that the server also ended your sign-in.')
   }
 }
 
-export async function apiRequest<T>(path:string,options:ApiRequestOptions={}):Promise<T>{
+async function authenticatedRequest<T>(path:string,options:ApiRequestOptions={}):Promise<T>{
   const token=await accessToken()
   try{return await send<T>(path,options,token)}
   catch(cause){
+    if(cause instanceof ApiClientError&&cause.status===403){
+      try{
+        const user=await send<User>('auth/me',{},token)
+        if(session?.token===token&&user.status==='Active'&&userRoles.includes(user.role)){
+          invalidateApiCache()
+          session.user=user
+          publish({status:'authenticated',user})
+        }
+      }catch(error){if(session?.token===token&&error instanceof ApiClientError&&error.status===401)clearSession('This account is unavailable. Please sign in again.')}
+      throw cause
+    }
     if(!(cause instanceof ApiClientError)||cause.status!==401)throw cause
     try{
       const nextToken=session?.token&&session.token!==token?session.token:await refreshSession()
       return await send<T>(path,options,nextToken)
     }catch(retryError){
-      if(retryError instanceof ApiClientError&&retryError.status===401)clearSession('Your session expired. Please sign in again.')
+      if(retryError instanceof ApiClientError&&retryError.status===401)clearSession('Your sign-in has expired. Please sign in again.')
       throw retryError
     }
   }
+}
+
+export async function apiRequest<T>(path:string,options:ApiRequestOptions={}):Promise<T>{
+  const method=(options.method??'GET').toUpperCase()
+  if(method!=='GET'){
+    invalidateApiCache()
+    try{return await authenticatedRequest<T>(path,options)}finally{invalidateApiCache()}
+  }
+  const cacheable=Object.keys(options).length===0&&!/^(auth|users)(\/|\?|$)/.test(path)
+  if(!cacheable)return authenticatedRequest<T>(path,options)
+  const cached=readCache.get(path)
+  if(session&&session.expiresAt>Date.now()+expiryLeewayMs&&cached&&cached.expiresAt>Date.now())return cached.value as T
+  const pending=pendingReads.get(path)
+  if(pending)return pending as Promise<T>
+  const revision=readRevision
+  const request=authenticatedRequest<T>(path,options).then(value=>{
+    if(revision===readRevision){
+      if(readCache.size>=100)readCache.clear()
+      readCache.set(path,{value,expiresAt:Date.now()+10_000})
+    }
+    return value
+  }).finally(()=>{if(pendingReads.get(path)===request)pendingReads.delete(path)})
+  pendingReads.set(path,request)
+  return request
 }

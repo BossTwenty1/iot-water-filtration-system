@@ -10,6 +10,7 @@ import type { LaboratoryValidationRecordRow } from '../types/db'
 import type { Json } from '../types/database.types'
 
 const router = express.Router()
+const LAB_SELECT = '*, test_run:test_runs(display_number)'
 
 interface LabValidationListQuery extends PaginationQuery {
   testRunId?: string
@@ -30,11 +31,11 @@ router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunct
   try {
     const query = req.query as LabValidationListQuery
     const { limit, offset } = parsePagination(query)
-    let builder = supabaseAdmin.from('laboratory_validation_records').select('*')
+    let builder = supabaseAdmin.from('laboratory_validation_records').select(LAB_SELECT)
     if (query.testRunId) builder = builder.eq('test_run_id', query.testRunId)
     builder = builder.order('validated_at', { ascending: false }).range(offset, offset + limit - 1)
 
-    const rows = orThrow<LaboratoryValidationRecordRow[]>(await builder, 'Failed to load laboratory validation records.')
+    const rows = orThrow<LaboratoryValidationRecordRow[]>(await builder.returns<LaboratoryValidationRecordRow[]>(), 'Failed to load laboratory validation records.')
     res.json(rows.map(toLaboratoryValidationRecord))
   } catch (err) {
     next(err)
@@ -45,7 +46,7 @@ router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunct
 router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const row = orThrow<LaboratoryValidationRecordRow | null>(
-      await supabaseAdmin.from('laboratory_validation_records').select('*').eq('id', param(req, 'id')).maybeSingle(),
+      await supabaseAdmin.from('laboratory_validation_records').select(LAB_SELECT).eq('id', param(req, 'id')).returns<LaboratoryValidationRecordRow[]>().maybeSingle(),
       'Failed to load laboratory validation record.'
     )
     if (!row) throw ApiError.notFound('Laboratory validation record was not found.')
@@ -72,7 +73,7 @@ router.post('/', requireAuth, async (req: Request, res: Response, next: NextFunc
           results: results as unknown as Json,
           percentage_error: percentageError(referenceResult, sensorReading),
         })
-        .select('*')
+        .select(LAB_SELECT).returns<LaboratoryValidationRecordRow[]>()
         .single(),
       'Failed to create laboratory validation record.'
     )
@@ -91,7 +92,7 @@ router.patch('/:id/result', requireAuth, async (req: Request, res: Response, nex
     if (referenceResult === undefined) throw ApiError.badRequest('referenceResult is required.')
 
     const existing = orThrow<LaboratoryValidationRecordRow | null>(
-      await supabaseAdmin.from('laboratory_validation_records').select('*').eq('id', param(req, 'id')).maybeSingle(),
+      await supabaseAdmin.from('laboratory_validation_records').select(LAB_SELECT).eq('id', param(req, 'id')).returns<LaboratoryValidationRecordRow[]>().maybeSingle(),
       'Failed to load laboratory validation record.'
     )
     if (!existing) throw ApiError.notFound('Laboratory validation record was not found.')
@@ -103,7 +104,7 @@ router.patch('/:id/result', requireAuth, async (req: Request, res: Response, nex
         .from('laboratory_validation_records')
         .update({ results: results as unknown as Json, percentage_error: percentageError(referenceResult, existingResults.sensorReading) })
         .eq('id', param(req, 'id'))
-        .select('*')
+        .select(LAB_SELECT).returns<LaboratoryValidationRecordRow[]>()
         .single(),
       'Failed to update laboratory validation record.'
     )

@@ -1,3 +1,4 @@
 import type { ReactNode } from 'react'
+import { formatStatusLabel } from '../../utils/formatters'
 const toneMap: Record<string,string> = { Online:'status-good', Active:'status-info', 'In Progress':'status-info', Available:'status-good', 'Record Available':'status-good', Completed:'status-good', Resolved:'status-good', Warning:'status-warn', Acknowledged:'status-warn', 'Review Needed':'status-warn', Due:'status-danger', Critical:'status-danger', Pending:'status-neutral', Cancelled:'status-neutral', Information:'status-info' }
-export function StatusBadge({children,tone}:{children:ReactNode;tone?:string}) { const key=tone??String(children); return <span className={`status-badge ${toneMap[key]??'status-neutral'}`}>{children}</span> }
+export function StatusBadge({children,tone}:{children:ReactNode;tone?:string}) { const key=tone??String(children); return <span className={`status-badge ${toneMap[key]??'status-neutral'}`}>{typeof children==='string'?formatStatusLabel(children):children}</span> }

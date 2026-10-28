@@ -7,7 +7,12 @@ import { notFoundHandler, errorHandler } from './middleware/errorHandler'
 
 const app = express()
 
-app.use(cors({ origin: env.corsOrigin }))
+const allowedOrigins = env.corsOrigin.split(',').map((origin) => origin.trim()).filter(Boolean)
+// Support both exact Vite loopback origins only when local development is configured.
+if (allowedOrigins.includes('http://localhost:5173') || allowedOrigins.includes('http://127.0.0.1:5173')) {
+  allowedOrigins.push('http://localhost:5173', 'http://127.0.0.1:5173')
+}
+app.use(cors({ origin: [...new Set(allowedOrigins)] }))
 app.use(express.json())
 
 // No auth required — liveness check only, per docs/API_ROUTES_DRAFT.md §1.

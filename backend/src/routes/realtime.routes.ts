@@ -2,7 +2,7 @@ import express, { type Request, type Response } from 'express'
 import { supabaseAdmin } from '../config/supabaseClient'
 import { requireAuth } from '../middleware/auth'
 import { orThrow } from '../lib/queryHelpers'
-import { startSseStream } from '../lib/sse'
+import { startSseStream, streamAuthorized } from '../lib/sse'
 import env from '../config/env'
 import { toAlert, groupReadingsIntoTelemetry } from '../lib/mappers'
 import type { AlertRow, SensorReadingWithSensor } from '../types/db'
@@ -21,6 +21,7 @@ router.get('/stream', requireAuth, (req: Request, res: Response) => {
 
   const timer = setInterval(async () => {
     try {
+      if (!await streamAuthorized(req, res)) return
       const readings = orThrow(
         await supabaseAdmin
           .from('sensor_readings')
@@ -30,7 +31,7 @@ router.get('/stream', requireAuth, (req: Request, res: Response) => {
         'Failed to poll telemetry.'
       ) as unknown as SensorReadingWithSensor[]
       if (readings.length) {
-        send('telemetry', groupReadingsIntoTelemetry(readings))
+        await send('telemetry', groupReadingsIntoTelemetry(readings))
         telemetryCursor = readings.reduce((max, row) => (row.measured_at > max ? row.measured_at : max), telemetryCursor)
       }
 
@@ -39,15 +40,15 @@ router.get('/stream', requireAuth, (req: Request, res: Response) => {
         'Failed to poll alerts.'
       )
       if (alerts.length) {
-        send('alert', alerts.map(toAlert))
+        await send('alert', alerts.map(toAlert))
         alertCursor = alerts.reduce((max, row) => (row.triggered_at > max ? row.triggered_at : max), alertCursor)
       }
     } catch (err) {
-      send('error', { message: err instanceof Error ? err.message : 'Unknown error' })
+      await send('error', { message: 'Stream update unavailable. Please retry.' })
     }
   }, env.ssePollIntervalMs)
 
-  req.on('close', () => clearInterval(timer))
+  res.on('close', () => clearInterval(timer))
 })
 
 export default router
