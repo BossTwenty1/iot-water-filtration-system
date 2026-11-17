@@ -11,7 +11,7 @@ import { SensorGrid } from '../components/telemetry/SensorGrid'
 import { TelemetryChart,TelemetrySparkline } from '../components/telemetry/TelemetryChart'
 import { useServiceData } from '../hooks/useServiceData'
 import { alertsService,deviceService,telemetryService,testRunsService } from '../services'
-import { formatDateTime,formatTime,formatOptionalNumber,formatStatusLabel } from '../utils/formatters'
+import { formatDateTime,formatOptionalNumber,formatStatusLabel } from '../utils/formatters'
 
 type DashboardMetricCardProps={title:string;value:ReactNode;detail:ReactNode;icon:LucideIcon;trend?:ReactNode;className:string}
 
@@ -86,16 +86,18 @@ export function DashboardPage() {
         <SensorGrid stage="after"/>
       </SectionCard>
 
-      <SectionCard className="dashboard-span-12" title="Sensor reading log" description="Saved readings · these do not confirm that the device is connected now">
+      <SectionCard className="dashboard-span-12" title="Sensor reading log" description="Saved readings · — means no numeric value in this record; each row belongs to one device">
         <div className="table-wrap"><table className="data-table">
-          <thead><tr><th>Time recorded</th><th>Before pH</th><th>After pH</th><th>Before / After turbidity</th><th>Before / After TDS</th><th>Before / After flow</th></tr></thead>
-          <tbody>{telemetry.length===0&&<tr><td colSpan={6}>No sensor readings are available.</td></tr>}{telemetry.slice(0,5).map((record)=><tr key={record.id}>
-            <td className="mono">{formatTime(record.timestamp,true)}</td>
+          <thead><tr><th>Time recorded</th><th>Device</th><th>Before pH</th><th>After pH</th><th>Before / After turbidity</th><th>Before / After TDS</th><th>Before / After flow</th><th>Before / After temperature (°C)</th></tr></thead>
+          <tbody>{telemetry.length===0&&<tr><td colSpan={8}>No sensor readings are available.</td></tr>}{telemetry.slice(0,5).map((record)=><tr key={record.id}>
+            <td className="mono">{formatDateTime(record.timestamp,true)}</td>
+            <td className="mono">{record.deviceDisplayId??'Not assigned'}</td>
             <td className="mono">{formatOptionalNumber(record.before.pH)}</td>
             <td className="mono">{formatOptionalNumber(record.after.pH)}</td>
             <td className="mono">{formatOptionalNumber(record.before.turbidity)} / {formatOptionalNumber(record.after.turbidity)}</td>
             <td className="mono">{formatOptionalNumber(record.before.TDS,0)} / {formatOptionalNumber(record.after.TDS,0)}</td>
             <td className="mono">{formatOptionalNumber(record.before.flowRate,1)} / {formatOptionalNumber(record.after.flowRate,1)}</td>
+            <td className="mono">{formatOptionalNumber(record.before.temperature)} / {formatOptionalNumber(record.after.temperature)}</td>
           </tr>)}</tbody>
         </table></div>
       </SectionCard>
