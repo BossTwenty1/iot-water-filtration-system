@@ -16,7 +16,7 @@ const telemetryService={getTelemetryHistory:()=>fixtures.records}
 const empty=()=>[]
 const services={telemetryService,alertsService:{getAlerts:empty},testRunsService:{getTestRuns:empty},deviceService:{getDeviceStatus:()=>null}}
 const Box=({children})=>React.createElement('div',null,children)
-const stubNames=['PageHeader','SectionCard','SummaryCard','StatusBadge','Modal','ResourceState','TelemetryChart','TelemetrySparkline','ProcessTopology','SensorGrid','Link','Download','Info','Activity','CloudCog','Droplets','FlaskConical','Gauge','ThermometerSun']
+const stubNames=['LatestBoardReadings','PageHeader','SectionCard','SummaryCard','StatusBadge','Modal','ResourceState','TelemetryChart','TelemetrySparkline','ProcessTopology','SensorGrid','Link','Download','Info','Activity','CloudCog','Droplets','FlaskConical','Gauge','ThermometerSun']
 const bindings={usePermission:()=>true,...formatters,...services,useState:React.useState,useServiceData:(fn)=>({status:'success',data:fn()}),downloadCsv:()=>{},...Object.fromEntries(stubNames.map(n=>[n,Box]))}
 globalThis.__telemetryDisplayCheck=bindings
 

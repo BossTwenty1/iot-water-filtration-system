@@ -6,6 +6,7 @@ import { ResourceState } from '../components/common/ResourceState'
 import { SectionCard,SummaryCard } from '../components/common/Cards'
 import { StatusBadge } from '../components/common/StatusBadge'
 import { Modal } from '../components/common/Overlay'
+import { LatestBoardReadings } from '../components/telemetry/LatestBoardReadings'
 import { TelemetryChart } from '../components/telemetry/TelemetryChart'
 import { useServiceData } from '../hooks/useServiceData'
 import { telemetryService } from '../services'
@@ -23,6 +24,7 @@ export function HistoryPage() {
   const exportRows=()=>{if(!canExport)return;downloadCsv('telemetry.csv',records.map((row)=>({timestamp:row.timestamp,test_run_id:row.testRunId,before_ph:row.before.pH,after_ph:row.after.pH,before_turbidity_ntu:row.before.turbidity,after_turbidity_ntu:row.after.turbidity,before_tds_ppm:row.before.TDS,after_tds_ppm:row.after.TDS,before_temperature_c:row.before.temperature,after_temperature_c:row.after.temperature,before_flow_l_min:row.before.flowRate,after_flow_l_min:row.after.flowRate,device_id:row.deviceId,test_number:row.testRunDisplayId,device_number:row.deviceDisplayId})))}
   if(resource.status!=='success'||!selected)return <div className="page-grid"><PageHeader title="Sensor history" description="View saved sensor readings. We have not confirmed whether they came from the actual device or whether the device is connected now." badge="Saved records"/><ResourceState status={resource.status} error={resource.error} loadingLabel="Loading sensor history…" emptyLabel="No sensor readings available."/></div>
   return <div className="page-grid"><PageHeader title="Sensor history" description="View saved sensor readings. We have not confirmed whether they came from the actual device or whether the device is connected now." badge="Saved records" actions={<button disabled={!canExport} type="button" className="button-primary" onClick={exportRows}><Download size={16}/>Download CSV</button>}/>
+  <LatestBoardReadings/>
   <div className="summary-grid"><SummaryCard label="Before filtering average" value={`${stats.before} NTU`} detail="Average of the readings shown"/><SummaryCard label="After filtering average" value={`${stats.after} NTU`} detail="Compares readings only; does not prove water safety" tone="good"/><SummaryCard label="Before: lowest / highest" value={range(beforeValues)} detail="Lowest and highest readings, NTU"/><SummaryCard label="After: lowest / highest" value={range(afterValues)} detail="Lowest and highest readings, NTU" tone="good"/></div>
   <div className="notice"><Info size={17}/><span>Lab results are kept separate from sensor readings.</span></div>
   <SectionCard title="Sensor readings over time" description="Saved readings before and after filtering" action={<span className="eyebrow text-hydro">Turbidity</span>}><TelemetryChart/></SectionCard>

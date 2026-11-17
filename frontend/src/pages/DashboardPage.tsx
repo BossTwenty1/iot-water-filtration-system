@@ -8,6 +8,7 @@ import { SectionCard } from '../components/common/Cards'
 import { StatusBadge } from '../components/common/StatusBadge'
 import { ProcessTopology } from '../components/telemetry/ProcessTopology'
 import { SensorGrid } from '../components/telemetry/SensorGrid'
+import { LatestBoardReadings } from '../components/telemetry/LatestBoardReadings'
 import { TelemetryChart,TelemetrySparkline } from '../components/telemetry/TelemetryChart'
 import { useServiceData } from '../hooks/useServiceData'
 import { alertsService,deviceService,telemetryService,testRunsService } from '../services'
@@ -49,6 +50,7 @@ export function DashboardPage() {
   return <div className="page-grid">
     <PageHeader title="System Dashboard" description="View saved records. The device connection and where the readings came from have not been confirmed." badge="Saved records"/>
 
+    <LatestBoardReadings/>
     <div className="dashboard-grid" aria-label="System dashboard overview">
       <DashboardMetricCard className="dashboard-span-4" title="Filtering status" value="Not confirmed" detail={<>Saved test: <strong>{activeRun?.status??'No run recorded'}</strong></>} icon={Activity}/>
       <DashboardMetricCard className="dashboard-span-4" title="Turbidity: before and after" value={<><span>{formatOptionalNumber(latest?.before.turbidity)}</span><span className="dashboard-value-divider" aria-hidden="true"> / </span><span>{formatOptionalNumber(latest?.after.turbidity)}</span><span className="dashboard-value-unit"> NTU</span></>} detail="Saved readings; their device source is not confirmed" icon={Droplets} trend={<TelemetrySparkline label="Saved turbidity readings over time. Their device source is not confirmed."/>}/>
