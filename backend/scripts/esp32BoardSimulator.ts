@@ -18,6 +18,14 @@
 //     a failed upload is simply lost, exactly like the firmware
 //   - the boards never talk to each other; they only share wall-clock time
 //
+// ESP32_SIM_ALIGNED=1 simulates the proposed firmware Fix 1
+// (docs/TWO_BOARD_SYNC_AND_MERGE.md): both boards upload on the same UTC slot
+// boundary and send that slot as measuredAt, so the backend can merge them
+// exactly. Without it, boards keep the current boot-relative schedule.
+//
+// Both simulated boards are put in one installation (devices.installation_id)
+// so GET /telemetry merges their before/after cycles.
+//
 // Optional disturbances (also like the field): Wi-Fi drops and the operator
 // opening the menu (sensor loop pauses -> snapshot goes stale -> upload skipped).
 //
@@ -30,6 +38,7 @@
 //   ESP32_SIM_FAULTS=pre:tds,pre:turbidity npm run simulate:esp32
 //   ESP32_SIM_UNCALIBRATED=post:ph ESP32_SIM_EVENTS=0 npm run simulate:esp32
 //   ESP32_SIM_BOARDS=pre npm run simulate:esp32                # only one board
+//   ESP32_SIM_ALIGNED=1 npm run simulate:esp32                 # proposed slot-aligned firmware
 // Stop with Ctrl+C.
 
 import { supabaseAdmin } from '../src/config/supabaseClient'
@@ -43,6 +52,9 @@ const TELEMETRY_MAX_AGE_MS = 10_000
 const HTTP_TIMEOUT_MS = 10_000 // kHttpConnectTimeoutMs + kHttpResponseTimeoutMs
 const API_BASE = (process.env.ESP32_SIM_API_BASE || `http://localhost:${env.port}/api/v1`).replace(/\/+$/, '')
 const EVENTS_ENABLED = process.env.ESP32_SIM_EVENTS !== '0'
+const ALIGNED = process.env.ESP32_SIM_ALIGNED === '1'
+// Fixed, obviously synthetic installation id shared by the two simulated boards.
+const SIM_INSTALLATION_ID = '00000000-0000-4000-8000-00000000510a'
 
 type Position = 'pre_filtration' | 'post_filtration'
 type Category = 'ph' | 'tds' | 'turbidity' | 'temperature' | 'flow_rate'
@@ -100,6 +112,7 @@ class SimulatedBoard {
   private values = new Map<Category, number>()
   private snapshot: { values: Map<Category, number>; updatedMs: number } | null = null
   private lastAttemptMs = 0
+  private lastSlotS = 0
   private wifiDownUntil = 0
   private menuOpenUntil = 0
   private timeSynced = false
@@ -193,7 +206,13 @@ class SimulatedBoard {
 
     const wifiConnected = now >= this.wifiDownUntil
     if (!wifiConnected || !this.timeSynced) return
-    if (now - this.lastAttemptMs < TELEMETRY_INTERVAL_MS) return
+
+    // Current firmware: interval counted from this board's task start.
+    // Aligned (proposed Fix 1): once per UTC slot, shared by both boards.
+    const intervalS = Math.max(1, Math.round(TELEMETRY_INTERVAL_MS / 1000))
+    const nowS = Math.floor(now / 1000)
+    const slotS = nowS - (nowS % intervalS)
+    if (ALIGNED ? slotS === this.lastSlotS : now - this.lastAttemptMs < TELEMETRY_INTERVAL_MS) return
 
     const snap = this.snapshot
     if (!snap) return
@@ -201,7 +220,10 @@ class SimulatedBoard {
     if (ageMs > TELEMETRY_MAX_AGE_MS) return // stale (menu open): skipped, interval not used up
 
     this.lastAttemptMs = now
-    const measuredAt = new Date(Math.floor(now / 1000) * 1000 - Math.floor(ageMs / 1000) * 1000)
+    this.lastSlotS = slotS
+    const measuredAt = ALIGNED
+      ? new Date(slotS * 1000)
+      : new Date(nowS * 1000 - Math.floor(ageMs / 1000) * 1000)
     const body = this.buildPayload(snap, measuredAt)
 
     this.busy = true
@@ -256,6 +278,10 @@ async function ensureBoard(spec: BoardSpec): Promise<string> {
     deviceId = created.data.id
   }
 
+  // Both simulated boards belong to one filtration unit.
+  const paired = await supabaseAdmin.from('devices').update({ installation_id: SIM_INSTALLATION_ID }).eq('id', deviceId)
+  if (paired.error) console.warn(`! could not set installation_id (migration applied?): ${paired.error.message}`)
+
   // Register only this board's position (one board = one filtration stage).
   const sensors = await supabaseAdmin.from('sensors').select('category, position').eq('device_id', deviceId)
   if (sensors.error) throw new Error(`Load sensors failed: ${sensors.error.message}`)
@@ -275,7 +301,7 @@ async function main(): Promise<void> {
   if (!specs.length) throw new Error('ESP32_SIM_BOARDS must contain "pre", "post" or both.')
 
   console.log(`ESP32 two-board simulator (synthetic dummy data) -> ${API_BASE}`)
-  console.log(`events ${EVENTS_ENABLED ? 'on' : 'off'}, faults [${[...FAULTS].join(', ') || 'none'}], uncalibrated [${[...UNCALIBRATED].join(', ') || 'none'}]\n`)
+  console.log(`schedule ${ALIGNED ? 'UTC-slot aligned (proposed Fix 1)' : 'boot-relative (current firmware)'}, events ${EVENTS_ENABLED ? 'on' : 'off'}, faults [${[...FAULTS].join(', ') || 'none'}], uncalibrated [${[...UNCALIBRATED].join(', ') || 'none'}]\n`)
 
   const boards: SimulatedBoard[] = []
   for (const spec of specs) {

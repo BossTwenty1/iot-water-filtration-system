@@ -65,6 +65,7 @@ erDiagram
         text device_identifier
         text name
         boolean is_simulated
+        uuid installation_id "added device_installation_pairing"
         text controller_name "added app_support_tables"
         text connection_state "added app_support_tables"
         text wifi_state "added app_support_tables"
@@ -243,6 +244,7 @@ Satisfies: DATABASE.md domain "devices and device status."
 | fail_safe_state | text, default `'Pending Hardware Integration'` | added by `app_support_tables` |
 | last_seen_at | timestamptz, nullable | added by `app_support_tables`; the heartbeat timestamp `deviceWatchdog.ts` compares against `DEVICE_OFFLINE_TIMEOUT_MS` |
 | config | jsonb, default `{}` | added by `app_support_tables` |
+| installation_id | uuid, nullable | added by `device_installation_pairing`; devices sharing it are the pre/post boards of one filtration unit and are merged by `GET /telemetry`. Set with `npm run pair:devices`. NULL = unpaired |
 | created_at | timestamptz | |
 
 Device "status" was not a stored column in the original 9-table design — the

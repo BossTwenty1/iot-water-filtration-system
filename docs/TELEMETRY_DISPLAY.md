@@ -20,3 +20,8 @@ Read-only production checks found typical within-board intervals of roughly 60�
 The after device cb06c51a-83db-4940-b6cc-19f6d52fcde7 had only temperature registered. Added missing post_filtration metadata for ph (pH), tds (ppm), turbidity (NTU), and flow_rate (L/min), retaining the original temperature registration. No readings, calibration, thresholds, pins or hardware specifications were created or modified. Registration allows future correctly formed payload entries to be accepted; it cannot recover previously skipped readings or make faulty sensors valid. The before board's latest stored TDS/turbidity statuses were fault with null values.
 
 Validation: frontend build/TypeScript, lint, scripts/check-board-readings.mjs and scripts/check-telemetry-display.mjs. Coverage includes independent stage requests, preserved timestamps, time-gap calculation, both columns in one rendered table, zero/missing readings, no carry-forward/mutation, missing-board/error/loading states.
+
+
+## Two-board pairing (backend) — 18 November 2026
+
+The backend can now merge a pre-filtration board and a post-filtration board into one before/after row when both devices share `devices.installation_id` (see `docs/TWO_BOARD_SYNC_AND_MERGE.md`). The merge is explicit, not silent: every merged row carries `pairing` (`exact`, `nearest`, `unpaired`), both device ids, both original timestamps and the gap in seconds, and `deviceDisplayId` names both boards. Devices without an installation keep one row per device/test/timestamp as described above. Merged rows are time-aligned, not experimentally matched samples; the pairing tolerance and any pre→post transit offset remain `TBD`. The frontend does not yet show the pairing label or gap.

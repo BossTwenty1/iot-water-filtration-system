@@ -212,35 +212,180 @@ export function toAppSettings(row: Partial<AppSettingsRow>): AppSettings {
   }
 }
 
-// Pivots a flat array of sensor_readings (joined with their sensor's
-// category/position) into TelemetryRecord-shaped { before, after } maps,
-// grouped by measured_at. Assumes one reading cycle shares an identical
-// measured_at across all sensors in the batch (documented assumption — see
-// docs/API_REFERENCE.md "Telemetry grouping").
-export function groupReadingsIntoTelemetry(rows: SensorReadingWithSensor[]): TelemetryRecord[] {
-  const groups = new Map<string, TelemetryRecord>()
+// Default window for pairing a pre-filtration board's cycle with a
+// post-filtration board's cycle when their measuredAt values differ
+// (boards not yet slot-aligned). PROVISIONAL — the approved tolerance is TBD
+// (docs/TWO_BOARD_SYNC_AND_MERGE.md); override with TELEMETRY_PAIR_TOLERANCE_MS.
+export const DEFAULT_PAIR_TOLERANCE_MS = 30_000
+
+export interface TelemetryGroupingOptions {
+  // Max |after - before| for a nearest-match pair. 0 = exact matches only.
+  pairToleranceMs?: number
+}
+
+// One device's reading cycle: every reading sharing device/testRun/measuredAt.
+interface ReadingCycle {
+  id: string
+  deviceId: string
+  deviceDisplayId?: string
+  installationId: string | null
+  testRunId: string | null
+  testRunDisplayId?: string
+  measuredAt: string
+  timeMs: number
+  hasBefore: boolean
+  hasAfter: boolean
+  before: TelemetryRecord['before']
+  after: TelemetryRecord['after']
+}
+
+function cycleKey(deviceId: string, testRunId: string | null, measuredAt: string): string {
+  return `${deviceId}|${testRunId ?? ''}|${measuredAt}`
+}
+
+function buildCycles(rows: SensorReadingWithSensor[]): ReadingCycle[] {
+  const cycles = new Map<string, ReadingCycle>()
   for (const row of rows) {
-    const key = `${row.device_id}|${row.test_run_id ?? ''}|${row.measured_at}`
-    if (!groups.has(key)) {
-      groups.set(key, {
+    const key = cycleKey(row.device_id, row.test_run_id, row.measured_at)
+    let cycle = cycles.get(key)
+    if (!cycle) {
+      cycle = {
         id: key,
-        timestamp: row.measured_at,
-        testRunId: row.test_run_id,
-        testRunDisplayId: displayId('Test', row.test_run?.display_number),
         deviceId: row.device_id,
         deviceDisplayId: displayId('Device', row.device?.display_number),
+        installationId: row.device?.installation_id ?? null,
+        testRunId: row.test_run_id,
+        testRunDisplayId: displayId('Test', row.test_run?.display_number),
+        measuredAt: row.measured_at,
+        timeMs: Date.parse(row.measured_at),
+        hasBefore: false,
+        hasAfter: false,
         before: {},
         after: {},
-      })
+      }
+      cycles.set(key, cycle)
     }
-    const group = groups.get(key) as TelemetryRecord
-    const parameter = categoryToParameter(row.sensor?.category)
     const stage = positionToStage(row.sensor?.position)
+    // A side counts as reported even when its value is null (fault/invalid),
+    // so a board's all-null cycle still occupies its slot instead of pairing
+    // with an unrelated cycle.
+    if (stage === 'before') cycle.hasBefore = true
+    else if (stage === 'after') cycle.hasAfter = true
     if (row.value === null || row.value === undefined) continue
-    if (stage === 'before') group.before[parameter] = row.value
-    else if (stage === 'after') group.after[parameter] = row.value
+    const parameter = categoryToParameter(row.sensor?.category)
+    if (stage === 'before') cycle.before[parameter] = row.value
+    else if (stage === 'after') cycle.after[parameter] = row.value
   }
-  return [...groups.values()].sort((a, b) => (a.timestamp < b.timestamp ? 1 : -1))
+  return [...cycles.values()]
+}
+
+function singleRecord(cycle: ReadingCycle, pairing: 'single-device' | 'unpaired'): TelemetryRecord {
+  return {
+    id: cycle.id,
+    timestamp: cycle.measuredAt,
+    testRunId: cycle.testRunId,
+    testRunDisplayId: cycle.testRunDisplayId,
+    deviceId: cycle.deviceId,
+    deviceDisplayId: cycle.deviceDisplayId,
+    before: cycle.before,
+    after: cycle.after,
+    pairing,
+    installationId: cycle.installationId,
+    beforeDeviceId: cycle.hasBefore ? cycle.deviceId : null,
+    afterDeviceId: cycle.hasAfter ? cycle.deviceId : null,
+    beforeDeviceDisplayId: cycle.hasBefore ? cycle.deviceDisplayId : undefined,
+    afterDeviceDisplayId: cycle.hasAfter ? cycle.deviceDisplayId : undefined,
+    beforeMeasuredAt: cycle.hasBefore ? cycle.measuredAt : null,
+    afterMeasuredAt: cycle.hasAfter ? cycle.measuredAt : null,
+    pairGapSeconds: cycle.hasBefore && cycle.hasAfter ? 0 : null,
+  }
+}
+
+function pairedRecord(before: ReadingCycle, after: ReadingCycle): TelemetryRecord {
+  const gapSeconds = (after.timeMs - before.timeMs) / 1000
+  const deviceDisplayId = before.deviceDisplayId && after.deviceDisplayId
+    ? `${before.deviceDisplayId} + ${after.deviceDisplayId}`
+    : before.deviceDisplayId ?? after.deviceDisplayId
+  return {
+    // `~` joins the two cycle ids so GET /telemetry/:id can reload both.
+    id: `${before.id}~${after.id}`,
+    // The pre-filtration cycle is the row's reference time.
+    timestamp: before.measuredAt,
+    testRunId: before.testRunId,
+    testRunDisplayId: before.testRunDisplayId,
+    deviceId: before.deviceId,
+    deviceDisplayId,
+    before: before.before,
+    after: after.after,
+    pairing: gapSeconds === 0 ? 'exact' : 'nearest',
+    installationId: before.installationId,
+    beforeDeviceId: before.deviceId,
+    afterDeviceId: after.deviceId,
+    beforeDeviceDisplayId: before.deviceDisplayId,
+    afterDeviceDisplayId: after.deviceDisplayId,
+    beforeMeasuredAt: before.measuredAt,
+    afterMeasuredAt: after.measuredAt,
+    pairGapSeconds: gapSeconds,
+  }
+}
+
+// Pivots a flat array of sensor_readings (joined with their sensor's
+// category/position and device) into TelemetryRecord-shaped { before, after }
+// rows, newest first.
+//
+// 1. Readings are grouped into per-device cycles by device/testRun/measuredAt
+//    (one board's upload shares one measuredAt — see docs/API_REFERENCE.md
+//    "Telemetry grouping").
+// 2. Cycles from boards that share an installation_id and report only one
+//    stage are paired: a pre cycle with a post cycle of the same installation
+//    and test run, exact measuredAt first, then the nearest within
+//    pairToleranceMs. Each cycle is used at most once and no value is ever
+//    carried forward; a cycle without a partner stays a half row ("unpaired").
+// 3. Everything else (single-device cycles, devices with no installation) is
+//    returned exactly as before.
+export function groupReadingsIntoTelemetry(rows: SensorReadingWithSensor[], options: TelemetryGroupingOptions = {}): TelemetryRecord[] {
+  const toleranceMs = Math.max(0, options.pairToleranceMs ?? DEFAULT_PAIR_TOLERANCE_MS)
+  const records: TelemetryRecord[] = []
+  const buckets = new Map<string, { befores: ReadingCycle[]; afters: ReadingCycle[] }>()
+
+  for (const cycle of buildCycles(rows)) {
+    const oneSided = cycle.hasBefore !== cycle.hasAfter
+    if (!cycle.installationId || !oneSided || Number.isNaN(cycle.timeMs)) {
+      records.push(singleRecord(cycle, 'single-device'))
+      continue
+    }
+    const bucketKey = `${cycle.installationId}|${cycle.testRunId ?? ''}`
+    let bucket = buckets.get(bucketKey)
+    if (!bucket) buckets.set(bucketKey, (bucket = { befores: [], afters: [] }))
+    ;(cycle.hasBefore ? bucket.befores : bucket.afters).push(cycle)
+  }
+
+  for (const { befores, afters } of buckets.values()) {
+    // Greedy by smallest gap: exact matches (gap 0) always win, and a cycle
+    // is never taken from a closer partner. Ties go to the newer cycle.
+    const candidates: Array<{ before: ReadingCycle; after: ReadingCycle; gap: number }> = []
+    for (const before of befores) {
+      for (const after of afters) {
+        if (after.deviceId === before.deviceId) continue
+        const gap = Math.abs(after.timeMs - before.timeMs)
+        if (gap <= toleranceMs) candidates.push({ before, after, gap })
+      }
+    }
+    candidates.sort((a, b) => a.gap - b.gap || b.before.timeMs - a.before.timeMs)
+
+    const used = new Set<ReadingCycle>()
+    for (const { before, after } of candidates) {
+      if (used.has(before) || used.has(after)) continue
+      used.add(before)
+      used.add(after)
+      records.push(pairedRecord(before, after))
+    }
+    for (const cycle of [...befores, ...afters]) {
+      if (!used.has(cycle)) records.push(singleRecord(cycle, 'unpaired'))
+    }
+  }
+
+  return records.sort((a, b) => (a.timestamp < b.timestamp ? 1 : a.timestamp > b.timestamp ? -1 : 0))
 }
 
 export function toSensorReadings(rows: SensorReadingWithSensor[]): SensorReading[] {
