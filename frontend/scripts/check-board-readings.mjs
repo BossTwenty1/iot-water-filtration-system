@@ -20,19 +20,23 @@ const load=async(source,bindings={})=>{
 }
 load.index=0
 const formatters=await load(await readFile(new URL('../src/utils/formatters.ts',import.meta.url),'utf8'))
-const pre={id:'pre-cycle',deviceId:'pre',deviceDisplayId:'Device 0001',testRunId:null,timestamp:'2026-11-17T13:12:57Z',before:{pH:7.56,temperature:26.25,flowRate:0},after:{}}
-const post={id:'post-cycle',deviceId:'post',deviceDisplayId:'Device 0005',testRunId:null,timestamp:'2026-11-17T12:45:47Z',before:{},after:{temperature:25}}
+const pre={id:'pre-cycle',deviceId:'d4b1601b-9355-4203-ac6e-2b84b28cbf50',deviceDisplayId:'Device 0001',testRunId:null,timestamp:'2026-11-17T13:12:57Z',before:{pH:7.56,temperature:26.25,flowRate:0},after:{}}
+const post={id:'post-cycle',deviceId:'cb06c51a-83db-4940-b6cc-19f6d52fcde7',deviceDisplayId:'Device 0005',testRunId:null,timestamp:'2026-11-17T12:45:47Z',before:{},after:{temperature:25}}
 const original=structuredClone({pre,post})
 const apiCalls=[]
 const apiRequest=async(path,options)=>{
   apiCalls.push({path,options})
-  return path.includes('stage=before')?[pre]:[post]
+  // Even an unexpected API response must not add another board to the pair.
+  return [path.includes('stage=before')?pre:post,{...pre,id:'simulated-cycle',deviceId:'simulated-board'}]
 }
 const {getBoardTelemetry}=await load(await readFile(new URL('../src/services/telemetryService.ts',import.meta.url),'utf8'),{apiRequest})
 const signal=new AbortController().signal
 assert.deepEqual(await getBoardTelemetry('before',signal),[pre])
 assert.deepEqual(await getBoardTelemetry('after',signal),[post])
-assert.deepEqual(apiCalls.map(call=>call.path),['telemetry?stage=before&limit=200','telemetry?stage=after&limit=200'])
+assert.deepEqual(apiCalls.map(call=>call.path),[
+  `telemetry?stage=before&deviceId=${pre.deviceId}&limit=200`,
+  `telemetry?stage=after&deviceId=${post.deviceId}&limit=200`,
+])
 assert.ok(apiCalls.every(call=>call.options.signal===signal&&call.options.cache==='no-store'))
 
 // Exercise the actual refresh hook with controlled network promises and timers.

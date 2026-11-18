@@ -26,8 +26,19 @@ Validation: frontend build/TypeScript, lint, scripts/check-board-readings.mjs an
 
 The history page's "Board recording history" table now shows each before-filtering record and after-filtering record on one row, so the two stages can be compared directly. Each measurement column reads `before / after`, and the device column names both boards.
 
-Pairing happens in the browser (`frontend/src/utils/pairBoardRecords.ts`) from the two stage queries the page already makes (`stage=before` and `stage=after`), so it works with the current backend. A before record is paired with the after record at the identical time, otherwise the nearest one within 30 seconds (provisional, `TBD`; the same default as the backend proposal in `docs/TWO_BOARD_SYNC_AND_MERGE.md`). Records are paired only within the same test run, and never across two different installations when the backend provides `installationId`. Each record is used once, and no older value is carried forward. A record without a partner stays on its own row, labeled "Before only" or "After only". A nonzero time difference is shown under the row time.
+Pairing happens in the browser (`frontend/src/utils/pairBoardRecords.ts`) from the two stage queries the page already makes (`stage=before` and `stage=after`), so it works with the current backend. A before record is paired with the after record at the identical time, otherwise the nearest one within 30 seconds for display alignment only. This window does not define experimental sample matching or synchronize the boards. Records are paired only within the same test run, and never across two different installations when the backend provides `installationId`. Each record is used once, and no older value is carried forward. A record without a partner stays on its own row, labeled "Before only" or "After only". A nonzero time difference is shown under the row time.
 
 Rows are time-aligned readings, not matched water samples. CSV export has one line per row and keeps both device UUIDs and both original recording times, plus the pairing type and the gap in seconds.
 
 Validation: frontend build (including TypeScript), lint, `node scripts/check-board-pairing.mjs`, `node scripts/check-telemetry-display.mjs` and `node scripts/check-board-readings.mjs`.
+
+### Physical board selection for release
+
+The latest-board comparison on Dashboard and History, the paired history table, its summaries and CSV are scoped to the confirmed physical pair:
+
+- Before: Device 0001, `esp32-E458290D5020`, UUID `d4b1601b-9355-4203-ac6e-2b84b28cbf50`.
+- After: Device 0005, `esp32-800BFEF61B44`, UUID `cb06c51a-83db-4940-b6cc-19f6d52fcde7`.
+
+`getBoardTelemetry` sends the existing `deviceId` filter alongside `stage` and `limit=200`, so simulated or unrelated devices cannot consume that board's history limit. The response is also checked against the expected UUID. This supersedes the earlier assumption of one active board per stage. Device 0006 and Device 0007 are simulated and are excluded from these comparison tables without deleting any records. Existing other charts and telemetry views retain their existing queries; this release does not change their scope.
+
+No backend pairing branch, schema migration, simulator, firmware change or new credential is required. Hardware sampling synchronization and experimental pairing criteria remain unverified.

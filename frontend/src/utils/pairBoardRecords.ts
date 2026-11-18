@@ -2,8 +2,7 @@ import type { TelemetryRecord } from '../types'
 
 // Window for showing a pre-filtration cycle and a post-filtration cycle on one
 // row when their recording times differ (boards not yet slot-aligned).
-// PROVISIONAL — the approved pairing tolerance is TBD
-// (docs/TWO_BOARD_SYNC_AND_MERGE.md). Matches the backend default.
+// Display alignment only; this is not an experimental sample-matching window.
 export const BOARD_PAIR_TOLERANCE_MS=30_000
 
 export type BoardPairing='exact'|'nearest'|'unpaired'
