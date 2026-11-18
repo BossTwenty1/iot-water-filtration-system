@@ -12,10 +12,15 @@ import type { TelemetryRecord } from '../types/domain'
 
 const router = express.Router()
 
+// Merges two boards of one installation into before/after rows (see
+// groupReadingsIntoTelemetry and docs/TWO_BOARD_SYNC_AND_MERGE.md).
+const groupTelemetry = (rows: SensorReadingWithSensor[]): TelemetryRecord[] =>
+  groupReadingsIntoTelemetry(rows, { pairToleranceMs: env.telemetryPairToleranceMs })
+
 // `!inner` so `.eq('sensor.category', ...)` filters actually restrict the
 // parent rows (PostgREST only applies embedded-resource filters as a real
 // join condition when the embed is an inner join).
-const READING_SELECT = '*, sensor:sensors!inner(category,position,unit), test_run:test_runs(display_number), device:devices(display_number)'
+const READING_SELECT = '*, sensor:sensors!inner(category,position,unit), test_run:test_runs(display_number), device:devices(display_number,installation_id)'
 
 interface TelemetryListQuery extends PaginationQuery, DateRangeQuery {
   testRunId?: string
@@ -44,7 +49,7 @@ router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunct
 
     builder = builder.order('measured_at', { ascending: false }).range(offset, offset + limit - 1)
     const rows = orThrow(await builder, 'Failed to load telemetry.')
-    res.json(groupReadingsIntoTelemetry(rows as unknown as SensorReadingWithSensor[]))
+    res.json(groupTelemetry(rows as unknown as SensorReadingWithSensor[]))
   } catch (err) {
     next(err)
   }
@@ -105,22 +110,31 @@ router.get('/stream', requireAuth, (req: Request, res: Response) => {
       if (req.query.deviceId) builder = builder.eq('device_id', req.query.deviceId as string)
       return orThrow(await builder.order('measured_at', { ascending: true }), 'Failed to poll telemetry.') as unknown as SensorReadingWithSensor[]
     },
-    transform: groupReadingsIntoTelemetry,
+    transform: groupTelemetry,
   })
 })
 
-// GET /telemetry/:id — single grouped record detail (id is the opaque key
-// returned by GET /telemetry: `deviceId|testRunId|measuredAt`).
+// GET /telemetry/:id — single grouped record detail. The id is the opaque key
+// returned by GET /telemetry: one cycle `deviceId|testRunId|measuredAt`, or
+// for a merged two-board row two cycles joined by `~`.
 router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const [deviceId, testRunId, measuredAt] = decodeURIComponent(param(req, 'id')).split('|')
-    if (!deviceId || !measuredAt) throw ApiError.badRequest('Malformed telemetry id.')
+    const id = decodeURIComponent(param(req, 'id'))
+    const parts = id.split('~')
+    if (parts.length > 2) throw ApiError.badRequest('Malformed telemetry id.')
 
-    let builder = supabaseAdmin.from('sensor_readings').select(READING_SELECT).eq('device_id', deviceId).eq('measured_at', measuredAt)
-    builder = testRunId ? builder.eq('test_run_id', testRunId) : builder.is('test_run_id', null)
+    const rows: SensorReadingWithSensor[] = []
+    for (const part of parts) {
+      const [deviceId, testRunId, measuredAt] = part.split('|')
+      if (!deviceId || !measuredAt) throw ApiError.badRequest('Malformed telemetry id.')
 
-    const rows = orThrow(await builder, 'Failed to load telemetry record.') as unknown as SensorReadingWithSensor[]
-    const [record] = groupReadingsIntoTelemetry(rows)
+      let builder = supabaseAdmin.from('sensor_readings').select(READING_SELECT).eq('device_id', deviceId).eq('measured_at', measuredAt)
+      builder = testRunId ? builder.eq('test_run_id', testRunId) : builder.is('test_run_id', null)
+      rows.push(...(orThrow(await builder, 'Failed to load telemetry record.') as unknown as SensorReadingWithSensor[]))
+    }
+
+    const records = groupTelemetry(rows)
+    const record = records.find((candidate) => candidate.id === id) ?? (parts.length === 1 ? records[0] : undefined)
     if (!record) throw ApiError.notFound('Telemetry record was not found.')
     res.json(record)
   } catch (err) {

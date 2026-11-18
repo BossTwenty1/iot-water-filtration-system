@@ -19,6 +19,16 @@ export interface Env {
   deviceWatchdogIntervalMs: number
   deviceOfflineTimeoutMs: number
   retentionJobIntervalMs: number
+  telemetryPairToleranceMs: number
+}
+
+// Non-negative integer env var; unset/blank/invalid -> fallback. Unlike
+// `Number(x) || fallback`, an explicit 0 is kept.
+function nonNegativeInt(name: string, fallback: number): number {
+  const raw = process.env[name]
+  if (raw === undefined || raw.trim() === '') return fallback
+  const value = Number(raw)
+  return Number.isInteger(value) && value >= 0 ? value : fallback
 }
 
 const env: Env = {
@@ -45,6 +55,11 @@ const env: Env = {
   // purges old sensor_readings. No-ops entirely while retention_days is
   // unset (today's default) — see PUT /data-retention.
   retentionJobIntervalMs: Number(process.env.RETENTION_JOB_INTERVAL_MS) || 24 * 60 * 60 * 1000,
+  // Window for merging a pre board's cycle with a post board's cycle of the
+  // same installation when their measuredAt differ (GET /telemetry). 0 =
+  // exact matches only. Provisional default; the approved value is TBD
+  // (docs/TWO_BOARD_SYNC_AND_MERGE.md).
+  telemetryPairToleranceMs: nonNegativeInt('TELEMETRY_PAIR_TOLERANCE_MS', 30_000),
 }
 
 export default env

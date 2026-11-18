@@ -32,7 +32,25 @@ export interface TelemetryRecord {
   deviceId: string
   before: Partial<Record<SensorParameter, number>>
   after: Partial<Record<SensorParameter, number>>
+  // Two-board pairing (docs/TWO_BOARD_SYNC_AND_MERGE.md). Added fields are
+  // optional so existing clients keep working unchanged.
+  //   single-device: one device reported both stages (or is not in an installation)
+  //   exact:         pre and post boards reported the same measuredAt
+  //   nearest:       pre and post cycles matched within the pairing tolerance
+  //   unpaired:      a paired board's cycle with no partner within tolerance
+  pairing?: TelemetryPairing
+  installationId?: string | null
+  beforeDeviceId?: string | null
+  afterDeviceId?: string | null
+  beforeDeviceDisplayId?: string
+  afterDeviceDisplayId?: string
+  beforeMeasuredAt?: string | null
+  afterMeasuredAt?: string | null
+  // afterMeasuredAt - beforeMeasuredAt in seconds, when both sides exist.
+  pairGapSeconds?: number | null
 }
+
+export type TelemetryPairing = 'single-device' | 'exact' | 'nearest' | 'unpaired'
 
 export interface TestRun {
   displayId?: string
