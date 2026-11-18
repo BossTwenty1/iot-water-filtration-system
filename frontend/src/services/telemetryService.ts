@@ -1,4 +1,4 @@
-import type { SensorReading,TelemetryChartPoint,TelemetryRecord } from '../types'
+import type { SensorReading,SensorStage,TelemetryChartPoint,TelemetryRecord } from '../types'
 import { apiRequest } from './apiClient'
 
 export interface TelemetryService {
@@ -7,14 +7,9 @@ export interface TelemetryService {
   getTelemetryChart():Promise<TelemetryChartPoint[]>
 }
 
-// Query each stage independently so a busy board cannot crowd the other out
-// of the global history limit. These are independent records, not a paired sample.
-export async function getLatestBoardRecords(){
-  const [before,after]=await Promise.all([
-    apiRequest<TelemetryRecord[]>('telemetry?stage=before&limit=10'),
-    apiRequest<TelemetryRecord[]>('telemetry?stage=after&limit=10'),
-  ])
-  return {before:before[0]??null,after:after[0]??null}
+// A separate limit for each stage keeps a busy board from hiding the other.
+export function getBoardTelemetry(stage:SensorStage,signal:AbortSignal){
+  return apiRequest<TelemetryRecord[]>(`telemetry?stage=${stage}&limit=200`,{signal,cache:'no-store'})
 }
 
 export const telemetryService:TelemetryService={

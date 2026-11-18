@@ -8,47 +8,152 @@ import ts from 'typescript'
 
 const require=createRequire(import.meta.url)
 const compile=source=>ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText
-const load=source=>import(`data:text/javascript,${encodeURIComponent(compile(source))}`)
+const stripImports=source=>source.replace(/^import .*\r?\n/gm,'')
+const load=async(source,bindings={})=>{
+  const key='__boardCheck'+load.index++
+  globalThis[key]=bindings
+  let output=compile('const {'+Object.keys(bindings).join(',')+'}=globalThis.'+key+';\n'+stripImports(source))
+  output=output.replaceAll('"react/jsx-runtime"',JSON.stringify(pathToFileURL(require.resolve('react/jsx-runtime')).href))
+  const result=await import('data:text/javascript,'+encodeURIComponent(output))
+  delete globalThis[key]
+  return result
+}
+load.index=0
 const formatters=await load(await readFile(new URL('../src/utils/formatters.ts',import.meta.url),'utf8'))
-const calls=[]
-const pre={id:'pre-cycle',deviceId:'pre',deviceDisplayId:'Device 0004',testRunId:null,timestamp:'2026-11-17T13:12:57Z',before:{pH:7.56,temperature:26.25,flowRate:0},after:{}}
+const pre={id:'pre-cycle',deviceId:'pre',deviceDisplayId:'Device 0001',testRunId:null,timestamp:'2026-11-17T13:12:57Z',before:{pH:7.56,temperature:26.25,flowRate:0},after:{}}
 const post={id:'post-cycle',deviceId:'post',deviceDisplayId:'Device 0005',testRunId:null,timestamp:'2026-11-17T12:45:47Z',before:{},after:{temperature:25}}
-let responses={before:[pre],after:[post]}
-globalThis.__boardApi=async path=>{calls.push(path);return path.includes('stage=before')?responses.before:responses.after}
-let service=await readFile(new URL('../src/services/telemetryService.ts',import.meta.url),'utf8')
-service=service.replace(/^import .*\r?\n/gm,'')
-service='const apiRequest=globalThis.__boardApi;\n'+service
-const {getLatestBoardRecords}=await load(service)
-let records=await getLatestBoardRecords()
-assert.deepEqual(calls,['telemetry?stage=before&limit=10','telemetry?stage=after&limit=10'])
-assert.equal(records.before,pre)
-assert.equal(records.after,post)
-assert.equal(pre.timestamp,'2026-11-17T13:12:57Z')
-assert.equal(post.timestamp,'2026-11-17T12:45:47Z')
-const source=await readFile(new URL('../src/components/telemetry/LatestBoardReadings.tsx',import.meta.url),'utf8')
+const original=structuredClone({pre,post})
+const apiCalls=[]
+const apiRequest=async(path,options)=>{
+  apiCalls.push({path,options})
+  return path.includes('stage=before')?[pre]:[post]
+}
+const {getBoardTelemetry}=await load(await readFile(new URL('../src/services/telemetryService.ts',import.meta.url),'utf8'),{apiRequest})
+const signal=new AbortController().signal
+assert.deepEqual(await getBoardTelemetry('before',signal),[pre])
+assert.deepEqual(await getBoardTelemetry('after',signal),[post])
+assert.deepEqual(apiCalls.map(call=>call.path),['telemetry?stage=before&limit=200','telemetry?stage=after&limit=200'])
+assert.ok(apiCalls.every(call=>call.options.signal===signal&&call.options.cache==='no-store'))
+
+// Exercise the actual refresh hook with controlled network promises and timers.
+// Hook slots model React state/ref retention without a browser or a hosted API.
+function hookHarness(){
+  const slots=[],effects=[],timers=new Map()
+  let cursor=0
+  let nextTimer=0
+  const equal=(a,b)=>a&&b&&a.length===b.length&&a.every((value,i)=>Object.is(value,b[i]))
+  const hooks={
+    useState(initial){
+      const index=cursor++
+      if(!(index in slots))slots[index]=initial
+      return [slots[index],next=>{slots[index]=typeof next==='function'?next(slots[index]):next}]
+    },
+    useRef(initial){
+      const index=cursor++
+      if(!(index in slots))slots[index]={current:initial}
+      return slots[index]
+    },
+    useCallback(callback,deps){
+      const index=cursor++
+      if(!slots[index]||!equal(slots[index].deps,deps))slots[index]={callback,deps}
+      return slots[index].callback
+    },
+    useEffect(callback,deps){
+      const index=cursor++
+      if(!slots[index]||!equal(slots[index].deps,deps)){
+        slots[index]?.cleanup?.()
+        slots[index]={deps}
+        effects.push(()=>{slots[index].cleanup=callback()})
+      }
+    },
+  }
+  return {hooks,timers,render(fn){cursor=0;const result=fn();effects.splice(0).forEach(effect=>effect());return result},
+    window:{setInterval(fn,ms){assert.equal(ms,10000);timers.set(++nextTimer,fn);return nextTimer},clearInterval(id){timers.delete(id)}},
+    dispose(){slots.forEach(slot=>slot?.cleanup?.())}}
+}
+const requests=[]
+const fakeGetBoardTelemetry=(stage,signal)=>new Promise((resolve,reject)=>{
+  requests.push({stage,signal,resolve,reject})
+  signal.addEventListener('abort',()=>reject(new Error('aborted')),{once:true})
+})
+const harness=hookHarness()
+const {useBoardTelemetry}=await load(await readFile(new URL('../src/hooks/useBoardTelemetry.ts',import.meta.url),'utf8'),{...harness.hooks,getBoardTelemetry:fakeGetBoardTelemetry,window:harness.window})
+const tick=()=>[...harness.timers.values()][0]()
+const flush=async()=>{for(let i=0;i<8;i++)await Promise.resolve()}
+let resource=harness.render(useBoardTelemetry)
+assert.deepEqual(requests.map(r=>r.stage),['before','after'])
+requests[0].resolve([pre])
+await flush()
+resource=harness.render(useBoardTelemetry)
+assert.deepEqual(resource.before.records,[pre])
+assert.equal(resource.before.loading,false)
+assert.equal(resource.after.loading,true)
+tick()
+assert.equal(requests.length,2,'skip overlapping polls while a stage is still pending')
+requests[1].resolve([post])
+await flush()
+resource=harness.render(useBoardTelemetry)
+assert.equal(resource.refreshing,false)
+assert.deepEqual(resource.after.records,[post])
+tick()
+resource=harness.render(useBoardTelemetry)
+assert.equal(resource.refreshing,true)
+assert.deepEqual(resource.before.records,[pre],'retain values during refresh')
+assert.deepEqual(resource.after.records,[post])
+const newerPost={...post,id:'new-post-cycle',timestamp:'2026-11-17T13:13:15Z',after:{temperature:24.5}}
+requests[3].resolve([newerPost])
+await flush()
+resource=harness.render(useBoardTelemetry)
+assert.deepEqual(resource.after.records,[newerPost],'after can finish first')
+assert.deepEqual(resource.before.records,[pre])
+requests[2].reject(new Error('Before server unavailable'))
+await flush()
+resource=harness.render(useBoardTelemetry)
+assert.equal(resource.before.error,'Before server unavailable')
+assert.deepEqual(resource.before.records,[pre],'failed refresh retains original pre cycle')
+assert.equal(resource.before.records[0].timestamp,pre.timestamp)
+assert.equal(resource.after.error,null)
+assert.equal(resource.refreshing,false)
+tick()
+requests[4].resolve([{...pre,id:'missing-pre',before:{}}])
+requests[5].resolve([])
+await flush()
+resource=harness.render(useBoardTelemetry)
+assert.equal(resource.before.error,null)
+assert.deepEqual(resource.before.records[0].before,{},'do not backfill missing measurements from earlier cycles')
+assert.deepEqual(resource.after.records,[],'successful empty response replaces prior data')
+tick()
+const pendingSignals=requests.slice(-2).map(r=>r.signal)
+harness.dispose()
+await flush()
+assert.ok(pendingSignals.every(s=>s.aborted))
+assert.equal(harness.timers.size,0)
+assert.deepEqual({pre,post},original)
+
 const Box=({children,title,description,action})=>React.createElement('section',null,title,description,action,children)
-let status='success'
-const bindings={...formatters,getLatestBoardRecords,useServiceData:()=>({status,data:records,error:'Example error',reload:async()=>{}}),SectionCard:Box,ResourceState:({status})=>React.createElement('p',null,status)}
-globalThis.__boardBindings=bindings
-let output=compile('const {'+Object.keys(bindings).join(',')+'}=globalThis.__boardBindings;\n'+source.replace(/^import .*\r?\n/gm,''))
-output=output.replaceAll('"react/jsx-runtime"',JSON.stringify(pathToFileURL(require.resolve('react/jsx-runtime')).href))
-const {LatestBoardReadings}=await import(`data:text/javascript,${encodeURIComponent(output)}`)
+const ready=records=>({records,loading:false,error:null})
+resource={before:ready([pre]),after:ready([post]),refreshing:false,refresh:async()=>{}}
+const {LatestBoardReadings}=await load(await readFile(new URL('../src/components/telemetry/LatestBoardReadings.tsx',import.meta.url),'utf8'),{...formatters,SectionCard:Box,useBoardTelemetry:()=>resource})
 const render=()=>renderToStaticMarkup(React.createElement(LatestBoardReadings))
 let html=render()
-for(const text of ['Device 0004','Device 0005','9:12:57 PM','8:45:47 PM','27 min 10 sec','7.56','26.25','25.00','0.0','not a synchronized','older values are not carried forward']) assert.ok(html.includes(text),text)
+for(const value of ['Device 0001','Device 0005','9:12:57 PM','8:45:47 PM','27 min 10 sec','7.56','26.25','25.00','0.0','independently recorded','every 10 seconds'])assert.ok(html.includes(value),value)
 assert.equal((html.match(/<table/g)??[]).length,1)
-assert.ok(html.includes('—'))
-assert.deepEqual(records,{before:pre,after:post})
-responses={before:[],after:[post]};records=await getLatestBoardRecords()
-html=render();assert.match(html,/No record/);assert.match(html,/until both boards have a record/);assert.match(html,/25\.00/)
-responses={before:[],after:[]};records=await getLatestBoardRecords()
-html=render();assert.doesNotMatch(html,/NaN|undefined/)
-records={before:pre,after:{...post,timestamp:pre.timestamp}}
-assert.match(render(),/0 min 0 sec/)
-records={before:{...pre,before:{}},after:post}
-assert.doesNotMatch(render(),/7\.56/)
-status='error';assert.match(render(),/error/)
-status='loading';assert.match(render(),/loading/)
-assert.match(render(),/disabled/)
-delete globalThis.__boardApi;delete globalThis.__boardBindings
-console.log('Both-board checks passed: independent stage queries, timestamps/gap, side-by-side values, zero/missing values, no carry-forward or mutation, empty/error/loading states.')
+resource={...resource,refreshing:true}
+html=render()
+assert.match(html,/disabled/)
+assert.match(html,/26\.25/)
+assert.match(html,/25\.00/)
+resource={...resource,refreshing:false,before:{...ready([pre]),error:'Before unavailable'}}
+html=render()
+assert.match(html,/role="alert"/)
+assert.match(html,/Showing its last saved records/)
+assert.match(html,/25\.00/)
+resource={...resource,before:{records:[],loading:true,error:null}}
+html=render()
+assert.match(html,/Loading/)
+assert.match(html,/25\.00/,'one board can load while the other remains visible')
+resource={...resource,before:ready([]),after:ready([])}
+html=render()
+assert.doesNotMatch(html,/NaN|undefined/)
+assert.match(html,/No record/)
+console.log('Board telemetry checks passed: stage-specific queries, independent arrival order, single-flight polling, refresh preservation, errors/recovery, cancellation, timestamps, missing/zero values, and side-by-side rendering.')

@@ -190,3 +190,22 @@ editable system names are supported. Lab and sensor-check pages are temporarily
 unavailable. Existing Super Administrator permissions and Users & Access stay
 enabled. Public `/forgot-password` and `/reset-password` pages use the existing
 API recovery routes; see [password recovery setup](../docs/PASSWORD_RECOVERY.md).
+
+## Independent board readings
+
+The Dashboard comparison and History page read each filtration stage separately
+through the existing telemetry endpoint, with a limit of 200 raw readings per
+stage. Each stage updates as soon as its request finishes. The view checks for
+new data every ten seconds, skips overlapping requests, and cancels outstanding
+requests when leaving the page. A failed refresh keeps that stage's last saved
+records and shows an error beside its original recording time.
+
+The comparison shows the latest cycle from each stage side by side with its
+device and timestamp. The History table labels each row's stage and shows only
+that stage's values. CSV exports retain the original device IDs and timestamps.
+These independent cycles are a reference comparison. Synchronized experimental
+pairing still requires an agreed sampling and test-run protocol.
+
+Run the focused display and refresh checks with
+`node scripts/check-board-readings.mjs` and
+`node scripts/check-telemetry-display.mjs` from `frontend`.

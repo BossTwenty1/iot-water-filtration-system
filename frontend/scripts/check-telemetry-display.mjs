@@ -16,8 +16,22 @@ const telemetryService={getTelemetryHistory:()=>fixtures.records}
 const empty=()=>[]
 const services={telemetryService,alertsService:{getAlerts:empty},testRunsService:{getTestRuns:empty},deviceService:{getDeviceStatus:()=>null}}
 const Box=({children})=>React.createElement('div',null,children)
-const stubNames=['LatestBoardReadings','PageHeader','SectionCard','SummaryCard','StatusBadge','Modal','ResourceState','TelemetryChart','TelemetrySparkline','ProcessTopology','SensorGrid','Link','Download','Info','Activity','CloudCog','Droplets','FlaskConical','Gauge','ThermometerSun']
-const bindings={usePermission:()=>true,...formatters,...services,useState:React.useState,useServiceData:(fn)=>({status:'success',data:fn()}),downloadCsv:()=>{},...Object.fromEntries(stubNames.map(n=>[n,Box]))}
+const stubNames=['LatestBoardReadings','BoardReadingsComparison','SectionCard','SummaryCard','StatusBadge','Modal','ResourceState','TelemetryChart','TelemetrySparkline','ProcessTopology','SensorGrid','Link','Download','Info','Activity','CloudCog','Droplets','FlaskConical','Gauge','ThermometerSun']
+let canExport=true
+let exportClick
+let exportRows
+const boardResource=()=>({
+ before:{records:fixtures.records.filter(row=>Object.keys(row.before).length>0),loading:false,error:null},
+ after:{records:fixtures.records.filter(row=>Object.keys(row.after).length>0),loading:false,error:null},
+ refreshing:false,refresh:async()=>{},
+})
+const bindings={
+ usePermission:()=>canExport,...formatters,...services,useState:React.useState,
+ useServiceData:(fn)=>({status:'success',data:fn()}),useBoardTelemetry:boardResource,
+ downloadCsv:(_filename,rows)=>{exportRows=rows},
+ ...Object.fromEntries(stubNames.map(n=>[n,Box])),
+ PageHeader:({actions})=>{exportClick=actions?.props.onClick;return React.createElement('header',null,actions)},
+}
 globalThis.__telemetryDisplayCheck=bindings
 
 // Render the actual page JSX. Only service hooks and unrelated child components
@@ -32,11 +46,34 @@ for(const page of ['HistoryPage','DashboardPage']){
  let html=render()
  assert.match(html,/25\.12/)
  assert.match(html,/Device 0005/)
- assert.match(html,/temperature \(°C\)/)
+ assert.match(html,/temperature \(°C\)/i)
  assert.match(html,/Nov 17, 2026/)
  assert.match(html,/—/)
  if(page==='HistoryPage') assert.match(html,/25\.12 °C<\/div>/) // details use the same value
  assert.doesNotMatch(html,/NaN|undefined/)
+ if(page==='HistoryPage'){
+  exportClick()
+  assert.equal(exportRows.length,1)
+  assert.equal(exportRows[0].device_id,'device-uuid')
+  assert.equal(exportRows[0].timestamp,record.timestamp)
+  assert.equal(exportRows[0].after_temperature_c,25.12)
+  assert.equal(exportRows[0].before_temperature_c,undefined)
+  const pre={...record,id:'pre-cycle',deviceId:'pre-board',deviceDisplayId:'Device 0001',timestamp:'2026-11-17T11:48:59Z',before:{pH:5.72,temperature:26.25},after:{}}
+  fixtures.records=[pre,record]
+  html=render()
+  assert.match(html,/<td>Before filtering<\/td>/)
+  assert.match(html,/<td>After filtering<\/td>/)
+  assert.match(html,/26\.25/)
+  assert.match(html,/25\.12/)
+  assert.doesNotMatch(html,/Before \/ After/)
+  exportClick()
+  assert.equal(exportRows.length,2)
+  assert.equal(exportRows.find(row=>row.device_id==='pre-board').timestamp,pre.timestamp)
+  assert.equal(exportRows.find(row=>row.device_id==='device-uuid').before_temperature_c,undefined)
+  canExport=false;exportRows=null;render();exportClick()
+  assert.equal(exportRows,null,'CSV permissions remain enforced')
+  canExport=true
+ }
  fixtures.records=[{...record,after:{temperature:0,TDS:0,flowRate:0,pH:0,turbidity:0}}]
  html=render()
  assert.match(html,/0\.00/)
