@@ -213,6 +213,10 @@ class SimulatedBoard {
     const nowS = Math.floor(now / 1000)
     const slotS = nowS - (nowS % intervalS)
     if (ALIGNED ? slotS === this.lastSlotS : now - this.lastAttemptMs < TELEMETRY_INTERVAL_MS) return
+    // Aligned: only send near the slot boundary, so measuredAt = slot start is
+    // honest. A board that boots or reconnects mid-slot waits for the next one
+    // instead of stamping late readings with an earlier time.
+    if (ALIGNED && now - slotS * 1000 > TELEMETRY_MAX_AGE_MS) return
 
     const snap = this.snapshot
     if (!snap) return

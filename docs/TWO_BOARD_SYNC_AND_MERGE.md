@@ -72,6 +72,9 @@ const time_t intervalS = config::kTelemetryIntervalMs / 1000;
 const time_t now = time(nullptr);
 const time_t slot = now - (now % intervalS);   // e.g. 11:37:00Z
 if (slot == lastSlot) continue;
+// only send near the boundary: a board that boots or reconnects mid-slot
+// waits for the next slot instead of stamping late readings with `slot`
+if ((now - slot) * 1000 > config::kTelemetryMaxAgeMs) continue;
 
 // existing freshness check stays: the sensor loop runs every 1 s,
 // so the snapshot is <= ~1 s old at the slot boundary
