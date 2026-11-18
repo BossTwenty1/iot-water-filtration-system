@@ -39,6 +39,23 @@ assert.deepEqual(apiCalls.map(call=>call.path),[
 ])
 assert.ok(apiCalls.every(call=>call.options.signal===signal&&call.options.cache==='no-store'))
 
+// Latest-reading cards: one request per confirmed board, and each board only
+// contributes its own stage, so a stage never gets two sets of cards.
+const currentCalls=[]
+const reading=(parameter,stage,value)=>({parameter,label:parameter,value,unit:'',stage})
+const currentRequest=async(path)=>{
+  currentCalls.push(path)
+  return path.includes(pre.deviceId)
+    ?[reading('pH','before',7.56),reading('TDS','before',289),reading('pH','after',99)]
+    :[reading('pH','after',3.82),reading('TDS','after',36),reading('pH','before',99)]
+}
+const latestService=await load(await readFile(new URL('../src/services/telemetryService.ts',import.meta.url),'utf8'),{apiRequest:currentRequest})
+const latest=await latestService.telemetryService.getLatestTelemetry()
+assert.deepEqual(currentCalls,[`telemetry/current?deviceId=${pre.deviceId}`,`telemetry/current?deviceId=${post.deviceId}`])
+assert.deepEqual(latest.map(r=>`${r.stage}-${r.parameter}=${r.value}`),['before-pH=7.56','before-TDS=289','after-pH=3.82','after-TDS=36'])
+const keys=latest.map(r=>`${r.stage}-${r.parameter}`)
+assert.equal(new Set(keys).size,keys.length,'unique stage/parameter cards')
+
 // Exercise the actual refresh hook with controlled network promises and timers.
 // Hook slots model React state/ref retention without a browser or a hosted API.
 function hookHarness(){

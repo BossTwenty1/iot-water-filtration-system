@@ -20,8 +20,20 @@ export async function getBoardTelemetry(stage:SensorStage,signal:AbortSignal){
   return records.filter(record=>record.deviceId===deviceId)
 }
 
+// Latest reading per sensor from the confirmed boards only: the before stage
+// from the pre-filtration board and the after stage from the post-filtration
+// board. Unfiltered telemetry/current returns every device's sensors, so a
+// simulated or extra board would add a second set of cards for a stage.
+export async function getLatestBoardReadings(){
+  const stages=await Promise.all((['before','after'] as const).map(async stage=>{
+    const readings=await apiRequest<SensorReading[]>(`telemetry/current?deviceId=${boardDeviceIds[stage]}`)
+    return readings.filter(reading=>reading.stage===stage)
+  }))
+  return stages.flat()
+}
+
 export const telemetryService:TelemetryService={
-  getLatestTelemetry:()=>apiRequest<SensorReading[]>('telemetry/current'),
+  getLatestTelemetry:getLatestBoardReadings,
   getTelemetryHistory:()=>apiRequest<TelemetryRecord[]>('telemetry'),
   getTelemetryChart:()=>apiRequest<TelemetryChartPoint[]>('telemetry/chart?parameter=turbidity'),
 }

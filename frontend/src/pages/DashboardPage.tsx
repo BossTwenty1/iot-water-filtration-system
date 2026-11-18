@@ -88,7 +88,7 @@ export function DashboardPage() {
         <SensorGrid stage="after"/>
       </SectionCard>
 
-      <SectionCard className="dashboard-span-12" title="Sensor reading log" description="Saved readings · — means no numeric value in this record; each row belongs to one device">
+      <SectionCard className="dashboard-span-12" title="Sensor reading log" description="Saved readings · — means no numeric value in this record; a row shows two devices when their before and after readings are paired">
         <div className="table-wrap"><table className="data-table">
           <thead><tr><th>Time recorded</th><th>Device</th><th>Before pH</th><th>After pH</th><th>Before / After turbidity</th><th>Before / After TDS</th><th>Before / After flow</th><th>Before / After temperature (°C)</th></tr></thead>
           <tbody>{telemetry.length===0&&<tr><td colSpan={8}>No sensor readings are available.</td></tr>}{telemetry.slice(0,5).map((record)=><tr key={record.id}>
