@@ -267,6 +267,7 @@ export type Database = {
           device_identifier: string
           fail_safe_state: string
           id: string
+          installation_id: string | null
           is_simulated: boolean
           last_seen_at: string | null
           name: string | null
@@ -280,6 +281,7 @@ export type Database = {
           device_identifier: string
           fail_safe_state?: string
           id?: string
+          installation_id?: string | null
           is_simulated?: boolean
           last_seen_at?: string | null
           name?: string | null
@@ -293,6 +295,7 @@ export type Database = {
           device_identifier?: string
           fail_safe_state?: string
           id?: string
+          installation_id?: string | null
           is_simulated?: boolean
           last_seen_at?: string | null
           name?: string | null

@@ -214,6 +214,29 @@ firmware ever timestamps sensors independently within a cycle, this grouping
 will split what should be one `TelemetryRecord` into several. Revisit
 `groupReadingsIntoTelemetry` in `backend/src/lib/mappers.ts` if that changes.
 
+**Two-board pairing** (`docs/TWO_BOARD_SYNC_AND_MERGE.md`, Fix 2): when the
+pre-filtration and post-filtration stages are reported by two separate
+devices that share `devices.installation_id`, their cycles are merged into
+one record:
+
+1. same installation + same `test_run_id` + identical `measured_at` →
+   `"pairing": "exact"`;
+2. otherwise the nearest partner within `TELEMETRY_PAIR_TOLERANCE_MS`
+   (default 30000, provisional — `TBD`; `0` = exact only) →
+   `"pairing": "nearest"`;
+3. no partner → a half row, `"pairing": "unpaired"`.
+
+Each cycle is used at most once and values are never carried forward.
+Devices without an `installation_id`, and devices that report both stages
+themselves, keep the per-device rows (`"pairing": "single-device"`). A merged
+row's `timestamp` is the pre-filtration cycle's `measured_at`; both original
+times are kept. Merged rows are time-aligned, not experimentally matched
+samples (the pre→post transit offset is `TBD`). Pairing only sees the rows on
+the current page, so a partner just past `limit` shows as unpaired. With
+`stage` or `deviceId` filters only one side is loaded, so no pairing occurs.
+`GET /telemetry/chart` and `GET /realtime/stream` still group by exact
+`measured_at` only.
+
 **`totalVolume`** (from `SensorParameter`) is intentionally never populated
 by these endpoints — it isn't one of the five confirmed sensor categories
 (`ph, turbidity, tds, temperature, flow_rate` per `REQUIREMENTS.md`). Use
@@ -238,8 +261,35 @@ Query: `from`, `to` (on `measured_at`), `testRunId`, `deviceId`, `parameter`
 ]
 ```
 
-`id` is an opaque composite key (`deviceId|testRunId|measuredAt`, URL-encode
-it before using it in a path) — pass it straight to `GET /telemetry/:id`.
+Two-board installation (merged row, synthetic example):
+
+```json
+{
+  "id": "PRE_DEVICE_ID||2026-11-18T03:37:00+00:00~POST_DEVICE_ID||2026-11-18T03:37:00+00:00",
+  "timestamp": "2026-11-18T03:37:00+00:00",
+  "testRunId": null,
+  "deviceId": "PRE_DEVICE_ID",
+  "deviceDisplayId": "Device 0006 + Device 0007",
+  "before": { "pH": 6.72 },
+  "after": { "pH": 7.06 },
+  "pairing": "exact",
+  "installationId": "INSTALLATION_ID",
+  "beforeDeviceId": "PRE_DEVICE_ID",
+  "afterDeviceId": "POST_DEVICE_ID",
+  "beforeDeviceDisplayId": "Device 0006",
+  "afterDeviceDisplayId": "Device 0007",
+  "beforeMeasuredAt": "2026-11-18T03:37:00+00:00",
+  "afterMeasuredAt": "2026-11-18T03:37:00+00:00",
+  "pairGapSeconds": 0
+}
+```
+
+The pairing fields are additive; existing clients can ignore them.
+`pairGapSeconds` is `afterMeasuredAt - beforeMeasuredAt` (null for a half row).
+
+`id` is an opaque composite key (`deviceId|testRunId|measuredAt`, or two of
+them joined by `~` for a merged row; URL-encode it before using it in a path)
+— pass it straight to `GET /telemetry/:id`.
 
 ### `GET /telemetry/current`
 
@@ -263,8 +313,9 @@ fragile than fixing it in one place.
 
 ### `GET /telemetry/:id`
 
-Detail for one grouped record (same shape as one `GET /telemetry` entry).
-`404` if no readings match that composite id.
+Detail for one grouped record (same shape as one `GET /telemetry` entry),
+including merged two-board ids. `400` for a malformed id, `404` if no
+readings match it.
 
 ### `GET /telemetry/chart`
 

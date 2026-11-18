@@ -30,7 +30,10 @@ export type DataRetentionPolicyRow = Tables<'data_retention_policy'>
 // Shape returned when a query embeds the owning sensor's display fields —
 // used everywhere a reading/calibration row is joined to `sensors`.
 export type SensorSummary = Pick<SensorRow, 'category' | 'position' | 'unit'>
-export type SensorReadingWithSensor = SensorReadingRow & TestRunReference & { sensor: SensorSummary | null; device?: NumberedRecord | null }
+// `installation_id` is embedded so two boards of one filtration unit can be
+// merged into one before/after record (see groupReadingsIntoTelemetry).
+export type ReadingDeviceSummary = NumberedRecord & { installation_id?: string | null }
+export type SensorReadingWithSensor = SensorReadingRow & TestRunReference & { sensor: SensorSummary | null; device?: ReadingDeviceSummary | null }
 export type CalibrationRecordWithSensor = CalibrationRecordRow & { sensor: SensorSummary | null }
 export type MaintenanceRecordWithPerformer = MaintenanceRecordRow & {
   performer: Pick<ProfileRow, 'full_name' | 'email'> | null
