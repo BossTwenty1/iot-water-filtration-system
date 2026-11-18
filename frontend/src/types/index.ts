@@ -32,6 +32,9 @@ export interface TelemetryRecord {
   deviceId: string
   before: Partial<Record<SensorParameter, number>>
   after: Partial<Record<SensorParameter, number>>
+  // Sent by backends with two-board pairing (devices.installation_id);
+  // absent on older backends.
+  installationId?: string | null
 }
 
 export interface TestRun {

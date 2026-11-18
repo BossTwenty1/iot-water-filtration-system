@@ -20,3 +20,14 @@ Read-only production checks found typical within-board intervals of roughly 60â€
 The after device cb06c51a-83db-4940-b6cc-19f6d52fcde7 had only temperature registered. Added missing post_filtration metadata for ph (pH), tds (ppm), turbidity (NTU), and flow_rate (L/min), retaining the original temperature registration. No readings, calibration, thresholds, pins or hardware specifications were created or modified. Registration allows future correctly formed payload entries to be accepted; it cannot recover previously skipped readings or make faulty sensors valid. The before board's latest stored TDS/turbidity statuses were fault with null values.
 
 Validation: frontend build/TypeScript, lint, scripts/check-board-readings.mjs and scripts/check-telemetry-display.mjs. Coverage includes independent stage requests, preserved timestamps, time-gap calculation, both columns in one rendered table, zero/missing readings, no carry-forward/mutation, missing-board/error/loading states.
+
+
+## Before and after on one row â€” 18 November 2026
+
+The history page's "Board recording history" table now shows each before-filtering record and after-filtering record on one row, so the two stages can be compared directly. Each measurement column reads `before / after`, and the device column names both boards.
+
+Pairing happens in the browser (`frontend/src/utils/pairBoardRecords.ts`) from the two stage queries the page already makes (`stage=before` and `stage=after`), so it works with the current backend. A before record is paired with the after record at the identical time, otherwise the nearest one within 30 seconds (provisional, `TBD`; the same default as the backend proposal in `docs/TWO_BOARD_SYNC_AND_MERGE.md`). Records are paired only within the same test run, and never across two different installations when the backend provides `installationId`. Each record is used once, and no older value is carried forward. A record without a partner stays on its own row, labeled "Before only" or "After only". A nonzero time difference is shown under the row time.
+
+Rows are time-aligned readings, not matched water samples. CSV export has one line per row and keeps both device UUIDs and both original recording times, plus the pairing type and the gap in seconds.
+
+Validation: frontend build (including TypeScript), lint, `node scripts/check-board-pairing.mjs`, `node scripts/check-telemetry-display.mjs` and `node scripts/check-board-readings.mjs`.

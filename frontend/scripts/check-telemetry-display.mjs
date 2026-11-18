@@ -10,6 +10,7 @@ const formatSource=await readFile(new URL('../src/utils/formatters.ts',import.me
 const compile=(source)=>ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText
 const load=(source)=>import(`data:text/javascript,${encodeURIComponent(compile(source))}`)
 const formatters=await load(formatSource)
+const pairing=await load(await readFile(new URL('../src/utils/pairBoardRecords.ts',import.meta.url),'utf8'))
 const record={id:'temperature-only',deviceId:'device-uuid',deviceDisplayId:'Device 0005',timestamp:'2026-11-17T11:49:53Z',testRunId:null,before:{},after:{temperature:25.12}}
 const fixtures={records:[record]}
 const telemetryService={getTelemetryHistory:()=>fixtures.records}
@@ -26,7 +27,7 @@ const boardResource=()=>({
  refreshing:false,refresh:async()=>{},
 })
 const bindings={
- usePermission:()=>canExport,...formatters,...services,useState:React.useState,
+ usePermission:()=>canExport,...formatters,...pairing,...services,useState:React.useState,
  useServiceData:(fn)=>({status:'success',data:fn()}),useBoardTelemetry:boardResource,
  downloadCsv:(_filename,rows)=>{exportRows=rows},
  ...Object.fromEntries(stubNames.map(n=>[n,Box])),
@@ -54,22 +55,48 @@ for(const page of ['HistoryPage','DashboardPage']){
  if(page==='HistoryPage'){
   exportClick()
   assert.equal(exportRows.length,1)
-  assert.equal(exportRows[0].device_id,'device-uuid')
+  assert.equal(exportRows[0].after_device_id,'device-uuid')
+  assert.equal(exportRows[0].before_device_id,undefined)
   assert.equal(exportRows[0].timestamp,record.timestamp)
   assert.equal(exportRows[0].after_temperature_c,25.12)
   assert.equal(exportRows[0].before_temperature_c,undefined)
+  assert.equal(exportRows[0].pairing,'unpaired')
+  assert.match(html,/After only/)
+
+  // Two boards further apart than the pairing window stay separate half rows.
   const pre={...record,id:'pre-cycle',deviceId:'pre-board',deviceDisplayId:'Device 0001',timestamp:'2026-11-17T11:48:59Z',before:{pH:5.72,temperature:26.25},after:{}}
   fixtures.records=[pre,record]
   html=render()
-  assert.match(html,/<td>Before filtering<\/td>/)
-  assert.match(html,/<td>After filtering<\/td>/)
   assert.match(html,/26\.25/)
   assert.match(html,/25\.12/)
-  assert.doesNotMatch(html,/Before \/ After/)
+  assert.match(html,/Before only/)
   exportClick()
   assert.equal(exportRows.length,2)
-  assert.equal(exportRows.find(row=>row.device_id==='pre-board').timestamp,pre.timestamp)
-  assert.equal(exportRows.find(row=>row.device_id==='device-uuid').before_temperature_c,undefined)
+  assert.equal(exportRows.find(row=>row.before_device_id==='pre-board').timestamp,pre.timestamp)
+  assert.equal(exportRows.find(row=>row.after_device_id==='device-uuid').before_temperature_c,undefined)
+
+  // Same recording time: before and after share ONE row, values side by side.
+  const alignedPre={...pre,id:'aligned-pre',timestamp:record.timestamp}
+  fixtures.records=[alignedPre,record]
+  html=render()
+  const bodyRows=html.split('<tbody>')[1].split('</tbody>')[0].match(/<tr/g)??[]
+  assert.equal(bodyRows.length,1,'before and after on the same row')
+  assert.match(html,/Device 0001 \/ Device 0005/)
+  assert.match(html,/26\.25<\/span><span class="text-muted" aria-hidden="true"> \/ <\/span><span class="text-hydro">25\.12/)
+  assert.doesNotMatch(html,/Before only|After only/)
+  exportClick()
+  assert.equal(exportRows.length,1)
+  assert.equal(exportRows[0].pairing,'exact')
+  assert.equal(exportRows[0].before_device_id,'pre-board')
+  assert.equal(exportRows[0].after_device_id,'device-uuid')
+  assert.equal(exportRows[0].before_temperature_c,26.25)
+  assert.equal(exportRows[0].after_temperature_c,25.12)
+
+  // Within the window but not identical: one row, with the time gap shown.
+  fixtures.records=[{...pre,id:'near-pre',timestamp:'2026-11-17T11:49:40Z'},record]
+  html=render()
+  assert.equal((html.split('<tbody>')[1].split('</tbody>')[0].match(/<tr/g)??[]).length,1)
+  assert.match(html,/After recorded \+13 s/)
   canExport=false;exportRows=null;render();exportClick()
   assert.equal(exportRows,null,'CSV permissions remain enforced')
   canExport=true
