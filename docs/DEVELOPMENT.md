@@ -68,7 +68,43 @@ The example API base is `http://localhost:3000/api/v1`; include the API prefix.
 Use HTTPS for production API requests. The build command includes TypeScript
 checking; lint uses Oxlint. No frontend test script is currently configured.
 
+### Local frontend/backend connection
+
+The backend's `CORS_ORIGIN` accepts comma-separated exact origins. Configuring
+`http://localhost:5173` or `http://127.0.0.1:5173` allows both Vite loopback
+addresses. Other ports and unrelated origins remain disallowed. A production-only
+configuration does not implicitly allow loopback. CORS is not authentication;
+protected routes still require a verified bearer token.
+
+For an API running locally on port 3000, put only
+`VITE_API_BASE_URL=http://localhost:3000/api/v1` in ignored `frontend/.env.local`
+and restart Vite. Backend credentials belong only in ignored `backend/.env`,
+entered privately, never in frontend configuration or source control.
+The existing API startup also runs a device watchdog and retention purge job;
+use only an explicitly approved test database and review its retention policy
+before starting it. No seed, reset, migration or purge command is required for
+frontend configuration.
+
+Supabase project/database ownership is separate from application authentication.
+Login requires an existing Supabase Auth account with its account password;
+application role comes from `profiles.role` (`Administrator`, `Researcher`, or
+`Viewer`), not database ownership. An email/account update reported by a teammate
+is not live login verification. Test using the exact email they configured.
+
 ### Authentication and route behavior
+
+The login page probes the public `/api/v1/health` endpoint before enabling Sign in.
+It shows a free-hosting wake-up notice, retries failed probes every five seconds,
+and stops after 90 seconds. Users can enter credentials during startup or retry
+the connection afterward without losing their inputs. Only health GETs are
+retried; authentication requests and existing session/RBAC behavior are unchanged.
+Cancellation clears the request and timers when the page is left. This is a
+frontend usability improvement, not a keep-alive service or a cold-start removal.
+
+History record inspection follows the existing 1050px stacked-layout breakpoint:
+Inspect selects the row, scrolls to the inspector below the sticky header, and
+moves focus into the inspector region. Back to records returns to the triggering
+button. Desktop selection stays in place; reduced-motion scrolling is immediate.
 
 `/login` is outside the protected shell. Dashboard, History, Alerts, Test Runs,
 Calibration, Laboratory Validation, Maintenance, and Settings require a session.
@@ -104,3 +140,81 @@ See the [frontend README](../frontend/README.md) for route paths and setup, and
 the [backend API reference](../backend/docs/API_REFERENCE.md) for implemented
 endpoints. Shared API/database draft status statements require separate team
 reconciliation; this update does not approve new contracts or remove TBD items.
+
+## 4. Render free-hosting preparation
+
+Use separate services from `BossTwenty1/iot-water-filtration-system`, branch
+`feature/user-management-rbac`: a Static Site for the frontend and a Free Node
+Web Service for the backend. Keep Auto-Deploy **Off** and PR previews disabled.
+Creating either service triggers its initial deployment, so obtain explicit
+approval before clicking Create. Do not reuse services belonging to other apps.
+
+| Setting | Frontend Static Site | Backend Web Service |
+| --- | --- | --- |
+| Root directory | `frontend` | `backend` |
+| Build command | `npx --yes pnpm@9.15.9 install --frozen-lockfile --prod=false && npm run build` | `npx --yes pnpm@9.15.9 install --frozen-lockfile --prod=false && npm run build` |
+| Publish directory | `dist` | Not applicable |
+| Start command | Not applicable | `npm start` |
+| Health check | Not applicable | `/api/v1/health` |
+
+Set `NODE_VERSION=24.21.0` for both services. The build command explicitly uses
+pnpm 9.15.9, compatible with the existing version-9 lockfiles, rather than relying
+on Render's package-manager default or an undocumented version environment
+variable. npm only executes the existing build/start scripts; it does not install
+application dependencies. Include dev dependencies during builds because
+TypeScript and Vite are build tools. The backend has no npm lockfile, so do not
+use `npm ci` there. The remote Linux dependency installation remains Not Confirmed
+until an approved initial deploy; no dependency build-script policy was changed
+on the local machine.
+
+The frontend needs only the public API setting
+`VITE_API_BASE_URL=https://<approved-backend-host>/api/v1`. Vite embeds this at
+build time; changing it requires a new approved build. Add a Static Site rewrite
+from `/*` to `/index.html` (Rewrite, not Redirect) for React Router refreshes.
+Never add backend credentials or a Supabase service-role key to this site.
+
+The backend needs private `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and
+`DEVICE_INGEST_KEY` values, `SUPABASE_URL=https://hxqshgajtithvuftnizo.supabase.co`,
+`CORS_ORIGIN=https://<approved-frontend-host>` (exact origin, no path or trailing
+slash), and `NODE_ENV=production`. Render supplies `PORT`; the backend prefers
+it over the local `BACKEND_PORT` fallback. The existing listener accepts external
+connections; do not use `vite preview` as a hosted server. `DATABASE_URL` is not
+used by the running API and is not required for this service. Keep migration,
+seed, simulation, and bootstrap commands out of build/start/pre-deploy commands.
+
+Optional timing settings retain their existing defaults:
+`SSE_POLL_INTERVAL_MS=3000`, `DEVICE_WATCHDOG_INTERVAL_MS=10000`,
+`DEVICE_OFFLINE_TIMEOUT_MS=30000`, and `RETENTION_JOB_INTERVAL_MS=86400000`.
+Background jobs are disabled by default. Only `BACKGROUND_JOBS_ENABLED=true`
+starts the device watchdog and immediately checks retention; keep it disabled
+for the Render development demo. Retention can delete old readings if a policy
+is configured. Review
+these existing data-writing jobs before authorizing hosted startup. Do not start
+a second API instance against the same database without coordinating the jobs.
+
+Do not connect or deploy this RBAC backend to hosted Supabase before separate
+approval of the migration and rollout. The safe sequence is recovery checkpoint,
+reviewed RBAC migration, separately authorized initial Super Administrator
+bootstrap, compatible backend, frontend, then approved hosted smoke checks.
+Existing Administrators must not be silently promoted. Service-role credentials
+must be entered privately in the backend service only after that approval.
+
+Render provides public HTTPS URLs. The hosted frontend must use the backend's
+public HTTPS URL, not localhost or Render's private-network hostname. Hosted
+login, CORS, deep-link refresh, and Supabase connectivity remain Not Confirmed
+until the services are approved and deployed.
+
+Free web services sleep after 15 minutes without inbound traffic and can take
+about a minute to wake up; the Static Site does not sleep. Open the API health
+page before the defense and allow it to warm up. Free hosting is suitable for
+the capstone demo, not an always-on telemetry collector or durable scheduler.
+Monthly free instance hours are shared across the workspace's Free web services;
+existing services also consume that allowance. No Render database is needed.
+
+## Client revisions and password recovery
+
+Readable IDs, simple English, detail modals, Manila date/time formatting, and
+editable system names are supported. Lab and sensor-check pages are temporarily
+unavailable. Existing Super Administrator permissions and Users & Access stay
+enabled. Public `/forgot-password` and `/reset-password` pages use the existing
+API recovery routes; see [password recovery setup](PASSWORD_RECOVERY.md).

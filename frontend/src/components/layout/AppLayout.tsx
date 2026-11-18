@@ -37,7 +37,7 @@ export function AppLayout(){
     <Sidebar expanded={sidebarExpanded} onToggle={()=>setSidebarExpanded((value)=>!value)}/>
     {mobileOpen&&<>
       <Sidebar mobile open expanded drawerRef={mobileDrawerRef} onClose={()=>setMobileOpen(false)}/>
-      <button type="button" className="sidebar-backdrop" aria-label="Close navigation" onClick={()=>setMobileOpen(false)}/>
+      <button type="button" className="sidebar-backdrop" aria-label="Close menu" onClick={()=>setMobileOpen(false)}/>
     </>}
     <div className={`app-main ${sidebarExpanded?'lg:ml-64':'lg:ml-20'}`}>
       <Header menuButtonRef={menuButtonRef} mobileOpen={mobileOpen} theme={theme} onMenu={()=>setMobileOpen(true)} onThemeToggle={toggleTheme}/>

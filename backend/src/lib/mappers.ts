@@ -1,3 +1,4 @@
+import { displayId, type NumberedRecord } from './displayIds'
 // Converts Supabase rows (snake_case, normalized) into the exact JSON shapes
 // frontend/src/types/index.ts describes (mirrored in src/types/domain.ts),
 // so each mock service in frontend/src/services/*.ts can be pointed at these
@@ -75,11 +76,13 @@ export function stageToPosition(stage: string): string {
 export function toAlert(row: AlertRow): SystemAlert {
   return {
     id: row.id,
+    displayId: displayId('Alert', row.display_number),
     timestamp: row.triggered_at,
     severity: (row.severity ?? 'Information') as SystemAlert['severity'],
     source: row.source,
     title: row.title,
     message: row.message,
+    testRunDisplayId: displayId('Test', row.test_run?.display_number),
     testRunId: row.test_run_id ?? undefined,
     status: (row.status ?? 'Active') as SystemAlert['status'],
   }
@@ -97,6 +100,7 @@ export interface TestRunComputedFields {
 export function toTestRun(row: TestRunRow & TestRunComputedFields): TestRun {
   return {
     id: row.id,
+    displayId: displayId('Test', row.display_number),
     startedAt: row.started_at,
     endedAt: row.ended_at ?? undefined,
     duration: row.duration,
@@ -114,6 +118,7 @@ export function toCalibrationRecord(row: CalibrationRecordWithSensor): Calibrati
   const params = (row.parameters as CalibrationParameters | null) ?? {}
   return {
     id: row.id,
+    displayId: displayId('Sensor check', row.display_number),
     date: row.performed_at,
     parameter: categoryToParameter(sensor?.category) as CalibrationRecord['parameter'],
     stage: positionToStage(sensor?.position),
@@ -130,7 +135,9 @@ export function toLaboratoryValidationRecord(row: LaboratoryValidationRecordRow)
   const results = (row.results as LaboratoryValidationResults | null) ?? {}
   return {
     id: row.id,
+    displayId: displayId('Lab record', row.display_number),
     date: row.validated_at,
+    testRunDisplayId: displayId('Test', row.test_run?.display_number),
     testRunId: row.test_run_id,
     sampleId: row.sample_reference,
     stage: results.stage,
@@ -147,6 +154,7 @@ export function toLaboratoryValidationRecord(row: LaboratoryValidationRecordRow)
 export function toMaintenanceRecord(row: MaintenanceRecordWithPerformer): MaintenanceRecord {
   return {
     id: row.id,
+    displayId: displayId('Maintenance', row.display_number),
     date: row.occurred_at,
     component: row.component,
     type: row.type,
@@ -160,6 +168,7 @@ export function toMaintenanceRecord(row: MaintenanceRecordWithPerformer): Mainte
 export function toMaintenanceReminder(row: MaintenanceReminderRow): MaintenanceReminder {
   return {
     id: row.id,
+    displayId: displayId('Reminder', row.display_number),
     component: row.component,
     label: row.label,
     dueDate: row.due_date,
@@ -167,12 +176,13 @@ export function toMaintenanceReminder(row: MaintenanceReminderRow): MaintenanceR
   }
 }
 
-type UserLike = Pick<ProfileRow, 'id'> & Partial<Pick<ProfileRow, 'full_name' | 'email' | 'role' | 'status'>>
+type UserLike = NumberedRecord & Pick<ProfileRow, 'id'> & Partial<Pick<ProfileRow, 'full_name' | 'email' | 'role' | 'status'>>
 
 export function toUser(row: UserLike): User {
   return {
     id: row.id,
-    name: row.full_name ?? row.email ?? row.id,
+    displayId: displayId('User', row.display_number),
+    name: row.full_name?.trim() || row.email?.trim() || displayId('User', row.display_number) || 'Unnamed user',
     email: row.email ?? '',
     role: (row.role ?? 'Viewer') as User['role'],
     status: row.status ?? 'Active',
@@ -182,6 +192,7 @@ export function toUser(row: UserLike): User {
 export function toDeviceStatus(row: DeviceRow & { latestReadingAt?: string | null }): DeviceStatus {
   return {
     deviceId: row.id,
+    displayId: displayId('Device', row.display_number),
     controller: row.controller_name ?? row.name ?? 'Unknown Controller',
     connection: row.connection_state ?? 'Pending Hardware Integration',
     wifiConnection: row.wifi_state ?? 'Not Configured',
@@ -215,7 +226,9 @@ export function groupReadingsIntoTelemetry(rows: SensorReadingWithSensor[]): Tel
         id: key,
         timestamp: row.measured_at,
         testRunId: row.test_run_id,
+        testRunDisplayId: displayId('Test', row.test_run?.display_number),
         deviceId: row.device_id,
+        deviceDisplayId: displayId('Device', row.device?.display_number),
         before: {},
         after: {},
       })

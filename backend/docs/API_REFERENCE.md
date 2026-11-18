@@ -88,13 +88,26 @@ invalid/expired.
 
 ### `POST /auth/password-reset/request` / `POST /auth/password-reset/confirm`
 
-Optional flow, present per the plan's "if wanted" note.
+Public recovery flow used by the login page's **Forgot password?** link.
 
-- `request` body: `{ "email": "..." }` → `204` (sends a reset email via
-  whatever Supabase Auth SMTP config is active — nothing is configured for
-  this locally beyond Mailpit).
+- `request` body: `{ "email": "..." }` → `204`. Registered and unknown
+  addresses receive the same empty success response. Email is trimmed and
+  validated. Delivery uses the Supabase Auth email settings.
 - `confirm` body: `{ "accessToken": "...", "newPassword": "..." }` → `204`.
   `accessToken` is the token embedded in the reset-email link.
+
+No old password or dashboard session is required. The server verifies the
+token with Supabase and updates that account using its own bearer token and
+the anonymous API key, never the administrative key. The password must have
+at least six characters; Supabase's configured password rules also apply.
+`400` means invalid input/password, `401` an invalid or expired link, `429`
+too many requests, and `503` a provider/email service failure.
+
+Set backend `PASSWORD_RESET_REDIRECT_URL` to the frontend's `/reset-password`
+URL, and allow that exact URL in Supabase Auth. The fallback uses the first
+configured `CORS_ORIGIN` plus `/reset-password`. Caller-provided redirects
+are ignored. See [password recovery setup](../../docs/PASSWORD_RECOVERY.md)
+for email configuration and the outstanding delivery checks.
 
 ## Error format
 
@@ -356,7 +369,10 @@ below.
 
 `TestRun.duration`, `.telemetryCount`, `.alertCount`, and `.validationStatus`
 are **computed on read**, not stored columns — see
-`backend/src/lib/testRunHydrator.ts`. `validationStatus` is `"Available"` if
+`backend/src/lib/testRunHydrator.ts`. Durations below one hour use `MMm SSs`;
+at 60 minutes they use `Hh MMm SSs` (for example, `15h 55m 36s` instead of
+`955m 36s`). Hours continue above 24; start/end timestamps are unchanged.
+`validationStatus` is `"Available"` if
 any linked `laboratory_validation_records` row has a `percentage_error` or a
 `results.referenceResult`, else `"Pending"`. `processedVolume` currently
 falls back to `target_volume_liters` (or `0`) — there's no flow-integration
@@ -923,6 +939,32 @@ continuous HTTP telemetry feed to exercise SSE/live surfaces, see
 automated tests instead of manual poking, see `docs/TESTING.md` (`npm test`).
 
 ---
+
+## Readable record IDs
+
+The approved October 27, 2026 readable-ID change adds `displayId` to device
+status, test, alert, calibration, lab, maintenance/reminder, and user objects.
+Examples are `Device 0001`, `Test 0001`, `Alert 0001`, `Sensor check 0001`,
+`Lab record 0001`, `Maintenance 0001`, `Reminder 0001`, and `User 0001`.
+Raw device rows also contain their new database `display_number` column.
+
+Alerts and lab records include the referenced test's `testRunDisplayId`;
+grouped telemetry includes `testRunDisplayId` and `deviceDisplayId`. List,
+detail, write-result, and streaming responses use the same labels. Left joins
+preserve records with null relationships. Request UUIDs and the grouped
+telemetry key are unchanged. Use the original UUID for note/status updates,
+filters and device ingestion, never a display label.
+
+The frontend labels `Acknowledged` alerts as **Pending** and uses **Mark as
+pending** for `/acknowledge`. It labels `Resolved` as **Resolved** and uses
+**Mark as resolved** for `/resolve`. Stored/API status values and the audit
+history remain unchanged. Pending alerts stay open; neither action controls
+equipment or proves the underlying fault is fixed.
+
+Schema migration: `supabase/migrations/20261027090000_readable_display_ids.sql`.
+Run `npm test` for mapper/API checks and `npm run build` for type checking.
+The SQL assertions in `supabase/tests/readable_display_ids.sql` run after the
+migration against an isolated temporary table and finish with `ROLLBACK`.
 
 ## Origin
 

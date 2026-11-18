@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express'
+import { verifySession } from '../middleware/auth'
 
 // Minimal Server-Sent Events helper. Chosen over WebSocket (see
 // API_ROUTES PLAN.md's "Real-time strategy note") because it needs no new
@@ -7,7 +8,16 @@ import type { Request, Response } from 'express'
 // only, so SSE's one-way stream is sufficient.
 
 export interface SseSender {
-  send: (event: string, data: unknown) => void
+  send: (event: string, data: unknown) => Promise<void>
+}
+
+export async function streamAuthorized(req: Request, res: Response): Promise<boolean> {
+  if (res.writableEnded || res.destroyed) return false
+  try { await verifySession(req.authToken ?? ''); return !res.writableEnded && !res.destroyed }
+  catch {
+    if (!res.writableEnded && !res.destroyed) res.end('event: error\ndata: {"message":"Session is unavailable. Sign in again.","status":401}\n\n')
+    return false
+  }
 }
 
 export function startSseStream(req: Request, res: Response): SseSender {
@@ -19,14 +29,15 @@ export function startSseStream(req: Request, res: Response): SseSender {
   })
   res.flushHeaders?.()
 
-  const send = (event: string, data: unknown) => {
+  const send = async (event: string, data: unknown) => {
+    if (!await streamAuthorized(req, res)) return
     res.write(`event: ${event}\n`)
     res.write(`data: ${JSON.stringify(data)}\n\n`)
   }
 
-  const heartbeat = setInterval(() => res.write(': heartbeat\n\n'), 15000)
+  const heartbeat = setInterval(() => { void streamAuthorized(req, res).then(allowed => { if (allowed) res.write(': heartbeat\n\n') }) }, 15000)
 
-  req.on('close', () => {
+  res.on('close', () => {
     clearInterval(heartbeat)
     res.end()
   })
@@ -68,16 +79,17 @@ export function pollAndStream<TRow extends { [key: string]: any }, TPayload = TR
 
   const tick = async () => {
     try {
+      if (!await streamAuthorized(req, res)) return
       const rows = await fetchLatest(cursor)
       if (rows?.length) {
-        send(event, transform ? transform(rows) : rows)
+        await send(event, transform ? transform(rows) : rows)
         cursor = rows.reduce((max, row) => (String(row[cursorField]) > max ? String(row[cursorField]) : max), cursor)
       }
     } catch (err) {
-      send('error', { message: err instanceof Error ? err.message : 'Unknown error' })
+      await send('error', { message: 'Stream update unavailable. Please retry.' })
     }
   }
 
   const timer = setInterval(tick, intervalMs)
-  req.on('close', () => clearInterval(timer))
+  res.on('close', () => clearInterval(timer))
 }

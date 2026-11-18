@@ -3,18 +3,21 @@ import { Navigate,Outlet,Route,Routes,useLocation } from 'react-router-dom'
 import { AppLayout } from './components/layout/AppLayout'
 import { useAuth } from './hooks/useAuth'
 import { LoginPage } from './pages/LoginPage'
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
+import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { restoreSession } from './services/apiClient'
 
 const DashboardPage=lazy(()=>import('./pages/DashboardPage').then((module)=>({default:module.DashboardPage})))
 const HistoryPage=lazy(()=>import('./pages/HistoryPage').then((module)=>({default:module.HistoryPage})))
 const AlertsPage=lazy(()=>import('./pages/AlertsPage').then((module)=>({default:module.AlertsPage})))
 const TestRunsPage=lazy(()=>import('./pages/TestRunsPage').then((module)=>({default:module.TestRunsPage})))
-const CalibrationPage=lazy(()=>import('./pages/CalibrationPage').then((module)=>({default:module.CalibrationPage})))
-const LaboratoryValidationPage=lazy(()=>import('./pages/LaboratoryValidationPage').then((module)=>({default:module.LaboratoryValidationPage})))
+const CalibrationPage=lazy(()=>import('./pages/CalibrationPage').then((module)=>({default:module.CalibrationUnavailablePage})))
+const LaboratoryValidationPage=lazy(()=>import('./pages/LaboratoryValidationPage').then((module)=>({default:module.LaboratoryValidationUnavailablePage})))
 const MaintenancePage=lazy(()=>import('./pages/MaintenancePage').then((module)=>({default:module.MaintenancePage})))
+const UsersPage=lazy(()=>import('./pages/UsersPage').then((module)=>({default:module.UsersPage})))
 const SettingsPage=lazy(()=>import('./pages/SettingsPage').then((module)=>({default:module.SettingsPage})))
 
-function PageLoading() { return <div className="panel p-6 text-sm text-muted" role="status">Loading research console…</div> }
+function PageLoading() { return <div className="panel p-6 text-sm text-muted" role="status">Loading dashboard…</div> }
 
 function RequireAuth(){
   const auth=useAuth()
@@ -25,6 +28,7 @@ function RequireAuth(){
 }
 
 export default function App() {
+  const location=useLocation()
   useEffect(()=>{void restoreSession()},[])
-  return <Suspense fallback={<PageLoading/>}><Routes><Route path="login" element={<LoginPage/>}/><Route element={<RequireAuth/>}><Route element={<AppLayout/>}><Route index element={<Navigate to="/dashboard" replace/>}/><Route path="dashboard" element={<DashboardPage/>}/><Route path="history" element={<HistoryPage/>}/><Route path="alerts" element={<AlertsPage/>}/><Route path="test-runs" element={<TestRunsPage/>}/><Route path="calibration" element={<CalibrationPage/>}/><Route path="laboratory-validation" element={<LaboratoryValidationPage/>}/><Route path="maintenance" element={<MaintenancePage/>}/><Route path="settings" element={<SettingsPage/>}/><Route path="*" element={<Navigate to="/dashboard" replace/>}/></Route></Route></Routes></Suspense>
+  return <Suspense fallback={<PageLoading/>}><Routes><Route path="login" element={<LoginPage/>}/><Route path="forgot-password" element={<ForgotPasswordPage/>}/><Route path="reset-password" element={<ResetPasswordPage key={location.hash}/>}/><Route element={<RequireAuth/>}><Route element={<AppLayout/>}><Route index element={<Navigate to="/dashboard" replace/>}/><Route path="dashboard" element={<DashboardPage/>}/><Route path="history" element={<HistoryPage/>}/><Route path="alerts" element={<AlertsPage/>}/><Route path="test-runs" element={<TestRunsPage/>}/><Route path="calibration" element={<CalibrationPage/>}/><Route path="laboratory-validation" element={<LaboratoryValidationPage/>}/><Route path="maintenance" element={<MaintenancePage/>}/><Route path="settings" element={<SettingsPage/>}/><Route path="users" element={<UsersPage/>}/><Route path="*" element={<Navigate to="/dashboard" replace/>}/></Route></Route></Routes></Suspense>
 }

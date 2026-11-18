@@ -122,12 +122,12 @@ Critical local control does not depend on these decisions.
 
 ## 9. Users and Authorization
 
-- final user roles — `TBD`
-- administrator permissions — `TBD`
-- normal user permissions — `TBD`
+- final user roles — resolved: Super Administrator, Administrator, Researcher, Viewer; see [RBAC](RBAC.md).
+- administrator permissions — resolved for approved software actions; see [RBAC](RBAC.md).
+- normal user permissions — resolved: Viewer read-only, Researcher permitted record writes/export.
 - who may operate remote controls — `TBD`
-- who may edit laboratory results — `TBD`
-- who may edit thresholds/configuration — `TBD`
+- who may edit laboratory records — Researcher and above; final scientific approval/workflow remains `TBD`.
+- who may edit approved application settings — Administrator and above. Threshold/hardware configuration remains `TBD` and denied to all roles.
 
 ---
 
