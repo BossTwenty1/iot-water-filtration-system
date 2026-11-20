@@ -2,8 +2,9 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <string.h>
 
-#include "config.h"
+#include "net_config.h"
 
 namespace {
 
@@ -33,6 +34,41 @@ void WifiManager::begin(const char* ssid, const char* password, uint32_t nowMs) 
 
   backoffMs_ = config::kWifiRetryBackoffInitialMs;
   startAttempt(nowMs);
+}
+
+void WifiManager::connectTo(const char* ssid, const char* password) {
+  if (ssid == nullptr || ssid[0] == '\0') {
+    stop();
+    return;
+  }
+  strlcpy(manualSsid_, ssid, sizeof(manualSsid_));
+  strlcpy(manualPassword_, password ? password : "", sizeof(manualPassword_));
+  ssid_ = manualSsid_;
+  password_ = manualPassword_;
+
+  WiFi.persistent(false);
+  WiFi.mode(WIFI_STA);
+  WiFi.setAutoReconnect(false);
+  WiFi.disconnect();  // Drop the old association, keep the radio on.
+  // The driver updates its status asynchronously: wait until it stops reporting the
+  // OLD connection, or loop() would mistake it for success on the new network.
+  for (uint8_t i = 0; i < 50 && WiFi.status() == WL_CONNECTED; ++i) {
+    delay(10);
+  }
+
+  backoffMs_ = config::kWifiRetryBackoffInitialMs;
+  attemptCount_ = 0;
+  startAttempt(millis());
+}
+
+void WifiManager::stop() {
+  if (state_ != State::kDisabled) {
+    Serial.println(F("[wifi] stopped - Wi-Fi off"));
+  }
+  state_ = State::kDisabled;
+  if (WiFi.getMode() != WIFI_OFF) {
+    WiFi.disconnect(true, false);  // radio off, stored AP config untouched
+  }
 }
 
 void WifiManager::loop(uint32_t nowMs) {

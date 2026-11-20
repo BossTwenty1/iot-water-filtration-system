@@ -26,8 +26,8 @@ __pycache__/
 *.bin
 *.elf
 *.map
-# ESP32 firmware credentials (template: firmware/esp32/include/secrets.example.h)
-firmware/esp32/include/secrets.h
+# ESP32 firmware credentials (template: firmware/esp32/FF/secrets.example.h)
+firmware/esp32/**/secrets.h
 
 # Local IDE and operating-system files
 .vscode/

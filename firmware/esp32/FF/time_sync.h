@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include <stdint.h>
 
 // UTC wall-clock time via SNTP.
 //
@@ -9,13 +10,14 @@
 // lwIP keeps re-syncing in the background, including across Wi-Fi reconnects.
 //
 // Until the first successful sync the clock is not trustworthy (it starts at
-// 1970), so formatUtcIso8601() refuses to produce a timestamp.
+// 1970), so formatUtcIso8601() refuses to produce a timestamp. HTTPS also
+// depends on it: certificate validity dates cannot be checked against 1970.
 class TimeSync {
  public:
-  // "YYYY-MM-DDTHH:MM:SSZ" + NUL, matching docs/API_CONTRACT.md §3.
+  // "YYYY-MM-DDTHH:MM:SSZ" + NUL.
   static constexpr size_t kIso8601BufferSize = 21;
 
-  // Call every main-loop iteration. Non-blocking.
+  // Call often. Non-blocking.
   void loop(bool wifiConnected);
 
   bool isSynced() const;
@@ -28,4 +30,6 @@ class TimeSync {
  private:
   bool started_ = false;
   bool loggedFirstSync_ = false;
+  bool warnedSlowSync_ = false;
+  uint32_t startedMs_ = 0;
 };

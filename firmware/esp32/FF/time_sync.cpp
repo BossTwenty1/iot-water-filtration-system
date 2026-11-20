@@ -7,11 +7,11 @@
 
 #include <atomic>
 
-#include "config.h"
+#include "net_config.h"
 
 namespace {
 
-// Set from the SNTP callback, which runs in the lwIP/tcpip task — keep it
+// Set from the SNTP callback, which runs in the lwIP/tcpip task - keep it
 // minimal and lock-free; logging happens later from loop().
 std::atomic<bool> gSynced{false};
 
@@ -25,6 +25,7 @@ void TimeSync::loop(bool wifiConnected) {
     // UTC only: the device reports UTC; local-time display is not in scope.
     configTzTime("UTC0", config::kNtpServerPrimary, config::kNtpServerSecondary);
     started_ = true;
+    startedMs_ = millis();
     Serial.printf("[time] SNTP started (%s, %s)\n", config::kNtpServerPrimary,
                   config::kNtpServerSecondary);
   }
@@ -34,6 +35,15 @@ void TimeSync::loop(bool wifiConnected) {
     char now[kIso8601BufferSize];
     formatUtcIso8601(now, sizeof(now));
     Serial.printf("[time] synced: %s\n", now);
+  }
+
+  // A network that blocks UDP port 123 or DNS never syncs, and without the time
+  // HTTPS cannot verify certificates. Say so once instead of failing silently.
+  if (started_ && !warnedSlowSync_ && !isSynced() &&
+      millis() - startedMs_ >= config::kTimeSyncWarnAfterMs) {
+    warnedSlowSync_ = true;
+    Serial.println(F("[time] no SNTP reply yet - check internet/DNS and that UDP port 123 is open. "
+                     "Uploads wait for the time."));
   }
 }
 

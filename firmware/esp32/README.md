@@ -1,57 +1,70 @@
-# ESP32 Firmware
+# ESP32 Firmware (two boards)
 
-Firmware for the ESP32-WROOM-32 in the IoT Water Filtration System.
-Built with PlatformIO, the Arduino framework, and C++.
+The Arduino sketch in [`FF/`](FF/) runs on both sensor boards. The board you
+compile for decides everything board-specific at compile time:
 
-## Current scope (foundation)
+| Board selected in Arduino IDE | Role | Uploads as | Backend device |
+|---|---|---|---|
+| ESP32 Dev Module (DevKit V1) | before filtration | `pre_filtration` | Device 0001 `d4b1601b-9355-4203-ac6e-2b84b28cbf50` |
+| ESP32S3 Dev Module (ESP32-S3) | after filtration | `post_filtration` | Device 0005 `cb06c51a-83db-4940-b6cc-19f6d52fcde7` |
 
-- Serial boot diagnostics and a periodic status line
-- Wi-Fi station with non-blocking auto-reconnect (capped exponential backoff)
-- NTP time sync, formatted as UTC ISO-8601 (`2026-09-14T14:30:00Z`)
-- HTTPS client skeleton that can POST JSON with verified TLS (structure only; not called yet)
+Pins are in `FF/board_config.h`, the stage in `FF/net_config.h`, and the
+device UUIDs in `FF/secrets.example.h`. The pin map is the team's current bench
+wiring; final pins are still `TBD` (docs/PENDING_DECISIONS.md).
 
-Not implemented, by design: GPIO assignments, sensor drivers, actuator control,
-thresholds, calibration, and cycle logic. These decisions are still open in
-[`docs/PENDING_DECISIONS.md`](../../docs/PENDING_DECISIONS.md). Search the
-code for `TODO(TBD)` to find each placeholder.
+## One-time setup
 
-## Setup
-
-1. Install PlatformIO Core, or the PlatformIO IDE extension for VS Code.
-2. Create your local secrets file (it is git-ignored):
+1. Install the Arduino IDE and the **esp32** board package by Espressif.
+2. Install these libraries (Library Manager): **ArduinoJson**, **OneWire**,
+   **DallasTemperature**, **LiquidCrystal I2C**, **NimBLE-Arduino**.
+   Library and core versions are not pinned yet (`TBD`).
+3. Create your settings file. It is git-ignored, so it never gets committed:
 
    ```sh
-   cp include/secrets.example.h include/secrets.h
+   cp firmware/esp32/FF/secrets.example.h firmware/esp32/FF/secrets.h
    ```
 
-   Fill in `WIFI_SSID` and `WIFI_PASSWORD`. Leave `API_BASE_URL` and
-   `API_ROOT_CA_PEM` empty until the backend host is decided. The API client
-   stays disabled until both are set.
-   **Never commit `secrets.h` or put real values in `secrets.example.h`.**
+   In `secrets.h`, set:
+   - `API_DEVICE_KEY`: the same value as `DEVICE_INGEST_KEY` on the backend
+     host. **Required.** Without it every upload is rejected with HTTP 401.
+   - `WIFI_SSID` / `WIFI_PASSWORD` (optional, 2.4 GHz only). You can also
+     connect from the board's menu (`3 = Wi-Fi`). A network saved there wins.
+   - `BLE_PIN` (optional, 4 to 8 digits) to allow phone control.
+   - `API_BASE_URL`: change it only if the backend is hosted at a different
+     address (see docs/DEPLOYMENT.md).
 
-   If `secrets.h` is missing, the firmware still builds. It uses the
-   placeholders, prints a compiler warning, and runs with Wi-Fi disabled.
+   Without `secrets.h` the sketch still compiles with a warning, but it cannot
+   upload anything.
 
-## Build / flash / monitor
+## Flash each board
 
-Run these from `firmware/esp32/`:
+1. Open `firmware/esp32/FF/FF.ino` in the Arduino IDE.
+2. **Tools → Board**: pick the board from the table above.
+3. Select the port and upload. If the build says the sketch is too big, pick
+   a larger app partition under **Tools → Partition Scheme**.
+4. Open the Serial Monitor at **115200** baud. Let the boot menu time out, or
+   press `1` (Run).
+5. Repeat for the other board.
 
-```sh
-pio run                    # build
-pio run -t upload          # flash over USB
-pio device monitor         # serial monitor at 115200 baud
+## Check that it uploads
+
+You should see these lines in the Serial Monitor about once a minute:
+
+```
+[api] POST https://.../api/v1/devices/<uuid>/readings - HTTP 201
+[telemetry] sent (... bytes)
 ```
 
-## Layout
-
-| Path | Purpose |
+| What you see | Meaning |
 |---|---|
-| `platformio.ini` | Build environment (`esp32dev`, Arduino framework, pinned platform version) |
-| `include/config.h` | Non-secret constants and provisional connectivity defaults |
-| `include/secrets.example.h` | Committed credential template |
-| `include/secrets_select.h` | Uses `secrets.h` if present, otherwise the example |
-| `src/main.cpp` | `setup()` / `loop()` wiring |
-| `src/boot_diagnostics.cpp` | Boot banner |
-| `src/wifi_manager.cpp` | Non-blocking Wi-Fi state machine |
-| `src/time_sync.cpp` | SNTP and the ISO-8601 formatter |
-| `src/api_client.cpp` | HTTPS POST skeleton |
+| `HTTP 401` | `API_DEVICE_KEY` does not match the backend's `DEVICE_INGEST_KEY` |
+| `HTTP 404` | wrong `API_BASE_URL`, or the device UUID is not in the database |
+| `HTTP 503` / transport error on the first try | free Render service waking up; the next minute usually works |
+| no `[api]` lines at all | Wi-Fi not connected, clock not synced yet, or the menu is open (uploads pause while the menu or calibration is open) |
+
+Run **both boards at the same time** if you want the history page to show
+before and after readings on the same row. Rows only pair when the two
+readings are within 30 seconds of each other.
+
+Sensor readings are for monitoring only. They do not show that the water is
+safe to drink.
