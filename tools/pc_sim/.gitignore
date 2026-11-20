@@ -1,0 +1,4 @@
+# Build outputs and upload logs from run_both.sh
+board_sim_pre
+board_sim_post
+*.log
