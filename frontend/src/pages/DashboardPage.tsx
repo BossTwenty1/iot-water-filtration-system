@@ -10,9 +10,11 @@ import { ProcessTopology } from '../components/telemetry/ProcessTopology'
 import { SensorGrid } from '../components/telemetry/SensorGrid'
 import { LatestBoardReadings } from '../components/telemetry/LatestBoardReadings'
 import { TelemetryChart,TelemetrySparkline } from '../components/telemetry/TelemetryChart'
+import { useBoardTelemetry } from '../hooks/useBoardTelemetry'
 import { useServiceData } from '../hooks/useServiceData'
 import { alertsService,deviceService,telemetryService,testRunsService } from '../services'
 import { formatDateTime,formatOptionalNumber,formatStatusLabel } from '../utils/formatters'
+import { pairBoardRecords } from '../utils/pairBoardRecords'
 
 type DashboardMetricCardProps={title:string;value:ReactNode;detail:ReactNode;icon:LucideIcon;trend?:ReactNode;className:string}
 
@@ -30,6 +32,8 @@ export function DashboardPage() {
   const runsResource=useServiceData(testRunsService.getTestRuns)
   const telemetryResource=useServiceData(telemetryService.getTelemetryHistory)
   const deviceResource=useServiceData(deviceService.getDeviceStatus)
+  // Same before/after board pairing as the History page, so the log shows both stages side by side.
+  const boardResource=useBoardTelemetry()
   const resources=[alertsResource,runsResource,telemetryResource,deviceResource]
   const unavailable=resources.find((resource)=>resource.status==='loading'||resource.status==='error')
 
@@ -46,6 +50,8 @@ export function DashboardPage() {
   const device=deviceResource.data
 
   const latest=telemetry[0]
+  const logRows=pairBoardRecords(boardResource.before.records,boardResource.after.records).slice(0,5)
+  const logLoading=boardResource.before.loading||boardResource.after.loading
 
   return <div className="page-grid">
     <PageHeader title="System Dashboard" description="View saved records. The device connection and where the readings came from have not been confirmed." badge="Saved records"/>
@@ -88,18 +94,17 @@ export function DashboardPage() {
         <SensorGrid stage="after"/>
       </SectionCard>
 
-      <SectionCard className="dashboard-span-12" title="Sensor reading log" description="Saved readings · — means no numeric value in this record; a row shows two devices when their before and after readings are paired">
+      <SectionCard className="dashboard-span-12" title="Sensor reading log" description="Latest saved readings · each row puts the before-filtering and after-filtering boards side by side (before / after); — means no numeric value">
         <div className="table-wrap"><table className="data-table">
-          <thead><tr><th>Time recorded</th><th>Device</th><th>Before pH</th><th>After pH</th><th>Before / After turbidity</th><th>Before / After TDS</th><th>Before / After flow</th><th>Before / After temperature (°C)</th></tr></thead>
-          <tbody>{telemetry.length===0&&<tr><td colSpan={8}>No sensor readings are available.</td></tr>}{telemetry.slice(0,5).map((record)=><tr key={record.id}>
-            <td className="mono">{formatDateTime(record.timestamp,true)}</td>
-            <td className="mono">{record.deviceDisplayId??'Not assigned'}</td>
-            <td className="mono">{formatOptionalNumber(record.before.pH)}</td>
-            <td className="mono">{formatOptionalNumber(record.after.pH)}</td>
-            <td className="mono">{formatOptionalNumber(record.before.turbidity)} / {formatOptionalNumber(record.after.turbidity)}</td>
-            <td className="mono">{formatOptionalNumber(record.before.TDS,0)} / {formatOptionalNumber(record.after.TDS,0)}</td>
-            <td className="mono">{formatOptionalNumber(record.before.flowRate,1)} / {formatOptionalNumber(record.after.flowRate,1)}</td>
-            <td className="mono">{formatOptionalNumber(record.before.temperature)} / {formatOptionalNumber(record.after.temperature)}</td>
+          <thead><tr><th>Time recorded</th><th>Devices (before / after)</th><th>pH</th><th>Turbidity (NTU)</th><th>TDS (ppm)</th><th>Flow (L/min)</th><th>Temperature (°C)</th></tr></thead>
+          <tbody>{logRows.length===0&&<tr><td colSpan={7}>{logLoading?'Loading sensor readings…':'No sensor readings are available.'}</td></tr>}{logRows.map((row)=><tr key={row.id}>
+            <td className="mono">{formatDateTime(row.timestamp,true)}</td>
+            <td className="mono">{row.before?.deviceDisplayId??'—'} / {row.after?.deviceDisplayId??'—'}</td>
+            <td className="mono whitespace-nowrap">{formatOptionalNumber(row.before?.before.pH)} / {formatOptionalNumber(row.after?.after.pH)}</td>
+            <td className="mono whitespace-nowrap">{formatOptionalNumber(row.before?.before.turbidity)} / {formatOptionalNumber(row.after?.after.turbidity)}</td>
+            <td className="mono whitespace-nowrap">{formatOptionalNumber(row.before?.before.TDS,0)} / {formatOptionalNumber(row.after?.after.TDS,0)}</td>
+            <td className="mono whitespace-nowrap">{formatOptionalNumber(row.before?.before.flowRate,1)} / {formatOptionalNumber(row.after?.after.flowRate,1)}</td>
+            <td className="mono whitespace-nowrap">{formatOptionalNumber(row.before?.before.temperature)} / {formatOptionalNumber(row.after?.after.temperature)}</td>
           </tr>)}</tbody>
         </table></div>
       </SectionCard>
